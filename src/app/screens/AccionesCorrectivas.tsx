@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import { motion } from 'motion/react'
 import {
-  Loader2, FileDown, Camera, Image, Trash2,
+  FileDown, Camera, Image, Trash2,
   AlertTriangle, ClipboardCheck, CheckCircle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
@@ -41,6 +42,15 @@ import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgo
 import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
+import { useEntradaPantalla } from '@/lib/motion'
 import { fechaCorta } from '@/lib/formato'
 import { limiteTexto } from '@/lib/limitesTexto'
 
@@ -68,34 +78,9 @@ interface FotoLocal {
 // ── Chip de estado ────────────────────────────────────────────────────────────
 
 function ChipEstado({ estado }: { estado: 'sin_capturar' | 'abierta' | 'cerrada' }) {
-  if (estado === 'cerrada') {
-    return (
-      <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-      >
-        Cerrada
-      </span>
-    )
-  }
-  if (estado === 'abierta') {
-    return (
-      <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-      >
-        Abierta
-      </span>
-    )
-  }
-  return (
-    <span
-      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted font-semibold"
-      style={{ color: 'var(--muted-foreground)' }}
-    >
-      Sin capturar
-    </span>
-  )
+  if (estado === 'cerrada') return <Etiqueta tono="menta">Cerrada</Etiqueta>
+  if (estado === 'abierta') return <Etiqueta tono="sky">Abierta</Etiqueta>
+  return <Etiqueta tono="neutral">Sin capturar</Etiqueta>
 }
 
 // ── Galería de fotos guardadas ────────────────────────────────────────────────
@@ -128,9 +113,7 @@ function GaleriaGuardadas({
       {fotos.map((f) => (
         <div key={f.id} className="flex items-center gap-3 p-2 rounded-xl border border-border">
           {cargando ? (
-            <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-            </div>
+            <Skeleton className="w-14 h-14 rounded-lg flex-shrink-0" />
           ) : urls[f.storage_path] ? (
             <FotoEvidencia
               src={urls[f.storage_path]}
@@ -204,6 +187,7 @@ export function AccionesCorrectivas() {
 
   const [guardando, setGuardando] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
+  const ent = useEntradaPantalla(!loading)
 
   const itemsFiltrados = items.filter((item) => {
     if (filtro === 'pendientes') return item.estado === 'sin_capturar' || item.estado === 'abierta'
@@ -443,11 +427,7 @@ export function AccionesCorrectivas() {
         onBack={() => navigate(-1)}
         acciones={
           <Boton tamano="sm" onClick={handleExportarPDF} cargando={generandoPDF}>
-            {generandoPDF ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <FileDown className="w-4 h-4" />
-            )}
+            <FileDown className="w-4 h-4" />
             PDF
           </Boton>
         }
@@ -472,7 +452,9 @@ export function AccionesCorrectivas() {
       {/* Content */}
       <div className="px-4 pb-4">
         {loading && (
-          <ListaSkeleton />
+          <div className="mt-2">
+            <ListaSkeleton rejilla onReintentar={refetch} />
+          </div>
         )}
         {!loading && error && (
           <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--agro-danger-fill)' }}>
@@ -480,67 +462,59 @@ export function AccionesCorrectivas() {
           </div>
         )}
         {!loading && !error && itemsFiltrados.length === 0 && (
-          <div className="flex flex-col items-center py-16 gap-3">
-            <ClipboardCheck className="w-12 h-12 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground text-center">
-              {filtro === 'cerradas'
-                ? 'Sin no-conformidades cerradas.'
-                : 'Sin no-conformidades pendientes. ¡Todo al día!'}
-            </p>
-          </div>
+          <EstadoVacio
+            icono={ClipboardCheck}
+            titulo={filtro === 'cerradas'
+              ? 'Sin no-conformidades cerradas.'
+              : 'Sin no-conformidades pendientes. ¡Todo al día!'}
+          />
         )}
         {!loading && !error && itemsFiltrados.length > 0 && (
-          <div className="space-y-3 mt-2">
-            {itemsFiltrados.map((item) => {
+          <div className="mt-2">
+          <ListaTarjetas>
+            {itemsFiltrados.map((item, index) => {
               const isPendiente =
                 item.estado === 'abierta' || item.estado === 'sin_capturar'
+              const est = asig.estados[item.respuesta_id]
+              const fecha = est?.fecha_limite
               return (
-                <div
-                  key={item.respuesta_id}
-                  id={`capa-${item.respuesta_id}`}
-                  className="rounded-xl border border-border p-4 bg-card"
-                  style={
-                    resaltadoId === item.respuesta_id
-                      ? { borderColor: 'var(--primary)', backgroundColor: 'var(--agro-info-fill)' }
-                      : isPendiente
-                      ? {
-                          borderColor: 'var(--agro-menta)',
-                          backgroundColor: 'var(--agro-info-fill)',
-                        }
-                      : {}
-                  }
-                >
-                  <button
-                    className="w-full text-left"
-                    onClick={() => abrirSheet(item)}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <ChipEstado estado={item.estado} />
-                      <span
-                        className="text-xs rounded px-1.5 py-0.5 bg-muted text-muted-foreground flex-shrink-0 font-semibold"
-                      >
-                        {item.modulo_label}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1 font-semibold">
-                      {item.codigo_pregunta}
-                    </p>
-                    <p className="text-sm text-foreground leading-snug line-clamp-2 mb-2">
-                      {item.texto_pregunta}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.rancho_nombre} · {formatFecha(item.fecha_auditoria)}
-                    </p>
-                    {item.accion?.fecha_cumplimiento && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Cumplida: {formatFecha(item.accion.fecha_cumplimiento)}
-                      </p>
+                <motion.div key={item.respuesta_id} id={`capa-${item.respuesta_id}`} {...ent(index)}>
+                  <TarjetaRegistro
+                    sinFirmas
+                    className={
+                      resaltadoId === item.respuesta_id
+                        ? 'border-primary bg-[var(--agro-info-fill)]'
+                        : isPendiente
+                        ? 'border-[var(--agro-menta)] bg-[var(--agro-info-fill)]'
+                        : undefined
+                    }
+                    meta={[item.codigo_pregunta, `${item.rancho_nombre} · ${formatFecha(item.fecha_auditoria)}`]}
+                    titulo={item.texto_pregunta}
+                    tituloTexto={item.texto_pregunta}
+                    alHacerClic={() => abrirSheet(item)}
+                    chips={(
+                      <>
+                        <ChipEstado estado={item.estado} />
+                        <Etiqueta tono="neutral">{item.modulo_label}</Etiqueta>
+                        {item.accion?.fecha_cumplimiento && (
+                          <Etiqueta tono="neutral" className="font-normal">
+                            Cumplida: {formatFecha(item.accion.fecha_cumplimiento)}
+                          </Etiqueta>
+                        )}
+                        {item.accion?.fotosSinSubir ? (
+                          <Etiqueta tono="sky">
+                            {item.accion.fotosSinSubir} foto{item.accion.fotosSinSubir !== 1 ? 's' : ''} sin subir
+                          </Etiqueta>
+                        ) : null}
+                      </>
                     )}
-                  </button>
-                  {esModuloAsignable(item.modulo) && (() => {
-                    const est = asig.estados[item.respuesta_id]
-                    const fecha = est?.fecha_limite
-                    return (
+                    acciones={item.accion ? (
+                      <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(item)}>
+                        <FileDown className="w-3.5 h-3.5" /> PDF
+                      </Boton>
+                    ) : undefined}
+                  >
+                    {esModuloAsignable(item.modulo) && (
                       <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
                         <p className="text-xs text-muted-foreground min-w-0">
                           <span className="font-semibold">Responsable · Fecha límite:</span>{' '}
@@ -549,38 +523,17 @@ export function AccionesCorrectivas() {
                             : 'Sin asignar'}
                         </p>
                         {asig.puedeAsignar && item.estado !== 'cerrada' && (
-                          <button
-                            onClick={() => abrirAsignar(item)}
-                            className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0 font-semibold"
-                          >
+                          <Boton variante="secundario" tamano="sm" onClick={() => abrirAsignar(item)}>
                             {est?.owner_user_id ? 'Editar asignación' : 'Asignar'}
-                          </button>
+                          </Boton>
                         )}
                       </div>
-                    )
-                  })()}
-                  {item.accion && (
-                    <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
-                      {item.accion.fotosSinSubir ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-                          {item.accion.fotosSinSubir} foto{item.accion.fotosSinSubir !== 1 ? 's' : ''} sin subir
-                        </span>
-                      ) : <span />}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handlePDFIndividual(item)
-                        }}
-                        className="flex items-center gap-1 text-xs"
-                        style={{ color: 'var(--primary)' }}
-                      >
-                        <FileDown className="w-3.5 h-3.5" /> PDF
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </TarjetaRegistro>
+                </motion.div>
               )
             })}
+          </ListaTarjetas>
           </div>
         )}
       </div>
@@ -596,17 +549,12 @@ export function AccionesCorrectivas() {
       />
 
       {/* Bottom Sheet — Detalle / Captura */}
-      <BottomSheet open={sheetAbierto} onClose={cerrarSheet} height="95%">
-        <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <div className="flex-1 min-w-0 pr-2">
-            <p className="text-xs text-muted-foreground mb-0.5 font-semibold">
-              {selectedItem?.modulo_label} · {selectedItem?.codigo_pregunta}
-            </p>
-            <h2 className="text-sm text-foreground leading-snug line-clamp-2 font-semibold">
-              {selectedItem?.texto_pregunta}
-            </h2>
-          </div>
-        </div>
+      <BottomSheet
+        open={sheetAbierto}
+        onClose={cerrarSheet}
+        height="95%"
+        title={selectedItem ? `${selectedItem.modulo_label} · ${selectedItem.codigo_pregunta}` : ''}
+      >
         <fieldset disabled={soloLectura} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-w-0 border-0 m-0">
           {soloLectura && (
             <div className="rounded-xl p-3 bg-muted">
@@ -624,6 +572,10 @@ export function AccionesCorrectivas() {
               </p>
             </div>
           )}
+          <p className="text-sm text-foreground leading-snug font-semibold">
+            {selectedItem?.texto_pregunta}
+          </p>
+
           {/* Contexto (no editable) */}
           <div className="rounded-xl p-3 bg-muted space-y-1">
             <p className="text-xs text-muted-foreground">
@@ -643,12 +595,12 @@ export function AccionesCorrectivas() {
           </div>
 
           {/* Fecha detección */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              FECHA DE DETECCIÓN
-            </label>
-            {puedeEditarHallazgo ? (
+          <Campo etiqueta="FECHA DE DETECCIÓN" className="gap-1">
+            {({ id }) => (
+              <>
+              {puedeEditarHallazgo ? (
               <input
+                id={id}
                 type="date"
                 value={fFechaDeteccion}
                 onChange={(e) => setFFechaDeteccion(e.target.value)}
@@ -664,15 +616,17 @@ export function AccionesCorrectivas() {
                 </p>
               </>
             )}
-          </div>
+              </>
+            )}
+          </Campo>
 
           {/* No conformidad */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              NO CONFORMIDAD (incumplimiento observado)
-            </label>
-            {puedeEditarHallazgo ? (
+          <Campo etiqueta="NO CONFORMIDAD (incumplimiento observado)" className="gap-1">
+            {({ id }) => (
+              <>
+              {puedeEditarHallazgo ? (
               <textarea
+                id={id}
                 value={fNoConformidad}
                 onChange={(e) => setFNoConformidad(e.target.value)}
                 rows={3}
@@ -689,49 +643,48 @@ export function AccionesCorrectivas() {
                 </p>
               </>
             )}
-          </div>
+              </>
+            )}
+          </Campo>
 
           {/* Causa */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              CAUSA (¿por qué ocurrió?)
-            </label>
-            <textarea
+          <Campo etiqueta="CAUSA (¿por qué ocurrió?)" className="gap-1">
+            {({ id }) => (
+              <textarea id={id}
               value={fCausa}
               onChange={(e) => setFCausa(e.target.value)}
               rows={2}
               placeholder="Causa raíz del incumplimiento…"
               className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
-          </div>
+            )}
+          </Campo>
 
           {/* Acción correctiva */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              ACCIÓN CORRECTIVA (¿cómo se corrigió?)
-            </label>
-            <textarea
+          <Campo etiqueta="ACCIÓN CORRECTIVA (¿cómo se corrigió?)" className="gap-1">
+            {({ id }) => (
+              <textarea id={id}
               value={fAccionCorrectiva}
               onChange={(e) => setFAccionCorrectiva(e.target.value)}
               rows={3}
               placeholder="Descripción de la corrección aplicada…"
               className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
-          </div>
+            )}
+          </Campo>
 
           {/* Acción preventiva */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              ACCIÓN PREVENTIVA (¿cómo evitar que se repita?)
-            </label>
-            <textarea
+          <Campo etiqueta="ACCIÓN PREVENTIVA (¿cómo evitar que se repita?)" className="gap-1">
+            {({ id }) => (
+              <textarea id={id}
               value={fAccionPreventiva}
               onChange={(e) => setFAccionPreventiva(e.target.value)}
               rows={2}
               placeholder="Medidas para prevenir recurrencia…"
               className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
-          </div>
+            )}
+          </Campo>
 
           {/* Fecha límite (solo lectura: la fija el admin al asignar) */}
           <div className="space-y-1">
@@ -758,11 +711,9 @@ export function AccionesCorrectivas() {
           </div>
 
           {/* Fecha de cumplimiento (la captura el responsable) */}
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-semibold">
-              FECHA DE CUMPLIMIENTO
-            </label>
-            <input
+          <Campo etiqueta="FECHA DE CUMPLIMIENTO" ayuda="Día en que se completó la acción" className="gap-1">
+            {({ id }) => (
+              <input id={id}
               type="date"
               value={fFechaCumplimiento}
               max={hoyMX()}
@@ -770,35 +721,33 @@ export function AccionesCorrectivas() {
               onChange={(e) => setFFechaCumplimiento(e.target.value)}
               className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
             />
-            <p className="text-small text-muted-foreground">Día en que se completó la acción</p>
-          </div>
+            )}
+          </Campo>
 
           {/* Realizó / Verificó */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-semibold">
-                REALIZÓ
-              </label>
-              <input
+            <Campo etiqueta="REALIZÓ" className="gap-1">
+                {({ id }) => (
+                  <input id={id}
                 type="text"
                 value={fRealizo}
                 onChange={(e) => setFRealizo(e.target.value)}
                 placeholder="Nombre"
                 className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-semibold">
-                VERIFICÓ
-              </label>
-              <input
+                )}
+              </Campo>
+            <Campo etiqueta="VERIFICÓ" className="gap-1">
+                {({ id }) => (
+                  <input id={id}
                 type="text"
                 value={fverifico}
                 onChange={(e) => setFverifico(e.target.value)}
                 placeholder="Nombre"
                 className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
-            </div>
+                )}
+              </Campo>
           </div>
 
           {/* Evidencia fotográfica */}
@@ -849,27 +798,15 @@ export function AccionesCorrectivas() {
                 <label className="text-xs text-muted-foreground font-semibold">
                   TIPO DE FOTO
                 </label>
-                <div className="flex gap-2">
-                  {(
-                    [
-                      ['no_conformidad', 'No conformidad'],
-                      ['evidencia_correccion', 'Evidencia corrección'],
-                    ] as ['no_conformidad' | 'evidencia_correccion', string][]
-                  ).map(([val, lbl]) => (
-                    <button
-                      key={val}
-                      onClick={() => setTipoFotoNueva(val)}
-                      className="flex-1 h-9 rounded-lg text-xs font-semibold"
-                      style={{
-                        backgroundColor:
-                          tipoFotoNueva === val ? 'var(--primary)' : 'var(--muted)',
-                        color: tipoFotoNueva === val ? '#fff' : 'var(--muted-foreground)',
-                      }}
-                    >
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
+                <SelectorSegmentado<'no_conformidad' | 'evidencia_correccion'>
+                  ariaLabel="Tipo de foto"
+                  value={tipoFotoNueva}
+                  onChange={setTipoFotoNueva}
+                  options={[
+                    { value: 'no_conformidad', label: 'No conformidad' },
+                    { value: 'evidencia_correccion', label: 'Evidencia corrección' },
+                  ]}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground font-semibold">
@@ -923,28 +860,23 @@ export function AccionesCorrectivas() {
 
         {/* Footer */}
         {!soloLectura && (
-        <div className="px-4 pb-4 pt-3 border-t border-border flex-shrink-0 space-y-2">
-          {esAdmin && online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
-            <button
-              onClick={() => handleGuardar(true)}
-              disabled={guardando}
-              className="w-full h-11 rounded-3xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 border-2 font-semibold"
-              style={{ borderColor: 'var(--agro-success-text)', color: 'var(--agro-success-text)' }}
-            >
-              {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              Guardar y cerrar NC
-            </button>
-          )}
-          <button
-            onClick={() => handleGuardar(false)}
-            disabled={guardando}
-            className="w-full h-12 rounded-3xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
-            {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {online ? 'Guardar' : 'Guardar fotos sin conexión'}
-          </button>
-        </div>
+          <PieFormulario
+            textoPrincipal={online ? 'Guardar' : 'Guardar fotos sin conexión'}
+            onPrincipal={() => handleGuardar(false)}
+            onCancelar={cerrarSheet}
+            cargando={guardando}
+            aviso={esAdmin && online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' ? (
+              <Boton
+                variante="secundario"
+                className="w-full"
+                onClick={() => handleGuardar(true)}
+                cargando={guardando}
+              >
+                <CheckCircle className="w-4 h-4" />
+                Guardar y cerrar NC
+              </Boton>
+            ) : undefined}
+          />
         )}
       </BottomSheet>
     </div>
