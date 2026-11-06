@@ -1,8 +1,10 @@
-import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
+import { Boton } from '@/app/components/ui-mady/Boton'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { X, CheckCircle, Loader2, FileDown, FileText } from "lucide-react";
+import { CheckCircle, FileDown, FileText } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { getAplicacionRicaById } from "@/lib/queries";
@@ -11,8 +13,7 @@ import { generarAplicacionPDF } from "@/lib/pdf/generarPDF";
 import { formatFenologia } from "@/lib/fenologia";
 import { useAuthContext } from "@/context/AuthContext";
 import { useModulosContext } from "@/context/ModulosContext";
-import { useTheme } from "@/context/ThemeContext";
-import { SPRING_SUAVE } from "@/lib/motion";
+import { SPRING_SUAVE, useEntradaPantalla } from "@/lib/motion";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import type { AplicacionRica } from "@/types/database.types";
 
@@ -26,6 +27,14 @@ export function DetalleAplicacion() {
   const [exportandoExcel, setExportandoExcel] = useState(false);
   const [exportandoPDF, setExportandoPDF] = useState(false);
   const reducedMotion = useReducedMotion();
+  const ent = useEntradaPantalla(!loading);
+
+  // Atrás si hay historial de la app; si se entró directo por URL, al Historial.
+  const regresar = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx;
+    if (typeof idx === "number" && idx > 0) navigate(-1);
+    else navigate("/historial");
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -76,44 +85,33 @@ export function DetalleAplicacion() {
   if (loading) {
     return (
       <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
-        <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <Skeleton className="h-5 w-40" />
-            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted">
-              <X className="w-6 h-6 text-foreground" />
-            </button>
-          </div>
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-5 w-24 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        </header>
+        <ModuloHeader tituloFallback="Detalle de Aplicación" forzarTitulo="Detalle de Aplicación" onBack={regresar} />
 
-        <div className="p-4 space-y-6">
-          <div>
-            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+        <div className="p-4 flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
+          <Panel>
             <div className="space-y-3">
               <SkeletonRow />
               <SkeletonRow />
               <SkeletonRow valueWidth="w-20" />
+              <SkeletonRow />
             </div>
-          </div>
-          <div>
-            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+          </Panel>
+          <Panel>
             <div className="space-y-3">
               <SkeletonRow valueWidth="w-16" />
               <SkeletonRow />
               <SkeletonRow valueWidth="w-24" />
             </div>
-          </div>
-          <div>
-            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+          </Panel>
+          <Panel>
             <div className="space-y-3">
               <SkeletonRow />
               <SkeletonRow valueWidth="w-20" />
             </div>
+          </Panel>
+          <div className="lg:col-span-2">
+            <AvisoCargaLenta />
           </div>
-          <AvisoCargaLenta />
         </div>
       </div>
     );
@@ -123,12 +121,7 @@ export function DetalleAplicacion() {
     return (
       <div className="min-h-full flex flex-col items-center justify-center gap-4 p-8">
         <p className="text-muted-foreground text-sm">Aplicación no encontrada</p>
-        <button
-          onClick={() => navigate("/historial")}
-          className="px-4 h-10 bg-primary text-primary-foreground rounded-xl text-sm font-semibold"
-        >
-          Volver al historial
-        </button>
+        <Boton onClick={() => navigate("/historial")}>Volver al historial</Boton>
       </div>
     );
   }
@@ -137,177 +130,157 @@ export function DetalleAplicacion() {
 
   return (
     <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
-      {/* Header */}
-      <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <h1 className="text-foreground flex-1 min-w-0 truncate font-semibold">
-            Detalle de Aplicación
-          </h1>
-          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted">
-            <X className="w-6 h-6 text-foreground" />
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Etiqueta tono="menta" icono={<CheckCircle className="w-3 h-3" />}>
-            {a.status === "completado" ? "Completado" : "Borrador"}
-          </Etiqueta>
-          <span className="text-sm text-muted-foreground">
-            {a.fecha_aplicacion}
-            {a.hora_inicio ? ` · ${a.hora_inicio}` : ""}
-          </span>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Detalle de Aplicación"
+        forzarTitulo="Detalle de Aplicación"
+        subtitulo={`${a.status === "completado" ? "Completado" : "Borrador"} · ${a.fecha_aplicacion}${a.hora_inicio ? ` · ${a.hora_inicio}` : ""}`}
+        onBack={regresar}
+      />
 
-      {/* Scrollable Content */}
-      <div className="p-4 space-y-6">
-        {/* Parcela y Cultivo */}
-        <Section title="INFORMACIÓN DE PARCELA Y CULTIVO">
-          <DataRow label="Productor" value={app.productores?.profiles?.nombre_completo ?? "—"} />
-          <DataRow label="Huerto" value={app.ranchos?.nombre ?? "—"} />
-          <DataRow label="Código de huerto" value={app.ranchos?.codigo ?? "—"} />
-          <DataRow label="Cultivo" value={app.ranchos?.cultivo ?? "—"} />
-          <DataRow label="Variedad" value={a.variedad ?? "—"} />
-          <DataRow label="Sector" value={a.sector ?? "—"} />
-          <DataRow label="Superficie" value={a.superficie_ha ? `${a.superficie_ha} ha` : "—"} />
-          <DataRow label="Etapa fenológica" value={formatFenologia(a.fenologia ?? undefined)} />
-          <DataRow label="Fecha recomendación" value={a.fecha_recomendacion ?? "—"} />
-          <DataRow label="Fecha aplicación" value={a.fecha_aplicacion} />
-          <DataRow label="Hora inicio" value={a.hora_inicio ?? "—"} />
-          <DataRow label="Hora fin" value={a.hora_fin ?? "—"} />
-        </Section>
-
-        {/* Productos */}
-        <Section title="PRODUCTOS APLICADOS">
-          {app.aplicacion_productos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin productos registrados</p>
-          ) : (
-            app.aplicacion_productos.map((p, index) => (
-              <div key={p.id} className="mb-4 pb-4 border-b border-border last:border-0">
-                <div className="text-sm mb-3 font-semibold">
-                  {p.catalogo_productos.nombre_comercial}
-                </div>
-                <div className="space-y-3">
-                  <DataRow label="Ingrediente activo" value={p.catalogo_productos.ingrediente_activo} />
-                  <DataRow label="RSCO" value={p.catalogo_productos.rsco ?? "—"} />
-                  <DataRow label="Objetivo" value={p.plaga_objetivo ?? "—"} />
-                  <DataRow label="Nivel infestación" value={p.nivel_infestacion ?? "—"} />
-                  <DataRow label="Dosis/ha" value={p.dosis_ha ? `${p.dosis_ha}` : "—"} />
-                  <DataRow label="Dosis/200L" value={p.dosis_200l ? `${p.dosis_200l}` : "—"} />
-                  <DataRow label="Total usado" value={p.total_producto ? `${p.total_producto}` : "—"} />
-                  <DataRow label="Días a cosecha" value={p.dias_cosecha ? `${p.dias_cosecha} días` : "—"} />
-                  <DataRow label="Reentrada" value={p.reentrada_hrs ? `${p.reentrada_hrs} hrs` : "—"} />
-                </div>
+      {/* Contenido: una columna en celular y tablet (orden de siempre); 2 columnas desde lg */}
+      <div className="p-4">
+        <motion.div
+          {...ent(0)}
+          className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start"
+        >
+          <div className="contents lg:flex lg:flex-col lg:gap-4">
+            {/* Parcela y Cultivo */}
+            <Panel titulo="Información de parcela y cultivo" className="order-1 lg:order-none">
+              <div className="space-y-3">
+                <DataRow label="Productor" value={app.productores?.profiles?.nombre_completo ?? "—"} />
+                <DataRow label="Huerto" value={app.ranchos?.nombre ?? "—"} />
+                <DataRow label="Código de huerto" value={app.ranchos?.codigo ?? "—"} />
+                <DataRow label="Cultivo" value={app.ranchos?.cultivo ?? "—"} />
+                <DataRow label="Variedad" value={a.variedad ?? "—"} />
+                <DataRow label="Sector" value={a.sector ?? "—"} />
+                <DataRow label="Superficie" value={a.superficie_ha ? `${a.superficie_ha} ha` : "—"} />
+                <DataRow label="Etapa fenológica" value={formatFenologia(a.fenologia ?? undefined)} />
+                <DataRow label="Fecha recomendación" value={a.fecha_recomendacion ?? "—"} />
+                <DataRow label="Fecha aplicación" value={a.fecha_aplicacion} />
+                <DataRow label="Hora inicio" value={a.hora_inicio ?? "—"} />
+                <DataRow label="Hora fin" value={a.hora_fin ?? "—"} />
               </div>
-            ))
-          )}
-        </Section>
+            </Panel>
 
-        {/* Aplicación y Agua */}
-        <Section title="APLICACIÓN Y AGUA">
-          <DataRow label="Tipo de aplicación" value={a.tipo_aplicacion} />
-          <DataRow label="Equipo" value={a.equipo ?? "—"} />
-          <DataRow label="Agua utilizada" value={a.total_agua_l ? `${a.total_agua_l} L` : "—"} />
-          <DataRow label="Cloración" value={a.cloracion ? "Sí" : "No"} />
-          {a.cloracion && (
-            <>
-              <DataRow label="Cantidad cloro" value={a.cloro_cantidad_l ? `${a.cloro_cantidad_l} L` : "—"} />
-              <DataRow label="pH" value={a.cloro_ph ? `${a.cloro_ph}` : "—"} />
-            </>
-          )}
-          <DataRow label="Condiciones climáticas" value={a.condicion_meteorologica ?? "—"} />
-        </Section>
-
-        {/* EPP */}
-        <Section title="EQUIPO DE PROTECCIÓN PERSONAL">
-          <div className="grid grid-cols-2 gap-3">
-            {(
-              [
-                ["Traje protector", a.epp_traje],
-                ["Guantes", a.epp_guantes],
-                ["Googles", a.epp_googles],
-                ["Botas", a.epp_botas],
-                ["Mascarillas", a.epp_mascarillas],
-              ] as [string, boolean][]
-            ).map(([item, used]) => (
-              <div
-                key={item}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                  used ? "bg-accent" : "bg-muted"
-                }`}
-              >
-                {used ? (
-                  <CheckCircle className="w-4 h-4 text-text-mint-strong" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />
+            {/* Aplicación y Agua */}
+            <Panel titulo="Aplicación y agua" className="order-3 lg:order-none">
+              <div className="space-y-3">
+                <DataRow label="Tipo de aplicación" value={a.tipo_aplicacion} />
+                <DataRow label="Equipo" value={a.equipo ?? "—"} />
+                <DataRow label="Agua utilizada" value={a.total_agua_l ? `${a.total_agua_l} L` : "—"} />
+                <DataRow label="Cloración" value={a.cloracion ? "Sí" : "No"} />
+                {a.cloracion && (
+                  <>
+                    <DataRow label="Cantidad cloro" value={a.cloro_cantidad_l ? `${a.cloro_cantidad_l} L` : "—"} />
+                    <DataRow label="pH" value={a.cloro_ph ? `${a.cloro_ph}` : "—"} />
+                  </>
                 )}
-                <span className={`text-sm ${used ? "" : "text-muted-foreground"}`}>{item}</span>
+                <DataRow label="Condiciones climáticas" value={a.condicion_meteorologica ?? "—"} />
               </div>
-            ))}
+            </Panel>
+
+            {/* EPP */}
+            <Panel titulo="Equipo de protección personal" className="order-4 lg:order-none">
+              <div className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    ["Traje protector", a.epp_traje],
+                    ["Guantes", a.epp_guantes],
+                    ["Googles", a.epp_googles],
+                    ["Botas", a.epp_botas],
+                    ["Mascarillas", a.epp_mascarillas],
+                  ] as [string, boolean][]
+                ).map(([item, used]) => (
+                  <div
+                    key={item}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                      used ? "bg-accent" : "bg-muted"
+                    }`}
+                  >
+                    {used ? (
+                      <CheckCircle className="w-4 h-4 text-text-mint-strong" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />
+                    )}
+                    <span className={`text-sm ${used ? "" : "text-muted-foreground"}`}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </Panel>
           </div>
-        </Section>
 
-        {/* Personal */}
-        <Section title="PERSONAL Y RESPONSABLES">
-          <DataRow label="Aplicador" value={a.aplicadores ?? "—"} />
-          <DataRow label="Asesor técnico" value={app.asesor?.nombre_completo ?? "—"} />
-          <DataRow label="Responsable inocuidad" value={app.responsable?.nombre_completo ?? "—"} />
-        </Section>
+          <div className="contents lg:flex lg:flex-col lg:gap-4">
+            {/* Productos */}
+            <Panel titulo="Productos aplicados" className="order-2 lg:order-none">
+              {app.aplicacion_productos.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Sin productos registrados</p>
+              ) : (
+                app.aplicacion_productos.map((p) => (
+                  <div key={p.id} className="mb-4 pb-4 border-b border-border last:mb-0 last:pb-0 last:border-0">
+                    <div className="text-sm mb-3 font-semibold">
+                      {p.catalogo_productos.nombre_comercial}
+                    </div>
+                    <div className="space-y-3">
+                      <DataRow label="Ingrediente activo" value={p.catalogo_productos.ingrediente_activo} />
+                      <DataRow label="RSCO" value={p.catalogo_productos.rsco ?? "—"} />
+                      <DataRow label="Objetivo" value={p.plaga_objetivo ?? "—"} />
+                      <DataRow label="Nivel infestación" value={p.nivel_infestacion ?? "—"} />
+                      <DataRow label="Dosis/ha" value={p.dosis_ha ? `${p.dosis_ha}` : "—"} />
+                      <DataRow label="Dosis/200L" value={p.dosis_200l ? `${p.dosis_200l}` : "—"} />
+                      <DataRow label="Total usado" value={p.total_producto ? `${p.total_producto}` : "—"} />
+                      <DataRow label="Días a cosecha" value={p.dias_cosecha ? `${p.dias_cosecha} días` : "—"} />
+                      <DataRow label="Reentrada" value={p.reentrada_hrs ? `${p.reentrada_hrs} hrs` : "—"} />
+                    </div>
+                  </div>
+                ))
+              )}
+            </Panel>
 
-        {a.observaciones && (
-          <Section title="OBSERVACIONES">
-            <p className="text-sm text-foreground">{a.observaciones}</p>
-          </Section>
-        )}
+            {/* Personal */}
+            <Panel titulo="Personal y responsables" className="order-5 lg:order-none">
+              <div className="space-y-3">
+                <DataRow label="Aplicador" value={a.aplicadores ?? "—"} />
+                <DataRow label="Asesor técnico" value={app.asesor?.nombre_completo ?? "—"} />
+                <DataRow label="Responsable inocuidad" value={app.responsable?.nombre_completo ?? "—"} />
+              </div>
+            </Panel>
+
+            {a.observaciones && (
+              <Panel titulo="Observaciones" className="order-6 lg:order-none">
+                <p className="text-sm text-foreground">{a.observaciones}</p>
+              </Panel>
+            )}
+          </div>
+        </motion.div>
 
         {/* Cápsula flotante — Excel / PDF */}
-        <div className="sticky bottom-[calc(88px+env(safe-area-inset-bottom,0px))] md:bottom-4 z-10 flex justify-center">
+        <div className="sticky bottom-[calc(88px+env(safe-area-inset-bottom,0px))] md:bottom-4 z-10 mt-4 flex justify-center">
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
             className="w-full md:w-fit flex items-center gap-2 md:gap-3 bg-card border border-border rounded-2xl p-2"
           >
-            <button
+            <Boton
+              variante="secundario"
               onClick={handleExportExcel}
-              disabled={exportandoExcel}
-              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-semibold"
+              cargando={exportandoExcel}
+              className="flex-1 md:flex-none md:min-w-[160px] border-primary text-primary hover:bg-primary/5"
             >
-              {exportandoExcel
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <FileDown className="w-4 h-4" />
-              }
+              <FileDown className="w-4 h-4" />
               Excel
-            </button>
-            <button
+            </Boton>
+            <Boton
               onClick={handleGenerarPDF}
-              disabled={exportandoPDF}
-              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-semibold"
+              cargando={exportandoPDF}
+              className="flex-1 md:flex-none md:min-w-[160px]"
             >
-              {exportandoPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+              <FileText className="w-4 h-4" />
               PDF
-            </button>
+            </Boton>
           </motion.div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const { resolvedTheme } = useTheme();
-  return (
-    <div>
-      <div className="bg-accent -mx-4 px-4 py-2 mb-4">
-        <h3
-          className="text-body font-semibold"
-          style={{
-            color: resolvedTheme === "dark" ? "var(--ring)" : "var(--accent-foreground)",
-          }}
-        >
-          {title}
-        </h3>
-      </div>
-      <div className="space-y-3">{children}</div>
     </div>
   );
 }
