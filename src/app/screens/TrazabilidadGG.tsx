@@ -540,7 +540,7 @@ export function TrazabilidadGG() {
                   className="h-9 px-3 rounded-xl text-xs transition-colors font-semibold"
                   style={{
                     backgroundColor: form.presentacion === p ? 'var(--primary)' : 'var(--muted)',
-                    color: form.presentacion === p ? '#fff' : 'var(--muted-foreground)',
+                    color: form.presentacion === p ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
                   {p}

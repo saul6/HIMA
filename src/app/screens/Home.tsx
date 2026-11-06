@@ -745,7 +745,7 @@ export function Home() {
                   to={m.ruta}
                   className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg ${FOCUS_RING}`}
                   style={{
-                    backgroundColor: 'rgba(153,60,29,0.12)',
+                    backgroundColor: 'var(--agro-danger-fill)',
                     color: 'var(--agro-danger-text)',
                     fontWeight: 600,
                   }}

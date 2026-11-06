@@ -437,7 +437,7 @@ export function FuentesAgua() {
                   <div key={item.id} className="rounded-[0.625rem] border border-border bg-card p-3">
                     <div className="flex items-start gap-3 mb-2">
                       <span
-                        className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                        className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-background"
                         style={{ backgroundColor: 'var(--muted-foreground)' }}
                       >
                         {item.numero}
@@ -446,7 +446,7 @@ export function FuentesAgua() {
                       <button
                         type="button"
                         onClick={() => setValores(v => ({ ...v, [item.id]: siguienteRespuesta(v[item.id] ?? 'si') }))}
-                        className="shrink-0 px-3 py-1 rounded-lg text-xs font-semibold text-white"
+                        className="shrink-0 px-3 py-1 rounded-lg text-xs font-semibold text-primary-foreground"
                         style={{ backgroundColor: colorRespuesta(valores[item.id] ?? 'si') }}
                       >
                         {labelRespuesta(valores[item.id] ?? 'si')}

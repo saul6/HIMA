@@ -278,7 +278,7 @@ function TabProductividad({
             let posBg = 'transparent'
             let posColor = 'var(--muted-foreground)'
             if (esPodio) {
-              if (c.posicion === 1) { posBg = 'var(--primary)'; posColor = '#fff' }
+              if (c.posicion === 1) { posBg = 'var(--primary)'; posColor = 'var(--primary-foreground)' }
               else if (c.posicion === 2) { posBg = 'var(--agro-info-fill)'; posColor = 'var(--agro-info-text)' }
               else { posBg = 'var(--muted)'; posColor = 'var(--foreground)' }
             }

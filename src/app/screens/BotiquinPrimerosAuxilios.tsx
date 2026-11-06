@@ -634,7 +634,7 @@ export function BotiquinPrimerosAuxilios() {
                 encima={r.requiere_correccion && r.comentario_correccion ? (
                   <div
                     className="flex items-start gap-2 mb-3 text-xs rounded-lg px-3 py-2"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-info-text)' }}
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                   >
                     <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
                     {r.comentario_correccion}
@@ -794,14 +794,14 @@ export function BotiquinPrimerosAuxilios() {
             </div>
 
             <div className="p-4 border-t border-border flex-shrink-0">
-              <button
+              <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                className="w-full"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -930,15 +930,15 @@ export function BotiquinPrimerosAuxilios() {
 
                 {/* Guardar */}
                 <div className="p-4 border-t border-border flex-shrink-0">
-                  <button
+                  <Boton
                     onClick={handleGuardar}
                     disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
-                    className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                    className="w-full"
                   >
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                     {!guardando && !online && <WifiOff className="w-4 h-4" />}
                     {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
-                  </button>
+                  </Boton>
                 </div>
               </>
             ) : (

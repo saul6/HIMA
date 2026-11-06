@@ -8,6 +8,7 @@ import {
   asignar, leerEstado, fechaMinimaAsignacion, esModuloAsignable,
   type ColaboradorAsignable, type EstadoAsignacion,
 } from '@/lib/hallazgos/asignacion'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 export interface HallazgoAsignable {
   respuesta_id: string
@@ -179,14 +180,14 @@ export function AsignarHallazgoSheet({
           >
             Cancelar
           </button>
-          <button
+          <Boton
             type="submit"
             disabled={guardando || bloqueado}
-            className="flex-1 h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+            className="flex-1"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : 'Guardar'}
-          </button>
+          </Boton>
         </div>
       </form>
     </BottomSheet>

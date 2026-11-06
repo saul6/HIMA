@@ -656,7 +656,7 @@ export function TemperaturasConservador() {
               <button
                 onClick={guardar}
                 disabled={cargando || !form.rancho_id}
-                className="w-full py-3 rounded-xl text-body font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-primary-foreground"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {cargando ? 'Guardando...' : !online ? 'Guardar sin conexión' : registroExistenteId ? 'Actualizar' : 'Guardar'}
@@ -714,7 +714,7 @@ export function TemperaturasConservador() {
               <button
                 onClick={generarConsolidado}
                 disabled={consolCargando || !consolDesde || !consolHasta}
-                className="w-full py-3 rounded-xl text-body font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-primary-foreground"
                 style={{ backgroundColor: consolCargando || !consolDesde || !consolHasta ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {consolCargando ? 'Generando...' : 'Generar PDF'}
