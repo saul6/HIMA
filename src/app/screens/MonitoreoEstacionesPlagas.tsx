@@ -369,8 +369,8 @@ function EstacionRevisionRow({
                     className={`px-4 py-1.5 text-sm font-semibold transition-colors ${
                       data.senalizacion === op
                         ? op === 'Si'
-                          ? 'bg-[var(--primary)] text-white'
-                          : 'bg-[var(--agro-red)] text-white'
+                          ? 'bg-[var(--primary)] text-primary-foreground'
+                          : 'bg-[var(--agro-red)] text-destructive-foreground'
                         : 'bg-card text-muted-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted'
                     } ${op === 'No' ? 'border-l border-border' : ''}`}
                   >
@@ -1403,7 +1403,7 @@ export function MonitoreoEstacionesPlagas() {
           </div>}
           {sheetNuevoPaso === 'form' && <div className="px-4 pb-safe-bottom pb-6 pt-3 border-t border-border shrink-0">
             <Button
-              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-white"
+              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-primary-foreground"
               onClick={handleGuardar}
               disabled={guardando}
             >
@@ -1459,7 +1459,7 @@ export function MonitoreoEstacionesPlagas() {
               </div>
             </div>
             <Button
-              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-white"
+              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-primary-foreground"
               onClick={handleConsolidado}
               disabled={cargandoCons}
             >
@@ -1543,7 +1543,7 @@ export function MonitoreoEstacionesPlagas() {
             Cancelar
           </Button>
           <Button
-            className="flex-1 h-12 bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-white"
+            className="flex-1 h-12 bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-primary-foreground"
             onClick={handleGuardarNfc}
             disabled={nfcGuardando || nfcCargandoEst || !nfcModal?.estacion}
           >

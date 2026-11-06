@@ -77,7 +77,7 @@ function CeldaCheck({ valor, onToggle }: { valor: boolean; onToggle: () => void 
       aria-pressed={valor}
       aria-label={valor ? 'Cumple' : 'No cumple'}
     >
-      {valor ? <Check className="w-4 h-4 text-white" /> : <X className="w-4 h-4" style={{ color: 'var(--agro-red)' }} />}
+      {valor ? <Check className="w-4 h-4 text-primary-foreground" /> : <X className="w-4 h-4" style={{ color: 'var(--agro-red)' }} />}
     </button>
   )
 }
@@ -138,7 +138,7 @@ function MatrizMonitoreo({
               className="w-4 h-4 rounded border flex items-center justify-center"
               style={{ backgroundColor: 'var(--primary)', borderColor: 'var(--primary)' }}
             >
-              <Check className="w-2.5 h-2.5 text-white" />
+              <Check className="w-2.5 h-2.5 text-primary-foreground" />
             </div>
             <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Cumple</span>
           </div>

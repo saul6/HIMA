@@ -82,7 +82,7 @@ function ToggleBtn({ activo, label, onToggle }: { activo: boolean; label: string
       onClick={onToggle}
       className="text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors"
       style={activo
-        ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
+        ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }
         : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
       }
     >
@@ -510,7 +510,7 @@ export function MipPreventivo() {
                     <div key={item.id} className="rounded-[0.625rem] border border-border bg-card p-3">
                       <div className="flex items-start gap-2 mb-2">
                         <span
-                          className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                          className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-background"
                           style={{ backgroundColor: 'var(--muted-foreground)', fontSize: '10px' }}
                         >
                           {item.numero}
