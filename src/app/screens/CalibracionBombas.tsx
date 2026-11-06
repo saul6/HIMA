@@ -528,7 +528,7 @@ export function CalibracionBombas() {
           <button
             onClick={guardar}
             disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-11 rounded-[0.625rem] bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!guardando && !online && <WifiOff className="w-4 h-4" />}
@@ -582,7 +582,7 @@ export function CalibracionBombas() {
           <button
             onClick={exportarConsolidado}
             disabled={exportando}
-            className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-11 rounded-[0.625rem] bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             Exportar PDF

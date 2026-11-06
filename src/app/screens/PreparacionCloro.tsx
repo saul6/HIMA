@@ -39,6 +39,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -328,8 +329,8 @@ export function PreparacionCloro() {
         {refTablaAbierta && (
           <div className="mt-1 rounded-xl border border-border overflow-hidden">
             <div className="grid grid-cols-2 px-4 py-2 bg-primary">
-              <span className="text-xs text-white font-semibold">Litros de agua</span>
-              <span className="text-xs text-white font-semibold">mL de cloro</span>
+              <span className="text-xs text-primary-foreground font-semibold">Litros de agua</span>
+              <span className="text-xs text-primary-foreground font-semibold">mL de cloro</span>
             </div>
             <div className="max-h-64 overflow-y-auto divide-y divide-border">
               {tablaReferencia.map(({ litros, ml }, i) => (
@@ -518,14 +519,14 @@ export function PreparacionCloro() {
           </div>
         </div>
         <div className="p-4 border-t border-border flex-shrink-0">
-          <button
+          <Boton
             onClick={handleGenerarConsolidado}
             disabled={generandoCons}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+            className="w-full"
           >
             {generandoCons && <Loader2 className="w-4 h-4 animate-spin" />}
             Generar PDF consolidado
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
 
@@ -705,16 +706,16 @@ export function PreparacionCloro() {
         </div>
 
         <div className="px-4 pb-6 pt-4 border-t border-border flex-shrink-0">
-          <button
+          <Boton
             onClick={handleGuardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+            className="w-full"
           >
             {guardando
               ? <Loader2 className="w-4 h-4 animate-spin" />
               : !online && <WifiOff className="w-4 h-4" />}
             {online ? 'Guardar' : 'Guardar sin conexión'}
-          </button>
+          </Boton>
         </div>
         </>)}
       </BottomSheet>

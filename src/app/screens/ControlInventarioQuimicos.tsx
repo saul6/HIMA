@@ -404,7 +404,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                       className="py-2.5 rounded-xl text-sm font-medium border transition-colors"
                       style={
                         movForm.tipo === t
-                          ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
+                          ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }
                           : { backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }
                       }
                     >
@@ -469,7 +469,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               <button
                 onClick={guardarMovimiento}
                 disabled={guardando}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
               >
                 {guardando ? 'Guardando...' : online ? 'Guardar movimiento' : 'Guardar sin conexión'}
               </button>
@@ -799,7 +799,7 @@ export function ControlInventarioQuimicos() {
                           aria-label={q.activo ? 'Desactivar' : 'Activar'}
                         >
                           <span
-                            className="w-5 h-5 rounded-full bg-white transition-transform mx-0.5"
+                            className="w-5 h-5 rounded-full bg-primary-foreground transition-transform mx-0.5"
                             style={{ transform: q.activo ? 'translateX(100%)' : 'translateX(0)' }}
                           />
                         </button>
@@ -878,7 +878,7 @@ export function ControlInventarioQuimicos() {
               <button
                 onClick={guardarQuimico}
                 disabled={guardandoQuimico}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
               >
                 {guardandoQuimico ? 'Guardando...' : online ? 'Agregar químico' : 'Agregar sin conexión'}
               </button>
@@ -932,7 +932,7 @@ export function ControlInventarioQuimicos() {
               <button
                 onClick={exportarConsolidado}
                 disabled={exportando}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
               >
                 {exportando
                   ? <span className="flex items-center justify-center gap-2">

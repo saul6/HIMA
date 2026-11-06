@@ -361,7 +361,7 @@ export function FrecuenciaCapacitacion() {
               style={{ backgroundColor: form.realizado ? 'var(--primary)' : 'var(--switch-background)' }}
             >
               <span
-                className="inline-block h-4 w-4 rounded-full bg-white transition-transform"
+                className="inline-block h-4 w-4 rounded-full bg-primary-foreground transition-transform"
                 style={{ transform: form.realizado ? 'translateX(22px)' : 'translateX(4px)' }}
               />
             </button>
