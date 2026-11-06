@@ -1,9 +1,7 @@
-﻿import { useState, useCallback, useMemo, useRef, useEffect } from "react"
-import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "motion/react"
-import { SPRING_SUAVE } from "@/lib/motion"
+﻿import { useState, useCallback, useMemo } from "react"
+import { motion, useReducedMotion } from "motion/react"
 import {
   Search,
-  Plus,
   ChevronDown,
   X,
   ExternalLink,
@@ -31,7 +29,14 @@ import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
+import { ListaTarjetas, ListaAncho } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
+import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { limiteTexto } from '@/lib/limitesTexto'
 
 const LOW_STOCK = 5
@@ -42,38 +47,14 @@ function fmtSaldo(saldo: number): string {
   return Number.isInteger(saldo) ? String(saldo) : saldo.toFixed(2)
 }
 
-// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
-// ítems escalonados, 35ms entre cada uno.
-function cascadeStyle(index: number, enabled: boolean) {
-  if (!enabled) return undefined
-  return {
-    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
-    animationDelay: `${Math.min(index, 7) * 35}ms`,
-  }
-}
-
-function StatusBadge({ saldo, unidad }: { saldo: number; unidad: string | null }) {
-  const label = fmtSaldo(Number(saldo))
-  const u = unidad ?? ""
+function StatusBadge({ saldo }: { saldo: number }) {
   if (Number(saldo) <= 0) {
-    return (
-      <Etiqueta tono="error">
-        Agotado
-      </Etiqueta>
-    )
+    return <Etiqueta tono="error">Agotado</Etiqueta>
   }
   if (Number(saldo) < LOW_STOCK) {
-    return (
-      <Etiqueta tono="sky">
-        Bajo · {label} {u}
-      </Etiqueta>
-    )
+    return <Etiqueta tono="sky">Bajo</Etiqueta>
   }
-  return (
-    <Etiqueta tono="menta">
-      Disponible · {label} {u}
-    </Etiqueta>
-  )
+  return <Etiqueta tono="menta">Disponible</Etiqueta>
 }
 
 function TipoBadge({ tipo }: { tipo: TipoMovimiento }) {
@@ -419,16 +400,11 @@ export function Inventario() {
     productor?.id ?? null,
   )
   const reducedMotion = useReducedMotion()
-  const primeraCargaRef = useRef(true)
-  useEffect(() => {
-    if (!loading) primeraCargaRef.current = false
-  }, [loading])
+  const ent = useEntradaPantalla(!loading)
 
   const esOperario = profile?.rol === 'operario'
   const esCampo = terminosSitio.singular === 'Rancho'
   const [vista, setVista] = useState<Vista>("rancho")
-  // Dirección de la última vista elegida (1 = derecha, -1 = izquierda)
-  const dirVistaRef = useRef(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("Todos")
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
@@ -495,6 +471,66 @@ export function Inventario() {
     refetch()
   }
 
+  // Tarjeta de producto (misma para las dos vistas; cambia la clave, el sitio y el historial).
+  const renderTarjeta = (
+    item: InventarioSaldoRancho | InventarioSaldoProductor,
+    key: string,
+    index: number,
+    ranchoId?: string,
+    ranchoNombre?: string,
+  ) => {
+    const expanded = expandedKey === key
+    const saldo = Number(item.saldo)
+    return (
+      <motion.div key={key} {...ent(index)}>
+        <TarjetaRegistro
+          sinFirmas
+          meta={[item.ingrediente_activo, ranchoNombre]}
+          titulo={item.nombre_comercial}
+          tituloTexto={item.nombre_comercial}
+          chips={(
+            <>
+              <StatusBadge saldo={saldo} />
+              {item.ultimo_movimiento && (
+                <Etiqueta tono="neutral" className="font-normal">Último mov.: {item.ultimo_movimiento}</Etiqueta>
+              )}
+            </>
+          )}
+          acciones={(
+            <div className="text-right">
+              <p className={`text-lg font-semibold leading-tight tabular-nums ${saldo <= 0 ? 'text-agro-danger-text' : 'text-foreground'}`}>
+                {fmtSaldo(saldo)}
+              </p>
+              {item.unidad && <p className="text-xs text-muted-foreground">{item.unidad}</p>}
+            </div>
+          )}
+        >
+          <button
+            onClick={() => toggleHistorial(key, item.producto_id, ranchoId)}
+            aria-expanded={expanded}
+            className="mt-2 flex items-center gap-1 text-sm text-primary font-semibold"
+          >
+            <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
+            {expanded ? 'Ocultar historial' : 'Ver historial'}
+          </button>
+          <div
+            className={`accordion-rows -mx-4 mt-2 rounded-b-xl ${expanded ? 'is-open -mb-4' : ''}`}
+            aria-hidden={!expanded}
+            inert={!expanded ? '' : undefined}
+          >
+            <div>
+              <HistorialInline
+                movimientos={historialCache[key] ?? []}
+                loading={loadingHistorial === key}
+                ranchoVisible={ranchoId === undefined}
+              />
+            </div>
+          </div>
+        </TarjetaRegistro>
+      </motion.div>
+    )
+  }
+
   return (
     <div className="min-h-full pb-safe-nav">
       <EncabezadoPantalla
@@ -512,36 +548,15 @@ export function Inventario() {
         }
         debajo={
         !esOperario ? (
-          <LayoutGroup id="inventario-vista">
-            <div className="flex gap-1 bg-muted p-1 rounded-lg md:w-72">
-              {(["rancho", "productor"] as Vista[]).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => {
-                    dirVistaRef.current = v === "productor" ? 1 : -1
-                    handleVistaChange(v)
-                  }}
-                  aria-pressed={vista === v}
-                  className={`relative flex-1 h-8 rounded-md text-sm transition-colors ${
-                    vista === v ? "text-foreground" : "text-muted-foreground"
-                  }`}
-                  style={{ fontWeight: 600, transitionDuration: 'var(--motion-fast)' }}
-                >
-                  {vista === v && (
-                    <motion.span
-                      layoutId="inventario-vista-activa"
-                      className="absolute inset-0 rounded-md bg-card"
-                      style={{ zIndex: 0 }}
-                      transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                    />
-                  )}
-                  <span className="relative z-10">
-                    {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </LayoutGroup>
+          <SelectorSegmentado
+            value={vista}
+            onChange={handleVistaChange}
+            ariaLabel="Vista del inventario"
+            options={[
+              { value: "rancho" as Vista, label: `Por ${terminosSitio.singular.toLowerCase()}` },
+              { value: "productor" as Vista, label: "Por productor" },
+            ]}
+          />
         ) : undefined
         }
       />
@@ -566,158 +581,38 @@ export function Inventario() {
         </div>
 
         {/* Estado de carga / error */}
-        {loading && (
-          <div className="space-y-3">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="bg-card border border-border rounded-xl p-4 animate-pulse">
-                <div className="flex items-start justify-between mb-1">
-                  <div className="flex-1 min-w-0 pr-2 space-y-1.5">
-                    <div className="h-3.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
-                  </div>
-                  <div className="h-5 w-14 rounded-full" style={{ backgroundColor: 'var(--muted)' }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {loading && <ListaSkeleton rejilla onReintentar={refetch} />}
         {error && (
           <div className="p-4 rounded-xl bg-agro-danger-fill text-agro-danger-text text-sm">
             {error}
           </div>
         )}
 
-        {/* Lista */}
+        {/* Lista: el cambio de vista es un fundido (solo opacidad) */}
         {!loading && !error && (
-          <AnimatePresence mode="wait" initial={false} custom={dirVistaRef.current}>
           <motion.div
             key={vista}
-            custom={dirVistaRef.current}
-            variants={{
-              enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
-              center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
-              exit: (d: number) => (reducedMotion
-                ? { opacity: 1 }
-                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
-            }}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className="space-y-3"
+            initial={reducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: DUR.base, ease: EASE_OUT } }}
           >
-            {filtered.length === 0 ? (
-              <p
-                className="text-sm text-muted-foreground text-center py-8"
-                style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-              >
-                {searchQuery ? "Sin resultados para esta búsqueda." : "Sin productos en inventario."}
-              </p>
-            ) : vista === "rancho" ? (
-              (filtered as InventarioSaldoRancho[]).map((item, index) => {
-                const key = `${item.rancho_id}||${item.producto_id}`
-                const expanded = expandedKey === key
-                return (
-                  <div
-                    key={key}
-                    className="bg-card border border-border rounded-xl overflow-hidden"
-                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex-1 min-w-0 pr-2">
-                          <div className="text-sm truncate font-semibold">
-                            {item.nombre_comercial}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {item.ingrediente_activo}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {item.rancho_nombre}
-                          </div>
-                        </div>
-                        <StatusBadge saldo={Number(item.saldo)} unidad={item.unidad} />
-                      </div>
-                      {item.ultimo_movimiento && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Último mov.: {item.ultimo_movimiento}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => toggleHistorial(key, item.producto_id, item.rancho_id)}
-                        aria-expanded={expanded}
-                        className="mt-2 flex items-center gap-1 text-sm text-primary font-semibold"
-                      >
-                        <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
-                        {expanded ? 'Ocultar historial' : 'Ver historial'}
-                      </button>
-                    </div>
-                    <div
-                      className={`accordion-rows ${expanded ? 'is-open' : ''}`}
-                      aria-hidden={!expanded}
-                      inert={!expanded ? '' : undefined}
-                    >
-                      <HistorialInline
-                        movimientos={historialCache[key] ?? []}
-                        loading={loadingHistorial === key}
-                        ranchoVisible={false}
-                      />
-                    </div>
-                  </div>
+            <ListaTarjetas>
+              {filtered.length === 0 ? (
+                <ListaAncho>
+                  <EstadoVacio
+                    titulo={searchQuery || activeFilter !== "Todos" ? "Sin resultados con estos filtros." : "Sin productos en inventario."}
+                  />
+                </ListaAncho>
+              ) : vista === "rancho" ? (
+                (filtered as InventarioSaldoRancho[]).map((item, index) =>
+                  renderTarjeta(item, `${item.rancho_id}||${item.producto_id}`, index, item.rancho_id, item.rancho_nombre),
                 )
-              })
-            ) : (
-              (filtered as InventarioSaldoProductor[]).map((item, index) => {
-                const key = item.producto_id
-                const expanded = expandedKey === key
-                return (
-                  <div
-                    key={key}
-                    className="bg-card border border-border rounded-xl overflow-hidden"
-                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex-1 min-w-0 pr-2">
-                          <div className="text-sm truncate font-semibold">
-                            {item.nombre_comercial}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {item.ingrediente_activo}
-                          </div>
-                        </div>
-                        <StatusBadge saldo={Number(item.saldo)} unidad={item.unidad} />
-                      </div>
-                      {item.ultimo_movimiento && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Último mov.: {item.ultimo_movimiento}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => toggleHistorial(key, item.producto_id)}
-                        aria-expanded={expanded}
-                        className="mt-2 flex items-center gap-1 text-sm text-primary font-semibold"
-                      >
-                        <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
-                        {expanded ? 'Ocultar historial' : 'Ver historial'}
-                      </button>
-                    </div>
-                    <div
-                      className={`accordion-rows ${expanded ? 'is-open' : ''}`}
-                      aria-hidden={!expanded}
-                      inert={!expanded ? '' : undefined}
-                    >
-                      <HistorialInline
-                        movimientos={historialCache[key] ?? []}
-                        loading={loadingHistorial === key}
-                        ranchoVisible
-                      />
-                    </div>
-                  </div>
+              ) : (
+                (filtered as InventarioSaldoProductor[]).map((item, index) =>
+                  renderTarjeta(item, item.producto_id, index),
                 )
-              })
-            )}
+              )}
+            </ListaTarjetas>
           </motion.div>
-          </AnimatePresence>
         )}
       </div>
 
