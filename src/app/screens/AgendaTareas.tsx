@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import type * as React from 'react'
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
-  Plus, Loader2, AlertTriangle,
+  ClipboardList, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
   Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine, Copy,
 } from 'lucide-react'
@@ -21,13 +21,15 @@ import { useAgendaTareas } from '@/hooks/useAgendaTareas'
 import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDetalle } from '@/hooks/useAgendaTareas'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
-import { Portal } from '@/app/components/Portal'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { Fab } from '@/app/components/Fab'
+import { DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
@@ -526,8 +528,12 @@ function DetalleSheet({
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--primary)' }} />
+      <div className="space-y-3 px-4 py-6" aria-busy="true">
+        <Skeleton className="h-5 w-2/3" />
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <AvisoCargaLenta onReintentar={cargarDetalle} />
       </div>
     )
   }
@@ -1461,6 +1467,7 @@ export function AgendaTareas() {
   const { ranchos } = useRanchos()
   const hook = useAgendaTareas()
   const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(!hook.loading)
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -1601,10 +1608,10 @@ export function AgendaTareas() {
                 </div>
               ))}
             </div>
-            <Skeleton className="h-9 w-full rounded-xl" />
             <Skeleton className="h-9 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <ListaSkeleton rows={4} />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-72 max-w-full rounded-xl" />
+            <ListaSkeleton rejilla rows={4} onReintentar={refrescar} />
           </div>
         ) : (
           /* ── VISTA ADMIN ── */
@@ -1649,6 +1656,7 @@ export function AgendaTareas() {
 
             {/* Filtro por colaborador */}
             {hook.colaboradores.length > 0 && (
+              <motion.div {...ent(1)}>
               <select
                 aria-label="Colaborador"
                 value={filtroColaborador}
@@ -1660,9 +1668,11 @@ export function AgendaTareas() {
                   <option key={c.id} value={c.id}>{c.nombre}</option>
                 ))}
               </select>
+              </motion.div>
             )}
 
             {/* Pestañas */}
+            <motion.div {...ent(2)}>
             <SelectorSegmentado<typeof tabAdmin>
               ariaLabel="Estado de las tareas"
               value={tabAdmin}
@@ -1674,6 +1684,7 @@ export function AgendaTareas() {
               }}
               options={tabsAdmin.map(t => ({ value: t.key, label: t.label }))}
             />
+            </motion.div>
 
             {/* Lista de tareas */}
             <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
@@ -1692,14 +1703,12 @@ export function AgendaTareas() {
                 exit="exit"
               >
                 {tareasTab.length === 0 ? (
-                  <motion.p
+                  <motion.div
                     initial={reducedMotion ? false : { opacity: 0 }}
                     animate={{ opacity: 1, transition: { duration: DUR.base, ease: EASE_OUT } }}
-                    className="text-sm text-center py-8"
-                    style={{ color: 'var(--muted-foreground)' }}
                   >
-                    Sin tareas
-                  </motion.p>
+                    <EstadoVacio icono={ClipboardList} titulo="Sin tareas" />
+                  </motion.div>
                 ) : (
                   <ListaTarjetas>
                     {tareasTab.map((t, index) => (
@@ -1731,7 +1740,7 @@ export function AgendaTareas() {
                   </div>
                 ))}
               </div>
-              <ListaSkeleton rows={4} />
+              <ListaSkeleton rejilla rows={4} onReintentar={refrescar} />
             </div>
           ) : (
           /* ── VISTA COLABORADOR ── */
@@ -1762,16 +1771,14 @@ export function AgendaTareas() {
               </p>
               <AnimatePresence mode="popLayout" initial={false}>
                 {filtroSeleccionado.lista.length === 0 ? (
-                  <motion.p
+                  <motion.div
                     key="vacio"
                     initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0, transition: { duration: DUR.base, ease: EASE_OUT } }}
                     exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido } }}
-                    className="text-sm text-center py-10"
-                    style={{ color: 'var(--muted-foreground)' }}
                   >
-                    {filtroSeleccionado.vacio}
-                  </motion.p>
+                    <EstadoVacio icono={ClipboardList} titulo={filtroSeleccionado.vacio} />
+                  </motion.div>
                 ) : (
                   <ListaTarjetas key="lista">
                     {filtroSeleccionado.lista.map((t, index) => (
@@ -1798,16 +1805,7 @@ export function AgendaTareas() {
 
       {/* FAB (solo admin) */}
       {esAdmin && (
-        <Portal>
-        <button
-          onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }}
-          className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 group no-press"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-          aria-label="Nueva tarea"
-        >
-          <Plus className="w-6 h-6 transition-transform duration-100 ease-[var(--ease-out)] motion-safe:group-active:scale-90" />
-        </button>
-        </Portal>
+        <Fab onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }} aria-label="Nueva tarea" />
       )}
 
       {/* Sheet nueva tarea */}
