@@ -22,13 +22,17 @@ import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDeta
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 import { Portal } from '@/app/components/Portal'
-import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
+import { DUR, EASE_OUT } from '@/lib/motion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { fechaCorta, fechaHora } from '@/lib/formato'
+
+const CLASE_SELECT =
+  'h-10 w-full min-w-0 rounded-lg border border-border-control bg-input-background px-3 text-sm focus:border-primary focus:outline-none'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1604,7 +1608,6 @@ export function AgendaTareas() {
                   valorPrimero
                   valor={resumen.por_verificar ?? 0}
                   etiqueta="Por verificar"
-                  tono={resumen.por_verificar ? 'info' : 'normal'}
                 />
                 <TarjetaContador
                   indice={1}
@@ -1622,29 +1625,26 @@ export function AgendaTareas() {
               </div>
             )}
 
-            {/* Chip sin acuse org */}
+            {/* Nota sin acuse org */}
             {resumen && (resumen.sin_acuse_org ?? 0) > 0 && (
               <div
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
+                className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
                 style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
-                <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
-                {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}
+                <PenLine className="w-4 h-4 mt-px flex-shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}
+                </div>
               </div>
             )}
 
             {/* Filtro por colaborador */}
             {hook.colaboradores.length > 0 && (
               <select
+                aria-label="Colaborador"
                 value={filtroColaborador}
                 onChange={e => { dirTabRef.current = 0; setFiltroColaborador(e.target.value) }}
-                className="w-full h-9 rounded-lg text-sm"
-                style={{
-                  backgroundColor: 'var(--input-background)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--foreground)',
-                  padding: '0 0.75rem',
-                }}
+                className={CLASE_SELECT}
               >
                 <option value="">Todos los colaboradores</option>
                 {hook.colaboradores.map(c => (
@@ -1654,35 +1654,17 @@ export function AgendaTareas() {
             )}
 
             {/* Pestañas */}
-            <LayoutGroup id="agenda-admin-tabs">
-              <div className="flex gap-1 rounded-xl p-1 overflow-x-auto" style={{ backgroundColor: 'var(--muted)' }}>
-                {tabsAdmin.map((t, i) => (
-                  <button
-                    key={t.key}
-                    onClick={() => {
-                      const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
-                      dirTabRef.current = i > actual ? 1 : -1
-                      setTabAdmin(t.key)
-                    }}
-                    className="relative flex-1 min-w-0 text-xs font-semibold whitespace-nowrap rounded-lg py-1.5 px-2 transition-colors"
-                    style={{
-                      color: tabAdmin === t.key ? 'var(--foreground)' : 'var(--muted-foreground)',
-                      transitionDuration: 'var(--motion-fast)',
-                    }}
-                  >
-                    {tabAdmin === t.key && (
-                      <motion.span
-                        layoutId="agenda-admin-tab-activa"
-                        className="absolute inset-0 rounded-lg"
-                        style={{ backgroundColor: 'var(--card)', zIndex: 0 }}
-                        transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                      />
-                    )}
-                    <span className="relative z-10">{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            </LayoutGroup>
+            <SelectorSegmentado<typeof tabAdmin>
+              ariaLabel="Estado de las tareas"
+              value={tabAdmin}
+              onChange={k => {
+                const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
+                const nuevo = tabsAdmin.findIndex(x => x.key === k)
+                dirTabRef.current = nuevo > actual ? 1 : -1
+                setTabAdmin(k)
+              }}
+              options={tabsAdmin.map(t => ({ value: t.key, label: t.label }))}
+            />
 
             {/* Lista de tareas */}
             <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
