@@ -21,9 +21,13 @@ import {
   mergePDFBlobs,
 } from '@/lib/pdf/generarBlobHistorial'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { fechaCorta, formatoPct, mesAnio } from '@/lib/formato'
+
+const CLASE_CONTROL =
+  'h-10 w-full min-w-0 rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-60'
 
 // ── Metadatos de módulo ───────────────────────────────────────────────────────
 
@@ -1125,53 +1129,47 @@ export function BibliotecaHistorial() {
         {/* Barra de filtros */}
         <div className="bg-card rounded-xl border border-border p-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:items-end">
-            <div className="min-w-0">
-              <label htmlFor="historial-desde" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                Desde
-              </label>
-              <input
-                id="historial-desde"
-                type="date"
-                value={inputDesde}
-                onChange={(e) => setInputDesde(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              />
-            </div>
-            <div className="min-w-0">
-              <label htmlFor="historial-hasta" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                Hasta
-              </label>
-              <input
-                id="historial-hasta"
-                type="date"
-                value={inputHasta}
-                onChange={(e) => setInputHasta(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              />
-            </div>
+            <Campo etiqueta="Desde" className="min-w-0 gap-1.5">
+              {({ id }) => (
+                <input
+                  id={id}
+                  type="date"
+                  value={inputDesde}
+                  onChange={(e) => setInputDesde(e.target.value)}
+                  className={`${CLASE_CONTROL} [&::-webkit-date-and-time-value]:text-left appearance-none`}
+                />
+              )}
+            </Campo>
+            <Campo etiqueta="Hasta" className="min-w-0 gap-1.5">
+              {({ id }) => (
+                <input
+                  id={id}
+                  type="date"
+                  value={inputHasta}
+                  onChange={(e) => setInputHasta(e.target.value)}
+                  className={`${CLASE_CONTROL} [&::-webkit-date-and-time-value]:text-left appearance-none`}
+                />
+              )}
+            </Campo>
 
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <label htmlFor="historial-sitio" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                {terminosSitio.singular}
-              </label>
-              <select
-                id="historial-sitio"
-                value={filtroRancho}
-                onChange={(e) => setFiltroRancho(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              >
-                <option value="todos">{terminosSitio.plural}</option>
-                {ranchos.map(([id, nombre]) => (
-                  <option key={id} value={id}>{nombre}</option>
-                ))}
-              </select>
-            </div>
+            <Campo etiqueta={terminosSitio.singular} className="col-span-2 md:col-span-1 min-w-0 gap-1.5">
+              {({ id }) => (
+                <select
+                  id={id}
+                  value={filtroRancho}
+                  onChange={(e) => setFiltroRancho(e.target.value)}
+                  className={CLASE_CONTROL}
+                >
+                  <option value="todos">{terminosSitio.plural}</option>
+                  {ranchos.map(([id, nombre]) => (
+                    <option key={id} value={id}>{nombre}</option>
+                  ))}
+                </select>
+              )}
+            </Campo>
 
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <span id="historial-modulos-label" className="text-caption block" style={{ color: 'var(--muted-foreground)' }}>
+            <div className="col-span-2 md:col-span-1 min-w-0 flex flex-col gap-1.5">
+              <span id="historial-modulos-label" className="text-xs font-semibold text-muted-foreground block">
                 Módulos
               </span>
               <button
@@ -1179,11 +1177,7 @@ export function BibliotecaHistorial() {
                 aria-labelledby="historial-modulos-label"
                 aria-haspopup="dialog"
                 onClick={() => setModulosSheetOpen(true)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{
-                  background: 'var(--input-background)',
-                  borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
-                }}
+                className={`${CLASE_CONTROL} ${todosSeleccionados ? '' : 'border-ring'}`}
               >
                 <span className="flex items-center justify-between gap-2 w-full">
                   <span className="truncate">
@@ -1193,7 +1187,7 @@ export function BibliotecaHistorial() {
                         ? 'Todos los módulos'
                         : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
                   </span>
-                  <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                  <ChevronDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
                 </span>
               </button>
             </div>
@@ -1253,16 +1247,19 @@ export function BibliotecaHistorial() {
 
         {/* Exportar paquete PDF — fila propia, a todo lo ancho */}
         {filtrados.length > 0 && (
-          <button
+          <Boton
+            variante="secundario"
+            type="button"
             onClick={handleExportarPaquete}
-            disabled={generandoPaquete || !!descargandoPDF}
-            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled: focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
+            disabled={!!descargandoPDF}
+            cargando={generandoPaquete}
+            className="w-full h-auto min-h-11 py-2 border-primary text-primary"
           >
-            {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
-            <span className="text-center leading-snug">
+            <Package className="w-4 h-4 flex-shrink-0" />
+            <span className="text-center leading-snug whitespace-normal">
               Exportar paquete PDF (<ContadorRegistros value={filtrados.length} reducedMotion={!!reducedMotion} /> registros)
             </span>
-          </button>
+          </Boton>
         )}
 
         {/* Lista de registros — crossfade rápido entre estados (cargando,
