@@ -309,7 +309,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
         </button>
         <Boton
           onClick={onNext}
-          className="flex-1"
+          className="flex-1 h-14 rounded-3xl"
         >
           Continuar
         </Boton>

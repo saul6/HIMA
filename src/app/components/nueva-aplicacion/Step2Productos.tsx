@@ -285,13 +285,13 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
             <Boton variante="secundario" onClick={() => {
                 setCurrentProduct({ ...emptyProduct });
                 setIsAddingProduct(false);
-              }} className="flex-1">
+              }} className="flex-1 h-12 rounded-xl">
               Cancelar
             </Boton>
             <Boton
               onClick={addProduct}
               disabled={!currentProduct.productId}
-              className="flex-1"
+              className="flex-1 h-14 rounded-3xl"
             >
               Agregar
             </Boton>

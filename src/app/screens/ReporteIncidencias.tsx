@@ -1652,7 +1652,7 @@ export function ReporteIncidencias() {
               <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full"
+                className="w-full h-14 rounded-3xl"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
@@ -1685,7 +1685,7 @@ export function ReporteIncidencias() {
             <div className="flex flex-col gap-2">
               <Boton
                 onClick={handleContinuarBorrador}
-                className="w-full"
+                className="w-full h-12 rounded-xl"
               >
                 Continuar borrador
               </Boton>
@@ -1878,7 +1878,7 @@ export function ReporteIncidencias() {
                 <Boton
                   onClick={handleGuardar}
                   disabled={guardando}
-                  className="w-full"
+                  className="w-full h-14 rounded-3xl"
                 >
                   {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                   {!guardando && !online && !hayFotosSinOptimizar && <WifiOff className="w-4 h-4" />}

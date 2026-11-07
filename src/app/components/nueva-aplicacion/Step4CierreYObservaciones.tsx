@@ -210,7 +210,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         <Boton
           onClick={onSave}
           disabled={saving}
-          className="flex-1"
+          className="flex-1 h-14 rounded-3xl"
         >
           {saving ? "Guardando..." : "Guardar y generar PDF"}
         </Boton>

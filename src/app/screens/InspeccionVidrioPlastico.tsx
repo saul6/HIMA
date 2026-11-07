@@ -1010,7 +1010,7 @@ export function InspeccionVidrioPlastico() {
                         type="button"
                         onClick={handleAgregarMaterial}
                         disabled={guardandoNuevo}
-                        className="w-full"
+                        className="w-full h-10 rounded-xl"
                       >
                         {guardandoNuevo ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1089,7 +1089,7 @@ export function InspeccionVidrioPlastico() {
               <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full"
+                className="w-full h-14 rounded-3xl"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -1263,7 +1263,7 @@ export function InspeccionVidrioPlastico() {
               <Boton
                 onClick={handleGuardar}
                 disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto || filasInspeccion.length === 0 || cargandoMateriales}
-                className="w-full"
+                className="w-full h-14 rounded-3xl"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!guardando && !online && <WifiOff className="w-4 h-4" />}

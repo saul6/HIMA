@@ -797,7 +797,7 @@ export function BotiquinPrimerosAuxilios() {
               <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full"
+                className="w-full h-14 rounded-3xl"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -933,7 +933,7 @@ export function BotiquinPrimerosAuxilios() {
                   <Boton
                     onClick={handleGuardar}
                     disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
-                    className="w-full"
+                    className="w-full h-14 rounded-3xl"
                   >
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                     {!guardando && !online && <WifiOff className="w-4 h-4" />}

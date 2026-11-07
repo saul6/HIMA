@@ -161,7 +161,7 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
       {/* Botón Continuar */}
       <Boton
         onClick={onNext}
-        className="w-full"
+        className="w-full h-14 rounded-3xl"
       >
         Continuar
       </Boton>

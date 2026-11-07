@@ -183,7 +183,7 @@ export function AsignarHallazgoSheet({
           <Boton
             type="submit"
             disabled={guardando || bloqueado}
-            className="flex-1"
+            className="flex-1 h-12 rounded-3xl"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : 'Guardar'}

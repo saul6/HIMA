@@ -522,7 +522,7 @@ export function PreparacionCloro() {
           <Boton
             onClick={handleGenerarConsolidado}
             disabled={generandoCons}
-            className="w-full"
+            className="w-full h-14 rounded-3xl"
           >
             {generandoCons && <Loader2 className="w-4 h-4 animate-spin" />}
             Generar PDF consolidado
@@ -709,7 +709,7 @@ export function PreparacionCloro() {
           <Boton
             onClick={handleGuardar}
             disabled={guardando}
-            className="w-full"
+            className="w-full h-14 rounded-3xl"
           >
             {guardando
               ? <Loader2 className="w-4 h-4 animate-spin" />
