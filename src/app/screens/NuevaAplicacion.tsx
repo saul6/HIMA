@@ -36,6 +36,9 @@ import { opInsert } from '@/lib/offline/construirOperaciones'
 import { leerSaldosInventarioCache, deltaPendienteInventario } from '@/lib/offline/saldosInventario'
 import type { Aplicacion } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { PanelPasos, PASOS } from '@/app/components/nueva-aplicacion/PanelPasos'
+import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -45,11 +48,26 @@ const r4 = (n: number) => parseFloat(n.toFixed(4));
 const PASOS_NOMBRE = ["Parcela y cultivo", "Productos", "Aplicación y agua", "Cierre"] as const
 const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT };
 
+// En escritorio el formulario del paso va en una sola tarjeta; en celular y tablet, sin envoltura.
+function ContenedorPaso({ esLg, titulo, paso, children }: { esLg: boolean; titulo: string; paso: number; children: ReactNode }) {
+  if (!esLg) return <>{children}</>
+  return (
+    <Panel
+      titulo={titulo}
+      acciones={<span className="text-xs text-muted-foreground">Paso {paso} de 4</span>}
+      className="p-6"
+    >
+      {children}
+    </Panel>
+  )
+}
+
 export function NuevaAplicacion() {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
+  const esLg = useEsEscritorio();
 
   // Dirección de la transición entre pasos — compara contra el paso anterior
   // para decidir si el contenido entra desde la derecha (avanzar) o la
@@ -194,6 +212,14 @@ export function NuevaAplicacion() {
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
+
+  const rutaRancho = ranchos.find((r) => r.id === formData.huerto)
+  const resumenPasos = [
+    { etiqueta: 'Rancho', valor: rutaRancho?.nombre ?? '—' },
+    { etiqueta: 'Cultivo', valor: formData.crop || '—' },
+    { etiqueta: 'Superficie', valor: formData.surface ? `${formData.surface} ha` : '—' },
+    { etiqueta: 'Productos', valor: String(formData.products.length) },
+  ]
 
   const nextStep = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
@@ -486,7 +512,7 @@ export function NuevaAplicacion() {
         titulo="Nueva Aplicación"
         alRegresar={() => navigate("/")}
         debajoCentrado
-        debajo={
+        debajo={esLg ? undefined :
         <div className="flex flex-col items-center gap-2">
           <div className="relative inline-flex items-center gap-2">
             {/* Línea de fondo */}
@@ -547,8 +573,12 @@ export function NuevaAplicacion() {
         </div>
       )}
 
-      {/* Pasos del formulario */}
-      <div className="p-4 overflow-hidden">
+      {/* Pasos del formulario: en escritorio, panel de pasos + resumen a la izquierda y el formulario en un Panel */}
+      <div className={currentStep <= 4 ? 'p-4 overflow-hidden lg:overflow-visible lg:grid lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6' : 'p-4 overflow-hidden'}>
+        {esLg && currentStep <= 4 && (
+          <PanelPasos pasoActual={currentStep} alIrAPaso={(n) => setCurrentStep(n)} resumen={resumenPasos} />
+        )}
+        <ContenedorPaso esLg={esLg && currentStep <= 4} titulo={PASOS[Math.min(currentStep, 4) - 1].nombre} paso={currentStep}>
         <AnimatePresence mode="wait" initial={false}>
           {currentStep === 1 && (
             <motion.div
@@ -619,6 +649,7 @@ export function NuevaAplicacion() {
             </motion.div>
           )}
         </AnimatePresence>
+        </ContenedorPaso>
       </div>
 
       {currentStep === 5 && aplicacionGuardada?.pendiente && (
