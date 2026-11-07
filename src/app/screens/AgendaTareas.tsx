@@ -22,7 +22,7 @@ import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDeta
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 import { Fab } from '@/app/components/Fab'
-import { DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -1673,17 +1673,50 @@ export function AgendaTareas() {
 
             {/* Pestañas */}
             <motion.div {...ent(2)}>
-            <SelectorSegmentado<typeof tabAdmin>
-              ariaLabel="Estado de las tareas"
-              value={tabAdmin}
-              onChange={k => {
-                const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
-                const nuevo = tabsAdmin.findIndex(x => x.key === k)
-                dirTabRef.current = nuevo > actual ? 1 : -1
-                setTabAdmin(k)
-              }}
-              options={tabsAdmin.map(t => ({ value: t.key, label: t.label }))}
-            />
+            {/* Celular y tablet: 4 pestañas del mismo ancho, sin scroll */}
+            <LayoutGroup id="agenda-admin-tabs">
+              <div className="flex gap-1 rounded-xl p-1 overflow-x-auto lg:hidden" style={{ backgroundColor: 'var(--muted)' }}>
+                {tabsAdmin.map((t, i) => (
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
+                      dirTabRef.current = i > actual ? 1 : -1
+                      setTabAdmin(t.key)
+                    }}
+                    className="relative flex-1 min-w-0 text-xs font-semibold whitespace-nowrap rounded-lg py-1.5 px-2 transition-colors"
+                    style={{
+                      color: tabAdmin === t.key ? 'var(--foreground)' : 'var(--muted-foreground)',
+                      transitionDuration: 'var(--motion-fast)',
+                    }}
+                  >
+                    {tabAdmin === t.key && (
+                      <motion.span
+                        layoutId="agenda-admin-tab-activa"
+                        className="absolute inset-0 rounded-lg"
+                        style={{ backgroundColor: 'var(--card)', zIndex: 0 }}
+                        transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                      />
+                    )}
+                    <span className="relative z-10">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </LayoutGroup>
+            {/* Escritorio (desde lg) */}
+            <div className="hidden lg:block">
+              <SelectorSegmentado<typeof tabAdmin>
+                ariaLabel="Estado de las tareas"
+                value={tabAdmin}
+                onChange={k => {
+                  const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
+                  const nuevo = tabsAdmin.findIndex(x => x.key === k)
+                  dirTabRef.current = nuevo > actual ? 1 : -1
+                  setTabAdmin(k)
+                }}
+                options={tabsAdmin.map(t => ({ value: t.key, label: t.label }))}
+              />
+            </div>
             </motion.div>
 
             {/* Lista de tareas */}
