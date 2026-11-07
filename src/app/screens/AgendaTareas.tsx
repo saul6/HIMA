@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { CSSProperties } from 'react'
+import type * as React from 'react'
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
   Plus, Loader2, AlertTriangle,
@@ -28,6 +28,8 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { fechaCorta, fechaHora } from '@/lib/formato'
 
@@ -121,79 +123,79 @@ function TareaCard({
   tarea,
   esAdmin,
   onClick,
-  style,
 }: {
   tarea: TareaListada
   esAdmin: boolean
   onClick: () => void
-  style?: CSSProperties
 }) {
+  const lineasMeta: React.ReactNode[] = []
+  if (esAdmin) {
+    lineasMeta.push(
+      <span key="para">
+        Para: <span className="text-foreground">{tarea.asignado_nombre}</span>
+      </span>,
+    )
+  }
+  if (tarea.rancho_nombre) {
+    lineasMeta.push(
+      <span key="sitio" className="inline-flex items-center gap-1 align-bottom">
+        <MapPin className="w-3 h-3" aria-hidden="true" />
+        {tarea.rancho_nombre}
+      </span>,
+    )
+  }
+  if (tarea.modulo_nombre) {
+    lineasMeta.push(
+      <span key="modulo" className="inline-flex items-center gap-1 align-bottom">
+        <FileText className="w-3 h-3" aria-hidden="true" />
+        {tarea.modulo_nombre}
+      </span>,
+    )
+  }
+
   return (
-    <button
-      onClick={onClick}
-      style={style}
-      className="w-full text-left rounded-xl border border-border bg-card p-4 flex flex-col gap-2 transition-colors hover:border-primary/30"
-    >
-      {tarea.regresada && (
+    <TarjetaRegistro
+      sinFirmas
+      className="hover:border-primary/30 transition-colors"
+      alHacerClic={onClick}
+      titulo={tarea.titulo}
+      tituloTexto={tarea.titulo}
+      meta={lineasMeta}
+      acciones={<ChipPrioridad prioridad={tarea.prioridad} />}
+      encima={tarea.regresada ? (
         <div
-          className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
+          className="mb-2 flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
         >
           <RotateCcw className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <span>Regresada: {tarea.motivo_regreso ?? '—'}</span>
         </div>
+      ) : undefined}
+      chips={(
+        <>
+          <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
+          {esTareaDeChecklist(tarea) && <ChipChecklist />}
+          {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
+              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+            >
+              <PenLine className="w-2.5 h-2.5" />
+              Firma pendiente
+            </span>
+          )}
+          {tarea.fecha_limite && (
+            <span
+              className="inline-flex items-center gap-1 text-xs"
+              style={{ color: tarea.vencida ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
+            >
+              <Calendar className="w-3 h-3" />
+              {formatFechaLimite(tarea.fecha_limite)}
+            </span>
+          )}
+        </>
       )}
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
-          {tarea.titulo}
-        </p>
-        <ChipPrioridad prioridad={tarea.prioridad} />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
-        {esTareaDeChecklist(tarea) && <ChipChecklist />}
-        {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
-            style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-          >
-            <PenLine className="w-2.5 h-2.5" />
-            Firma pendiente
-          </span>
-        )}
-        {tarea.fecha_limite && (
-          <span
-            className="inline-flex items-center gap-1 text-xs"
-            style={{ color: tarea.vencida ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
-          >
-            <Calendar className="w-3 h-3" />
-            {formatFechaLimite(tarea.fecha_limite)}
-          </span>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-        {esAdmin && (
-          <span className="inline-flex items-center gap-1">
-            <span>Para:</span>
-            <span style={{ color: 'var(--foreground)' }}>{tarea.asignado_nombre}</span>
-          </span>
-        )}
-        {tarea.rancho_nombre && (
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            {tarea.rancho_nombre}
-          </span>
-        )}
-        {tarea.modulo_nombre && (
-          <span className="inline-flex items-center gap-1">
-            <FileText className="w-3 h-3" />
-            {tarea.modulo_nombre}
-          </span>
-        )}
-      </div>
-    </button>
+    />
   )
 }
 
@@ -1681,7 +1683,6 @@ export function AgendaTareas() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="space-y-2"
               >
                 {tareasTab.length === 0 ? (
                   <motion.p
@@ -1693,18 +1694,20 @@ export function AgendaTareas() {
                     Sin tareas
                   </motion.p>
                 ) : (
-                  tareasTab.map((t, index) => (
-                    <motion.div
-                      key={t.id}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{
-                        opacity: 1, y: 0,
-                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-                      }}
-                    >
-                      <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
-                    </motion.div>
-                  ))
+                  <ListaTarjetas>
+                    {tareasTab.map((t, index) => (
+                      <motion.div
+                        key={t.id}
+                        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                        animate={{
+                          opacity: 1, y: 0,
+                          transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
+                        }}
+                      >
+                        <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
+                      </motion.div>
+                    ))}
+                  </ListaTarjetas>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -1763,19 +1766,21 @@ export function AgendaTareas() {
                     {filtroSeleccionado.vacio}
                   </motion.p>
                 ) : (
-                  filtroSeleccionado.lista.map((t, index) => (
-                    <motion.div
-                      key={t.id}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{
-                        opacity: 1, y: 0,
-                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 },
-                      }}
-                      exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
-                    >
-                      <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
-                    </motion.div>
-                  ))
+                  <ListaTarjetas key="lista">
+                    {filtroSeleccionado.lista.map((t, index) => (
+                      <motion.div
+                        key={t.id}
+                        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                        animate={{
+                          opacity: 1, y: 0,
+                          transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 },
+                        }}
+                        exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
+                      >
+                        <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
+                      </motion.div>
+                    ))}
+                  </ListaTarjetas>
                 )}
               </AnimatePresence>
             </div>
