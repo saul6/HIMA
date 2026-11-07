@@ -462,7 +462,7 @@ export function TemperaturasConservador() {
                 }}
                 className="p-2 rounded-lg flex-shrink-0"
                 style={{ color: 'var(--primary)' }}
-                title="Descargar PDF"
+                title="Descargar PDF" aria-label="Descargar PDF"
               >
                 <FileText size={18} />
               </button>

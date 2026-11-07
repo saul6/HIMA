@@ -275,7 +275,7 @@ function IncidenciaForm({
           type="button"
           onClick={onQuitar}
           className="p-1 text-muted-foreground hover:text-agro-red transition-colors"
-          title="Quitar incidencia"
+          title="Quitar incidencia" aria-label="Quitar incidencia"
         >
           <Trash2 className="w-4 h-4" />
         </button>
