@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { FormField } from "../FormField";
-import { FormSelect } from "../FormSelect";
+import { CampoTexto, CampoSelect, SeccionPaso, Fila, PiePaso, EtiquetaGrupo } from "./controles";
 import { ProductoCombobox } from "./ProductoCombobox";
 import { useCatalogoProductos } from "@/hooks/useCatalogoProductos";
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { fechaHora } from '@/lib/formato'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { DUR, EASE_OUT } from '@/lib/motion'
@@ -18,6 +19,8 @@ interface Props {
   productosEnInventario?: string[]
   /** Marca de tiempo del saldo en caché (sin red); null cuando el saldo es en vivo */
   inventarioAl?: number | null
+  /** Escritorio (≥ lg): acomodo en columnas y piezas estándar. */
+  esLg?: boolean
 }
 
 const pestOptions = [
@@ -63,7 +66,7 @@ function calcularDosisBarril(dosePerHa: string, totalWater: string, surface: str
   return ((dose / (agua / 200)) * sup).toFixed(4);
 }
 
-export function Step2Productos({ formData, updateFormData, onNext, onBack, productosEnInventario, inventarioAl }: Props) {
+export function Step2Productos({ formData, updateFormData, onNext, onBack, productosEnInventario, inventarioAl, esLg = false }: Props) {
   const { productos, loading: loadingCatalogo } = useCatalogoProductos();
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<typeof emptyProduct>({ ...emptyProduct });
@@ -112,14 +115,20 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
     });
   };
 
+  const selectorProducto = loadingCatalogo ? (
+    <Skeleton className={esLg ? "h-10 w-full rounded-lg" : "h-11 w-full rounded-lg"} aria-busy="true" aria-label="Cargando catálogo" />
+  ) : (
+    <ProductoCombobox
+      productos={productos}
+      value={currentProduct.productId}
+      onSelect={handleProductSelect}
+      productosEnInventario={productosEnInventario}
+    />
+  )
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Encabezado de sección */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          PRODUCTOS APLICADOS
-        </h3>
-      </div>
+    <div className={esLg ? "flex flex-col gap-5" : "flex flex-col gap-4"}>
+      <SeccionPaso esLg={esLg} primera titulo="Productos aplicados" movil="PRODUCTOS APLICADOS" />
 
       {/* Lista de productos agregados */}
       {formData.products.length > 0 && (
@@ -174,20 +183,19 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
 
       {/* Formulario para agregar producto */}
       {isAddingProduct ? (
-        <div className="bg-card border-2 border-primary rounded-xl p-4 space-y-4">
+        <div className={esLg ? "border border-border-control rounded-xl p-4 flex flex-col gap-4" : "bg-card border-2 border-primary rounded-xl p-4 flex flex-col gap-4"}>
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
-              Nombre comercial
-            </label>
-            {loadingCatalogo ? (
-              <Skeleton className="h-11 w-full rounded-lg" aria-busy="true" aria-label="Cargando catálogo" />
+            {esLg ? (
+              <Campo etiqueta="Nombre comercial" className="gap-1.5">
+                {() => selectorProducto}
+              </Campo>
             ) : (
-              <ProductoCombobox
-                productos={productos}
-                value={currentProduct.productId}
-                onSelect={handleProductSelect}
-                productosEnInventario={productosEnInventario}
-              />
+              <>
+                <label className="text-xs text-muted-foreground mb-2 block font-semibold">
+                  Nombre comercial
+                </label>
+                {selectorProducto}
+              </>
             )}
             {inventarioAl != null && (
               <p className="text-xs text-muted-foreground mt-1">
@@ -196,107 +204,99 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
             )}
           </div>
 
-          <FormField
-            label="Ingrediente activo"
-            value={currentProduct.activeIngredient}
-            onChange={() => {}}
-            disabled
-          />
+          <Fila esLg={esLg}>
+            <CampoTexto esLg={esLg} label="Ingrediente activo" value={currentProduct.activeIngredient} onChange={() => {}} disabled />
+            <CampoTexto esLg={esLg} label="Número RSCO/COFEPRIS" value={currentProduct.rsco} onChange={() => {}} disabled />
+          </Fila>
 
-          <FormField
-            label="Número RSCO/COFEPRIS"
-            value={currentProduct.rsco}
-            onChange={() => {}}
-            disabled
-          />
+          <Fila esLg={esLg}>
+            <CampoSelect
+              esLg={esLg}
+              label="Justificación / Plaga"
+              value={currentProduct.pest}
+              onChange={(value) => setCurrentProduct((prev) => ({ ...prev, pest: value }))}
+              options={pestOptions}
+            />
 
-          <FormSelect
-            label="Justificación / Plaga"
-            value={currentProduct.pest}
-            onChange={(value) => setCurrentProduct((prev) => ({ ...prev, pest: value }))}
-            options={pestOptions}
-          />
-
-          {/* Nivel de infestación */}
-          <div>
-            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
-              Nivel de infestación
-            </label>
-            <div className="flex gap-2">
-              {infestationLevels.map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setCurrentProduct((prev) => ({ ...prev, infestationLevel: level }))}
-                  className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-                    currentProduct.infestationLevel === level
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card border border-border text-foreground"
-                  }`}
-                  style={{ fontWeight: 600 }}
-                >
-                  {level}
-                </button>
-              ))}
+            {/* Nivel de infestación */}
+            <div>
+              {esLg ? (
+                <>
+                  <EtiquetaGrupo>Nivel de infestación</EtiquetaGrupo>
+                  <SelectorSegmentado
+                    ariaLabel="Nivel de infestación"
+                    value={currentProduct.infestationLevel}
+                    onChange={(level) => setCurrentProduct((prev) => ({ ...prev, infestationLevel: level }))}
+                    options={infestationLevels.map((level) => ({ value: level, label: level }))}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="text-xs text-muted-foreground mb-2 block font-semibold">
+                    Nivel de infestación
+                  </label>
+                  <div className="flex gap-2">
+                    {infestationLevels.map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => setCurrentProduct((prev) => ({ ...prev, infestationLevel: level }))}
+                        className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                          currentProduct.infestationLevel === level
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card border border-border text-foreground"
+                        }`}
+                        style={{ fontWeight: 600 }}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-          </div>
+          </Fila>
 
-          {/* Dosis por ha (editable) */}
-          <FormField
-            label="Dosis por ha"
-            type="number"
-            value={currentProduct.dosePerHa}
-            onChange={handleDosePerHaChange}
-            placeholder="kg/ha"
-          />
+          {/* Dosis por ha (editable); dosis por barril y total (auto-calculadas) */}
+          <Fila esLg={esLg} cols={3}>
+            <CampoTexto esLg={esLg} label="Dosis por ha" type="number" value={currentProduct.dosePerHa} onChange={handleDosePerHaChange} placeholder="kg/ha" />
+            <div className="grid grid-cols-2 gap-3 lg:contents">
+              <CampoTexto
+                esLg={esLg}
+                label="Dosis por barril (200 L)"
+                value={currentProduct.dosePer200L || (formData.totalWater ? '—' : 'Agrega agua (paso 3)')}
+                onChange={() => {}}
+                disabled
+              />
+              <CampoTexto esLg={esLg} label="Dosis total" value={currentProduct.totalProduct || '—'} onChange={() => {}} disabled />
+            </div>
+          </Fila>
 
-          {/* Dosis por barril y dosis total (auto-calculados) */}
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="Dosis por barril (200 L)"
-              value={currentProduct.dosePer200L || (formData.totalWater ? '—' : 'Agrega agua (paso 3)')}
-              onChange={() => {}}
-              disabled
-            />
-            <FormField
-              label="Dosis total"
-              value={currentProduct.totalProduct || '—'}
-              onChange={() => {}}
-              disabled
-            />
-          </div>
+          <Fila esLg={esLg} movil2>
+            <CampoTexto esLg={esLg} label="Días a cosecha" type="number" value={currentProduct.daysToHarvest} onChange={(value) => setCurrentProduct((prev) => ({ ...prev, daysToHarvest: value }))} />
+            <CampoTexto esLg={esLg} label="Tiempo reentrada (hrs)" type="number" value={currentProduct.reentryTime} onChange={(value) => setCurrentProduct((prev) => ({ ...prev, reentryTime: value }))} />
+          </Fila>
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="Días a cosecha"
-              type="number"
-              value={currentProduct.daysToHarvest}
-              onChange={(value) => setCurrentProduct((prev) => ({ ...prev, daysToHarvest: value }))}
-            />
-
-            <FormField
-              label="Tiempo reentrada (hrs)"
-              type="number"
-              value={currentProduct.reentryTime}
-              onChange={(value) => setCurrentProduct((prev) => ({ ...prev, reentryTime: value }))}
-            />
-          </div>
-
-          <div className="flex gap-2">
+          <div className={esLg ? "flex justify-end gap-3" : "flex gap-2"}>
             <Boton variante="secundario" onClick={() => {
                 setCurrentProduct({ ...emptyProduct });
                 setIsAddingProduct(false);
-              }} className="flex-1 h-12 rounded-xl">
+              }} className={esLg ? undefined : "flex-1 h-12 rounded-xl"}>
               Cancelar
             </Boton>
             <Boton
               onClick={addProduct}
               disabled={!currentProduct.productId}
-              className="flex-1 h-14 rounded-3xl"
+              className={esLg ? undefined : "flex-1 h-14 rounded-3xl"}
             >
               Agregar
             </Boton>
           </div>
         </div>
+      ) : esLg ? (
+        <Boton variante="secundario" onClick={() => setIsAddingProduct(true)} className="self-start">
+          <Plus className="w-4 h-4" />
+          Agregar producto
+        </Boton>
       ) : (
         <button
           onClick={() => setIsAddingProduct(true)}
@@ -308,21 +308,25 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
       )}
 
       {/* Botones de navegación */}
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={onBack}
-          className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
-        >
-          Atrás
-        </button>
-        <Boton
-          onClick={onNext}
-          disabled={formData.products.length === 0}
-          className="flex-1"
-        >
-          Continuar
-        </Boton>
-      </div>
+      {esLg ? (
+        <PiePaso onBack={onBack} onNext={onNext} deshabilitado={formData.products.length === 0} />
+      ) : (
+        <div className="flex gap-3 pt-4">
+          <button
+            onClick={onBack}
+            className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
+          >
+            Atrás
+          </button>
+          <Boton
+            onClick={onNext}
+            disabled={formData.products.length === 0}
+            className="flex-1"
+          >
+            Continuar
+          </Boton>
+        </div>
+      )}
     </div>
   );
 }

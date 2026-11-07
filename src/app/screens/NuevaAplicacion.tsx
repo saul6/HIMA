@@ -593,6 +593,7 @@ export function NuevaAplicacion() {
                 updateFormData={updateFormData}
                 onNext={nextStep}
                 esCampo={esCampo}
+                esLg={esLg}
               />
             </motion.div>
           )}
@@ -611,6 +612,7 @@ export function NuevaAplicacion() {
                 onBack={prevStep}
                 productosEnInventario={productosEnInventario}
                 inventarioAl={inventarioAl}
+                esLg={esLg}
               />
             </motion.div>
           )}
@@ -628,6 +630,7 @@ export function NuevaAplicacion() {
                 onNext={nextStep}
                 onBack={prevStep}
                 esCampo={esCampo}
+                esLg={esLg}
               />
             </motion.div>
           )}
@@ -645,6 +648,7 @@ export function NuevaAplicacion() {
                 onSave={handleSave}
                 onBack={prevStep}
                 saving={saving}
+                esLg={esLg}
               />
             </motion.div>
           )}
