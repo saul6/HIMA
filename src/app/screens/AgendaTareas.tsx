@@ -28,6 +28,8 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
@@ -1298,6 +1300,9 @@ interface TareaFormState {
   modulo_codigo?: string
 }
 
+const CLASE_CONTROL =
+  'w-full rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-60'
+
 function EditarForm({
   form,
   onChange,
@@ -1308,10 +1313,13 @@ function EditarForm({
   onSave,
   guardando,
   bloqueado = false,
+  embebido = false,
 }: {
   form: TareaFormState
   /** Tarea nacida de un hallazgo: responsable y fecha se cambian desde el hallazgo */
   bloqueado?: boolean
+  /** true: solo los campos (sin caja, título ni botones); quien lo usa pone el PieFormulario */
+  embebido?: boolean
   onChange: (f: TareaFormState) => void
   colaboradores: { id: string; nombre: string }[]
   ranchos: { id: string; nombre: string }[]
@@ -1320,126 +1328,125 @@ function EditarForm({
   onSave: () => void
   guardando: boolean
 }) {
-  const inputSt: React.CSSProperties = {
-    backgroundColor: 'var(--input-background)',
-    border: '1px solid var(--border)',
-    color: 'var(--foreground)',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 0.75rem',
-    fontSize: '0.875rem',
-    width: '100%',
-    outline: 'none',
-  }
   return (
-    <div className="space-y-3 rounded-xl border border-border p-4">
-      <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Editar tarea</p>
+    <div className={embebido ? 'space-y-3' : 'space-y-3 rounded-xl border border-border p-4'}>
+      {!embebido && <p className="text-sm font-semibold text-foreground">Editar tarea</p>}
 
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Título *</label>
-        <input maxLength={160}
-          type="text"
-          value={form.titulo}
-          onChange={e => onChange({ ...form, titulo: e.target.value })}
-          style={{ ...inputSt, marginTop: '0.25rem' }}
-          placeholder="Título de la tarea"
-        />
-      </div>
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Descripción</label>
-        <textarea
-          value={form.descripcion}
-          onChange={e => onChange({ ...form, descripcion: e.target.value })}
-          rows={2}
-          style={{ ...inputSt, marginTop: '0.25rem', resize: 'none' }}
-          placeholder="Detalles adicionales"
-        />
-      </div>
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Prioridad</label>
-        <select
-          value={form.prioridad}
-          onChange={e => onChange({ ...form, prioridad: e.target.value as PrioridadTarea })}
-          style={{ ...inputSt, marginTop: '0.25rem' }}
-        >
-          <option value="">Seleccionar...</option>
-          <option value="alta">Alta</option>
-          <option value="media">Media</option>
-          <option value="baja">Baja</option>
-        </select>
-      </div>
-      {colaboradores.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Asignada a *</label>
+      <Campo etiqueta="Título" requerido className="gap-1">
+        {({ id }) => (
+          <input
+            id={id}
+            maxLength={160}
+            type="text"
+            value={form.titulo}
+            onChange={e => onChange({ ...form, titulo: e.target.value })}
+            className={`${CLASE_CONTROL} h-10`}
+            placeholder="Título de la tarea"
+          />
+        )}
+      </Campo>
+      <Campo etiqueta="Descripción" className="gap-1">
+        {({ id }) => (
+          <textarea
+            id={id}
+            value={form.descripcion}
+            onChange={e => onChange({ ...form, descripcion: e.target.value })}
+            rows={2}
+            className={`${CLASE_CONTROL} py-2 resize-none`}
+            placeholder="Detalles adicionales"
+          />
+        )}
+      </Campo>
+      <Campo etiqueta="Prioridad" className="gap-1">
+        {({ id }) => (
           <select
-            value={form.asignado_a}
-            disabled={bloqueado}
-            onChange={e => onChange({ ...form, asignado_a: e.target.value })}
-            style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
+            id={id}
+            value={form.prioridad}
+            onChange={e => onChange({ ...form, prioridad: e.target.value as PrioridadTarea })}
+            className={`${CLASE_CONTROL} h-10`}
           >
             <option value="">Seleccionar...</option>
-            {colaboradores.map(c => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
           </select>
-        </div>
-      )}
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Fecha límite</label>
-        <input
-          type="date"
-          value={form.fecha_limite}
-          disabled={bloqueado}
-          onChange={e => onChange({ ...form, fecha_limite: e.target.value })}
-          style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
-        />
-        {bloqueado && (
-          <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-            Se cambia desde el hallazgo
-          </p>
         )}
-      </div>
+      </Campo>
+      {colaboradores.length > 0 && (
+        <Campo etiqueta="Asignada a" requerido className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.asignado_a}
+              disabled={bloqueado}
+              onChange={e => onChange({ ...form, asignado_a: e.target.value })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Seleccionar...</option>
+              {colaboradores.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
+      )}
+      <Campo
+        etiqueta="Fecha límite"
+        className="gap-1"
+        ayuda={bloqueado ? 'Se cambia desde el hallazgo' : undefined}
+      >
+        {({ id, describedBy }) => (
+          <input
+            id={id}
+            aria-describedby={describedBy}
+            type="date"
+            value={form.fecha_limite}
+            disabled={bloqueado}
+            onChange={e => onChange({ ...form, fecha_limite: e.target.value })}
+            className={`${CLASE_CONTROL} h-10`}
+          />
+        )}
+      </Campo>
       {ranchos.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Sitio</label>
-          <select
-            value={form.rancho_id ?? ''}
-            onChange={e => onChange({ ...form, rancho_id: e.target.value || undefined })}
-            style={{ ...inputSt, marginTop: '0.25rem' }}
-          >
-            <option value="">Sin sitio</option>
-            {ranchos.map(r => (
-              <option key={r.id} value={r.id}>{r.nombre}</option>
-            ))}
-          </select>
-        </div>
+        <Campo etiqueta="Sitio" className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.rancho_id ?? ''}
+              onChange={e => onChange({ ...form, rancho_id: e.target.value || undefined })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Sin sitio</option>
+              {ranchos.map(r => (
+                <option key={r.id} value={r.id}>{r.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
       )}
       {modulos.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Formato / módulo</label>
-          <select
-            value={form.modulo_codigo ?? ''}
-            onChange={e => onChange({ ...form, modulo_codigo: e.target.value || undefined })}
-            style={{ ...inputSt, marginTop: '0.25rem' }}
-          >
-            <option value="">Sin formato</option>
-            {modulos.map(m => (
-              <option key={m.codigo} value={m.codigo}>{m.nombre}</option>
-            ))}
-          </select>
+        <Campo etiqueta="Formato / módulo" className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.modulo_codigo ?? ''}
+              onChange={e => onChange({ ...form, modulo_codigo: e.target.value || undefined })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Sin formato</option>
+              {modulos.map(m => (
+                <option key={m.codigo} value={m.codigo}>{m.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
+      )}
+      {!embebido && (
+        <div className="flex gap-2 pt-1">
+          <Boton variante="secundario" onClick={onCancel} className="flex-1">Cancelar</Boton>
+          <Boton onClick={onSave} cargando={guardando} disabled={!form.titulo.trim()} className="flex-1">Guardar</Boton>
         </div>
       )}
-      <div className="flex gap-2 pt-1">
-        <button
-          onClick={onCancel}
-          className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted transition-colors"
-          style={{ color: 'var(--foreground)' }}
-        >
-          Cancelar
-        </button>
-        <Boton onClick={onSave} cargando={guardando} disabled={!form.titulo.trim()} className="flex-1">
-          {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
-        </Boton>
-      </div>
     </div>
   )
 }
@@ -1808,8 +1815,9 @@ export function AgendaTareas() {
         <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>Nueva tarea</p>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           <EditarForm
+            embebido
             form={nuevaForm}
             onChange={setNuevaForm}
             colaboradores={hook.colaboradores}
@@ -1820,6 +1828,13 @@ export function AgendaTareas() {
             guardando={guardandoNueva}
           />
         </div>
+        <PieFormulario
+          textoPrincipal="Guardar"
+          onPrincipal={handleCrearTarea}
+          onCancelar={() => setSheetNueva(false)}
+          cargando={guardandoNueva}
+          deshabilitado={!nuevaForm.titulo.trim()}
+        />
       </BottomSheet>
 
       {/* Sheet detalle */}
