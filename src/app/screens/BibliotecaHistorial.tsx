@@ -8,9 +8,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
-import { Portal } from '@/app/components/Portal'
+import { Progress } from '@/app/components/ui/progress'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
@@ -22,6 +22,8 @@ import {
 } from '@/lib/pdf/generarBlobHistorial'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { fechaCorta, formatoPct, mesAnio } from '@/lib/formato'
@@ -970,6 +972,7 @@ export function BibliotecaHistorial() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(!loading)
   // true solo durante el render provocado por una búsqueda recién terminada
   // (ver cargar()) — decide si las filas entran escalonadas o solo con fade.
   const freshSearchRef = useRef(false)
@@ -1127,7 +1130,7 @@ export function BibliotecaHistorial() {
       <div className="p-4 space-y-4">
 
         {/* Barra de filtros */}
-        <div className="bg-card rounded-xl border border-border p-4">
+        <motion.div {...ent(0)} className="bg-card rounded-xl border border-border p-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:items-end">
             <Campo etiqueta="Desde" className="min-w-0 gap-1.5">
               {({ id }) => (
@@ -1202,7 +1205,7 @@ export function BibliotecaHistorial() {
               Buscando…
             </p>
           ) : null}
-        </div>
+        </motion.div>
 
         {/* Resumen de módulos filtrados — solo escritorio (ver móvil abajo) */}
         {!todosSeleccionados && (
@@ -1271,30 +1274,16 @@ export function BibliotecaHistorial() {
               key="cargando"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
-              {[0, 1, 2, 3, 4].map(i => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
-                  <div className="flex-1 min-w-0 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-10 rounded-full" style={{ backgroundColor: 'var(--muted)' }} />
-                      <div className="h-3 w-24 rounded" style={{ backgroundColor: 'var(--muted)' }} />
-                    </div>
-                    <div className="h-3.5 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                  </div>
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
-                </div>
-              ))}
+              <ListaSkeleton rejilla rows={6} onReintentar={cargar} />
             </motion.div>
           ) : error ? (
             <motion.div
               key="error"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-8 text-center text-sm"
-              style={{ color: 'var(--destructive)' }}
+              role="alert"
+              className="py-8 text-center text-sm text-agro-danger-text"
             >
               {error}
             </motion.div>
@@ -1303,29 +1292,16 @@ export function BibliotecaHistorial() {
               key="sin-modulos"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
-              <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Elige los módulos para ver los registros
-              </p>
+              <EstadoVacio icono={Filter} titulo="Elige los módulos para ver los registros" />
             </motion.div>
           ) : filtrados.length === 0 ? (
             <motion.div
               key="sin-resultados"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
-              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Sin registros en este periodo
-              </p>
-              <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
-                Prueba un rango de fechas más amplio
-              </p>
+              <EstadoVacio icono={FilterX} titulo="Sin registros en este periodo" ayuda="Prueba un rango de fechas más amplio" />
             </motion.div>
           ) : (
             <motion.div
@@ -1407,31 +1383,19 @@ export function BibliotecaHistorial() {
 
       </div>
 
-      {/* Overlay de progreso */}
-      {generandoPaquete && (
-        <Portal>
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)' }}>
-          <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
-            <div>
-              <p className="text-seccion font-semibold">Generando paquete PDF</p>
-              <p className="text-small mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                {progresoActual} de {progresoTotal} registros
-              </p>
-            </div>
-            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
-              <div
-                className="h-2 w-full rounded-full transition-transform duration-300 ease-[var(--ease-out)]"
-                style={{
-                  background: 'var(--primary)',
-                  transform: `translateX(-${progresoTotal > 0 ? 100 - (progresoActual / progresoTotal) * 100 : 100}%)`,
-                }}
-              />
-            </div>
+      {/* Ventana de progreso: no hay cancelación, así que Escape y el fondo no la cierran */}
+      <BottomSheet open={generandoPaquete} onClose={() => {}}>
+        <div role="status" aria-live="polite" className="p-6 text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto text-primary" aria-hidden="true" />
+          <div>
+            <p className="text-seccion font-semibold">Generando paquete PDF</p>
+            <p className="text-small mt-1 text-muted-foreground">
+              {progresoActual} de {progresoTotal} registros
+            </p>
           </div>
+          <Progress value={progresoTotal > 0 ? (progresoActual / progresoTotal) * 100 : 0} />
         </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* Ventana de módulos */}
       <BottomSheet open={modulosSheetOpen} onClose={cerrarModulosSheet} height="85%">
@@ -1445,7 +1409,7 @@ export function BibliotecaHistorial() {
               animate={{ scale: 1 }}
               transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
               className="px-2 py-0.5 rounded-full text-caption"
-              style={{ backgroundColor: 'rgba(42, 173, 149, 0.16)', color: 'var(--primary)', fontWeight: 700 }}
+              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 700 }}
             >
               {filtroModulos.size}
             </motion.span>
