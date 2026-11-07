@@ -5,6 +5,7 @@ import { CampoTexto, CampoSelect, SeccionPaso, Fila, PiePaso, EtiquetaGrupo } fr
 import { ProductoCombobox } from "./ProductoCombobox";
 import { useCatalogoProductos } from "@/hooks/useCatalogoProductos";
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { fechaHora } from '@/lib/formato'
@@ -116,7 +117,10 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
   };
 
   const selectorProducto = loadingCatalogo ? (
-    <Skeleton className={esLg ? "h-10 w-full rounded-lg" : "h-11 w-full rounded-lg"} aria-busy="true" aria-label="Cargando catálogo" />
+    <>
+      <Skeleton className={esLg ? "h-10 w-full rounded-lg" : "h-11 w-full rounded-lg"} aria-busy="true" aria-label="Cargando catálogo" />
+      <AvisoCargaLenta permitirRecargar={false} />
+    </>
   ) : (
     <ProductoCombobox
       productos={productos}

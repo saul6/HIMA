@@ -4,6 +4,7 @@ import { useMostrarCarga } from "@/hooks/useMostrarCarga";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { limiteTexto } from '@/lib/limitesTexto'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 interface Props {
   formData: any;
@@ -47,7 +48,10 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
         <CampoTexto esLg={esLg} label="Productor" value={formData.producer} disabled onChange={() => {}} />
 
         {mostrarSkeletonRanchos ? (
-          <Skeleton className="mt-3 h-16 w-full rounded-lg lg:mt-0 lg:h-10" aria-busy="true" aria-label="Cargando ranchos" />
+          <>
+            <Skeleton className="mt-3 h-16 w-full rounded-lg lg:mt-0 lg:h-10" aria-busy="true" aria-label="Cargando ranchos" />
+            <AvisoCargaLenta permitirRecargar={false} />
+          </>
         ) : (
           <CampoSelect esLg={esLg} requerido label="Huerto / Rancho" value={formData.huerto} onChange={handleHuertoChange} options={ranchoOptions} />
         )}

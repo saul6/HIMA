@@ -28,7 +28,7 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { marcarCapturaEnCurso } from '@/lib/offline/actualizacionSegura'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -49,9 +49,10 @@ const PASOS_NOMBRE = ["Parcela y cultivo", "Productos", "Aplicación y agua", "C
 const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT };
 
 // En escritorio el formulario del paso va en una sola tarjeta; en celular y tablet, sin envoltura.
-function ContenedorPaso({ esLg, titulo, paso, children }: { esLg: boolean; titulo: string; paso: number; children: ReactNode }) {
+function ContenedorPaso({ esLg, titulo, paso, children, entrada }: { esLg: boolean; titulo: string; paso: number; children: ReactNode; entrada: ReturnType<ReturnType<typeof useEntradaPantalla>> }) {
   if (!esLg) return <>{children}</>
   return (
+    <motion.div className="min-w-0" {...entrada}>
     <Panel
       titulo={titulo}
       acciones={<span className="text-xs text-muted-foreground">Paso {paso} de 4</span>}
@@ -59,6 +60,7 @@ function ContenedorPaso({ esLg, titulo, paso, children }: { esLg: boolean; titul
     >
       {children}
     </Panel>
+    </motion.div>
   )
 }
 
@@ -68,6 +70,7 @@ export function NuevaAplicacion() {
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
   const esLg = useEsEscritorio();
+  const ent = useEntradaPantalla(true);
 
   // Dirección de la transición entre pasos — compara contra el paso anterior
   // para decidir si el contenido entra desde la derecha (avanzar) o la
@@ -578,14 +581,14 @@ export function NuevaAplicacion() {
         {esLg && currentStep <= 4 && (
           <PanelPasos pasoActual={currentStep} alIrAPaso={(n) => setCurrentStep(n)} resumen={resumenPasos} />
         )}
-        <ContenedorPaso esLg={esLg && currentStep <= 4} titulo={PASOS[Math.min(currentStep, 4) - 1].nombre} paso={currentStep}>
+        <ContenedorPaso esLg={esLg && currentStep <= 4} titulo={PASOS[Math.min(currentStep, 4) - 1].nombre} paso={currentStep} entrada={ent(0)}>
         <AnimatePresence mode="wait" initial={false}>
           {currentStep === 1 && (
             <motion.div
               key={1}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step1ParcelaYCultivo
@@ -600,9 +603,9 @@ export function NuevaAplicacion() {
           {currentStep === 2 && (
             <motion.div
               key={2}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step2Productos
@@ -619,9 +622,9 @@ export function NuevaAplicacion() {
           {currentStep === 3 && (
             <motion.div
               key={3}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step3AplicacionYAgua
@@ -637,9 +640,9 @@ export function NuevaAplicacion() {
           {currentStep === 4 && (
             <motion.div
               key={4}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step4CierreYObservaciones
