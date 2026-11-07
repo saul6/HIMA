@@ -10,7 +10,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useMetricas } from '@/hooks/useMetricas'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { hoyMX } from '@/lib/fecha'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT, entrada, useEntradaPantalla } from '@/lib/motion'
 import type {
   MetProductividad,
   MetAgenda,
@@ -24,6 +24,11 @@ import type {
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { formatoNumero, formatoPct } from '@/lib/formato'
 
 // Mismo timing/curva que el resto de la app (tokens de @/lib/motion).
@@ -88,22 +93,23 @@ function ChipPct({ pct }: { pct: number }) {
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
-function Skeleton({ className = '' }: { className?: string }) {
-  return (
-    <div
-      className={`rounded-md animate-pulse ${className}`}
-      style={{ backgroundColor: 'var(--muted)' }}
-    />
-  )
-}
-
 function TabSkeleton() {
   return (
-    <div className="space-y-3 p-4">
-      <Skeleton className="h-20 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
+    <div className="space-y-4 px-4 pt-4 pb-8">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="space-y-2 rounded-xl border border-border bg-card p-4">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-7 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
       <AvisoCargaLenta />
     </div>
   )
@@ -122,30 +128,6 @@ function AnimatedNumber({
 }: { value: number | null; format: (n: number) => string; reducedMotion: boolean }) {
   const spanRef = useContadorAnimado(value, format, reducedMotion)
   return <span ref={spanRef}>{value === null ? '—' : format(value)}</span>
-}
-
-// ── Entrada escalonada reutilizable (tarjetas y filas de listas) ─────────────
-
-function EntradaEscalonada({
-  index, reducedMotion, children, className, style,
-}: {
-  index: number
-  reducedMotion: boolean
-  children: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <motion.div
-      className={className}
-      style={style}
-      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index * 0.04, 0.4) }}
-    >
-      {children}
-    </motion.div>
-  )
 }
 
 // ── Tarjeta resumen ───────────────────────────────────────────────────────────
@@ -191,13 +173,13 @@ function TabProductividad({
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
         {esAdmin ? (
           <>
-            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+            <motion.div {...entrada(0, reducedMotion)}>
               <TarjetaResumen
                 label="Total capturas"
                 valor={<AnimatedNumber value={totalCapturas} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+            </motion.div>
+            <motion.div {...entrada(1, reducedMotion)}>
               <TarjetaResumen
                 label="Colaboradores con capturas"
                 valor={<>
@@ -205,24 +187,24 @@ function TabProductividad({
                   <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
                 </>}
               />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
+            </motion.div>
+            <motion.div {...entrada(2, reducedMotion)}>
               <TarjetaResumen
                 label="Con corrección"
                 valor={<AnimatedNumber value={pctCorreccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />}
                 sub={`${totalCorrecciones} registros`}
               />
-            </EntradaEscalonada>
+            </motion.div>
           </>
         ) : (
           <>
-            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+            <motion.div {...entrada(0, reducedMotion)}>
               <TarjetaResumen
                 label="Mis capturas"
                 valor={<AnimatedNumber value={mr?.capturas ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+            </motion.div>
+            <motion.div {...entrada(1, reducedMotion)}>
               <TarjetaResumen
                 label="Mi posición"
                 valor={miPosicion != null ? (
@@ -232,25 +214,25 @@ function TabProductividad({
                   </>
                 ) : '—'}
               />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
+            </motion.div>
+            <motion.div {...entrada(2, reducedMotion)}>
               <TarjetaResumen
                 label="Con corrección"
                 valor={mr?.pct_correccion != null ? (
                   <AnimatedNumber value={mr.pct_correccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
                 ) : '—'}
               />
-            </EntradaEscalonada>
+            </motion.div>
           </>
         )}
         {v && (
-          <EntradaEscalonada index={3} reducedMotion={reducedMotion}>
+          <motion.div {...entrada(3, reducedMotion)}>
             <TarjetaResumen
               label="Verificados"
               valor={<AnimatedNumber value={v.verificados} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
             />
-          </EntradaEscalonada>
+          </motion.div>
         )}
       </div>
 
@@ -443,7 +425,7 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
       {colaboradores.map((c, i) => {
         const pctATiempo = c.cerradas > 0 ? (c.a_tiempo / c.cerradas) * 100 : null
         return (
-          <EntradaEscalonada key={c.profile_id} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <motion.div {...entrada(i, reducedMotion)} key={c.profile_id} className="rounded-xl border border-border bg-card p-4 space-y-3">
             <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{c.nombre}</p>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
@@ -488,7 +470,7 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
                 </p>
               </div>
             </div>
-          </EntradaEscalonada>
+          </motion.div>
         )
       })}
     </div>
@@ -688,13 +670,10 @@ function GrupoAuditoriasInternas({
               const b = bandaCumplimiento(a.porcentaje, a.posibles)
               const { color: bc, bg: bbg } = estilosBanda(b)
               return (
-                <EntradaEscalonada
+                <motion.div {...entrada(i, reducedMotion)}
                   key={i}
-                  index={i}
-                  reducedMotion={reducedMotion}
                   className="flex items-center justify-between gap-3 px-4 py-3"
-                  style={{ backgroundColor: 'var(--card)' }}
-                >
+                  style={{ backgroundColor: 'var(--card)' }}>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{a.nombre}</p>
                     <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
@@ -718,7 +697,7 @@ function GrupoAuditoriasInternas({
                       <span className="text-xs tabular-nums" style={{ color: 'var(--muted-foreground)' }}>0/0 pts</span>
                     )}
                   </div>
-                </EntradaEscalonada>
+                </motion.div>
               )
             })}
           </div>
@@ -765,12 +744,9 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                       : 'sin_puntaje'
                     const { color, bg } = estilosBanda(banda)
                     return (
-                      <EntradaEscalonada
+                      <motion.div {...entrada(i, reducedMotion)}
                         key={r.modulo}
-                        index={i}
-                        reducedMotion={reducedMotion}
-                        className="rounded-xl border border-border bg-card p-3 flex flex-col gap-1.5"
-                      >
+                        className="rounded-xl border border-border bg-card p-3 flex flex-col gap-1.5">
                         <p
                           className="text-xs line-clamp-2"
                           style={{ color: 'var(--muted-foreground)' }}
@@ -790,7 +766,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                           {r.auditorias} auditoría{r.auditorias !== 1 ? 's' : ''}
                           {r.sin_puntaje > 0 && ` · ${r.sin_puntaje} sin puntaje`}
                         </p>
-                      </EntradaEscalonada>
+                      </motion.div>
                     )
                   })}
                 </div>
@@ -844,7 +820,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           </p>
           <div className="space-y-2">
             {externas.map((a, i) => (
-              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-3 space-y-1">
+              <motion.div {...entrada(i, reducedMotion)} key={i} className="rounded-xl border border-border bg-card p-3 space-y-1">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{a.fecha}</p>
                   <span className="text-xs px-2 py-0.5 rounded-md" style={{
@@ -864,7 +840,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                     {a.nc_abiertas} NC{a.nc_abiertas > 1 ? 's' : ''} abiertas
                   </p>
                 )}
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -879,18 +855,18 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           {porMes.length <= 1 ? (
             <div className="space-y-2 mt-3">
               <div className="grid grid-cols-2 gap-3">
-                <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+                <motion.div {...entrada(0, reducedMotion)}>
                   <TarjetaResumen
                     label="Reportes"
                     valor={<AnimatedNumber value={datos.incidencias.reportes} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                   />
-                </EntradaEscalonada>
-                <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+                </motion.div>
+                <motion.div {...entrada(1, reducedMotion)}>
                   <TarjetaResumen
                     label="Incidencias"
                     valor={<AnimatedNumber value={datos.incidencias.incidencias} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                   />
-                </EntradaEscalonada>
+                </motion.div>
               </div>
               <p className="text-xs text-muted-foreground">Un reporte puede tener varias incidencias</p>
             </div>
@@ -921,7 +897,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           </p>
           <div className="space-y-1.5">
             {fallas.map((f, i) => (
-              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="flex items-start justify-between gap-3 py-1.5 border-b border-border last:border-0">
+              <motion.div {...entrada(i, reducedMotion)} key={i} className="flex items-start justify-between gap-3 py-1.5 border-b border-border last:border-0">
                 <div className="min-w-0">
                   <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
                     {f.modulo}
@@ -931,7 +907,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                 <span className="text-sm tabular-nums flex-shrink-0 font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                   ×<AnimatedNumber value={f.veces} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
                 </span>
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -961,12 +937,9 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
         {modulos.map((m, i) => {
           const huecos = m.huecos_recientes ?? []
           return (
-            <EntradaEscalonada
+            <motion.div {...entrada(i, reducedMotion)}
               key={`${m.modulo}-${m.rancho_id}-${i}`}
-              index={i}
-              reducedMotion={reducedMotion}
-              className="rounded-xl border border-border bg-card overflow-hidden"
-            >
+              className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{m.nombre}</p>
@@ -986,7 +959,7 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
                   </p>
                 </div>
               )}
-            </EntradaEscalonada>
+            </motion.div>
           )
         })}
       </div>
@@ -1018,18 +991,18 @@ function TabCampo({ datos }: { datos: MetCampo }) {
           </p>
           {meses.length <= 1 ? (
             <div className="grid grid-cols-2 gap-3">
-              <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+              <motion.div {...entrada(0, reducedMotion)}>
                 <TarjetaResumen
                   label="Aplicaciones"
                   valor={<AnimatedNumber value={porMes[meses[0]]?.aplicaciones ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                 />
-              </EntradaEscalonada>
-              <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+              </motion.div>
+              <motion.div {...entrada(1, reducedMotion)}>
                 <TarjetaResumen
                   label="Hectáreas"
                   valor={<AnimatedNumber value={porMes[meses[0]]?.ha ?? 0} format={n => n.toFixed(1)} reducedMotion={reducedMotion} />}
                 />
-              </EntradaEscalonada>
+              </motion.div>
             </div>
           ) : (
             <GraficaBarrasMes
@@ -1058,7 +1031,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
               const maxP = productosTop[0]?.aplicaciones ?? 1
               const pct = (p.aplicaciones / maxP) * 100
               return (
-                <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="space-y-1">
+                <motion.div {...entrada(i, reducedMotion)} key={i} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="truncate" style={{ color: 'var(--foreground)' }}>{p.producto}</span>
                     <span className="tabular-nums flex-shrink-0 ml-2 text-xs font-semibold" style={{ color: 'var(--primary)' }}>
@@ -1074,7 +1047,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                       transition={reducedMotion ? { duration: 0 } : { ...SPRING_SUAVE_SIN_REBOTE, delay: Math.min(i * 0.04, 0.4) + 0.1 }}
                     />
                   </div>
-                </EntradaEscalonada>
+                </motion.div>
               )
             })}
           </div>
@@ -1089,13 +1062,10 @@ function TabCampo({ datos }: { datos: MetCampo }) {
           </p>
           <div className="space-y-2">
             {cosechasEnIntervalo.map((c, i) => (
-              <EntradaEscalonada
+              <motion.div {...entrada(i, reducedMotion)}
                 key={i}
-                index={i}
-                reducedMotion={reducedMotion}
                 className="rounded-xl border p-3 space-y-1"
-                style={{ borderColor: 'var(--agro-danger-fill)', backgroundColor: 'var(--agro-danger-fill)' }}
-              >
+                style={{ borderColor: 'var(--agro-danger-fill)', backgroundColor: 'var(--agro-danger-fill)' }}>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                     {c.rancho}
@@ -1108,7 +1078,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                 <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
                   Permitida desde: {c.cosecha_permitida_desde}
                 </p>
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -1134,6 +1104,9 @@ interface FiltrosProps {
   pestanaActiva: string
 }
 
+const CLASE_CONTROL =
+  'w-full rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none'
+
 function Filtros({
   periodo, setPeriodo,
   desdePersonalizado, hastaPersonalizado,
@@ -1142,41 +1115,15 @@ function Filtros({
   ranchos, terminoSingular, esAdmin, pestanaActiva,
 }: FiltrosProps) {
   const mostrarRancho = esAdmin && pestanaActiva !== 'agenda'
-  const reducedMotion = useReducedMotion()
   return (
-    <div
-      className="sticky top-0 z-10 px-4 py-3 border-b border-border"
-      style={{ backgroundColor: 'var(--card)' }}
-    >
-      {/* Selector de periodo — fondo deslizante (layoutId + SPRING_SUAVE) */}
+    <div>
+      {/* Selector de periodo */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
-        {PERIODOS.map(p => {
-          const activo = periodo === p.key
-          return (
-            <button
-              key={p.key}
-              onClick={() => setPeriodo(p.key)}
-              className="relative isolate flex-shrink-0 text-xs px-3 py-1.5 rounded-full"
-              style={{
-                color: activo ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                fontWeight: activo ? 600 : 400,
-              }}
-            >
-              {activo && (
-                <motion.span
-                  layoutId="metricas-periodo-pill"
-                  className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
-                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                />
-              )}
-              {!activo && (
-                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
-              )}
-              <span className="relative">{p.label}</span>
-            </button>
-          )
-        })}
+        <FiltroPildoras<PeriodoKey>
+          options={PERIODOS.map(p => ({ value: p.key, label: p.label }))}
+          value={periodo}
+          onChange={setPeriodo}
+        />
       </div>
 
       {/* Fechas personalizadas — desplegable, cerrado = 0 real */}
@@ -1187,23 +1134,15 @@ function Filtros({
               type="date"
               value={desdePersonalizado}
               onChange={e => setDesdePersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'var(--input-background)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-              }}
+              aria-label="Desde"
+              className={`${CLASE_CONTROL} h-10 flex-1`}
             />
             <input
               type="date"
               value={hastaPersonalizado}
               onChange={e => setHastaPersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'var(--input-background)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-              }}
+              aria-label="Hasta"
+              className={`${CLASE_CONTROL} h-10 flex-1`}
             />
           </div>
         </div>
@@ -1214,12 +1153,8 @@ function Filtros({
         <select
           value={ranchoId}
           onChange={e => setRanchoId(e.target.value)}
-          className="w-full h-9 px-3 rounded-lg text-sm mt-3"
-          style={{
-            backgroundColor: 'var(--input-background)',
-            border: '1px solid var(--border)',
-            color: 'var(--foreground)',
-          }}
+          aria-label={terminoSingular}
+          className={`${CLASE_CONTROL} mt-3 h-10`}
         >
           <option value="">Todos los {terminoSingular.toLowerCase()}s</option>
           {ranchos.map(r => (
@@ -1289,6 +1224,7 @@ export function Metricas() {
   const [datosConst, setDatosConst] = useState<MetConstancia | null>(null)
   const [datosCampo, setDatosCampo] = useState<MetCampo | null>(null)
   const [cargando, setCargando] = useState(false)
+  const ent = useEntradaPantalla(!cargando)
 
   const resolverFechas = useCallback((): { desde: string; hasta: string } => {
     if (periodo === 'personalizado') {
@@ -1407,57 +1343,37 @@ export function Metricas() {
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <EncabezadoPantalla titulo="Métricas" fijo={false} />
 
-      {/* Filtros */}
-      <Filtros
-        periodo={periodo}
-        setPeriodo={p => { setPeriodo(p) }}
-        desdePersonalizado={desdePersonalizado}
-        hastaPersonalizado={hastaPersonalizado}
-        setDesdePersonalizado={setDesdePersonalizado}
-        setHastaPersonalizado={setHastaPersonalizado}
-        ranchoId={ranchoId}
-        setRanchoId={setRanchoId}
-        ranchos={ranchos}
-        terminoSingular={terminosSitio.singular}
-        esAdmin={esAdmin}
-        pestanaActiva={pestanaActiva}
-      />
+      <div className="space-y-3 px-4 pt-4 flex-shrink-0">
+        {/* Filtros */}
+        <motion.div {...ent(0)}>
+          <Filtros
+            periodo={periodo}
+            setPeriodo={p => { setPeriodo(p) }}
+            desdePersonalizado={desdePersonalizado}
+            hastaPersonalizado={hastaPersonalizado}
+            setDesdePersonalizado={setDesdePersonalizado}
+            setHastaPersonalizado={setHastaPersonalizado}
+            ranchoId={ranchoId}
+            setRanchoId={setRanchoId}
+            ranchos={ranchos}
+            terminoSingular={terminosSitio.singular}
+            esAdmin={esAdmin}
+            pestanaActiva={pestanaActiva}
+          />
+        </motion.div>
 
-      {/* Pestañas — fondo deslizante (layoutId + SPRING_SUAVE) */}
-      <div
-        className="flex gap-1 overflow-x-auto no-scrollbar px-4 py-2 border-b border-border flex-shrink-0"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
-        {pestanas.map(p => {
-          const activa = pestanaActiva === p.key
-          return (
-            <button
-              key={p.key}
-              onClick={() => cambiarPestana(p.key)}
-              className="relative isolate flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
-              style={{
-                color: activa ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                fontWeight: activa ? 600 : 400,
-              }}
-            >
-              {activa && (
-                <motion.span
-                  layoutId="metricas-pestana-pill"
-                  className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
-                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                />
-              )}
-              {!activa && (
-                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
-              )}
-              <span className="relative flex items-center gap-1.5">
-                {p.icon}
-                {p.label}
-              </span>
-            </button>
-          )
-        })}
+        {/* Pestañas */}
+        <motion.div {...ent(1)}>
+          <SelectorSegmentado<PestanaKey>
+            ariaLabel="Secciones de métricas"
+            value={pestanaActiva}
+            onChange={cambiarPestana}
+            options={pestanas.map(p => ({
+              value: p.key,
+              label: <span className="flex items-center gap-1.5">{p.icon}{p.label}</span>,
+            }))}
+          />
+        </motion.div>
       </div>
 
       {/* Contenido — entra desde el lado de la pestaña elegida */}
