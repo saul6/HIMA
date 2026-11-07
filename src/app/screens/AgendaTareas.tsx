@@ -30,6 +30,7 @@ import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
@@ -669,7 +670,7 @@ function DetalleSheet({
         {tarea.descripcion && (
           <div>
             <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>Descripción</p>
-            <p className="text-sm" style={{ color: 'var(--foreground)' }}>{tarea.descripcion}</p>
+            <TextoColapsable texto={tarea.descripcion} lineas={4} className="text-sm text-foreground" />
           </div>
         )}
 
