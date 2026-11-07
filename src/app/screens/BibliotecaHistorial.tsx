@@ -21,6 +21,8 @@ import {
   mergePDFBlobs,
 } from '@/lib/pdf/generarBlobHistorial'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { fechaCorta, formatoPct, mesAnio } from '@/lib/formato'
 
 // ── Metadatos de módulo ───────────────────────────────────────────────────────
@@ -1333,20 +1335,18 @@ export function BibliotecaHistorial() {
               key="lista"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
-              <AnimatePresence initial={false}>
+              <ListaTarjetas>
                 {filtrados.map((reg, index) => {
                   const escalonado = !reducedMotion && freshSearchRef.current
                   return (
                     <motion.div
                       key={reg.key}
-                      layout
+                      className="min-w-0"
                       initial={
                         reducedMotion ? false : escalonado ? { opacity: 0, y: 8 } : { opacity: 0 }
                       }
                       animate={escalonado ? { opacity: 1, y: 0 } : { opacity: 1 }}
-                      exit={reducedMotion ? undefined : { opacity: 0 }}
                       transition={
                         reducedMotion
                           ? { duration: 0 }
@@ -1354,55 +1354,56 @@ export function BibliotecaHistorial() {
                             ? { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 }
                             : { duration: DUR.rapido, ease: EASE_OUT }
                       }
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
-                      style={{ transitionDuration: 'var(--motion-fast)' }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className="px-2 py-0.5 rounded-full text-caption text-white"
-                            style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                      <TarjetaRegistro
+                        sinFirmas
+                        etiquetas={(
+                          <>
+                            <span
+                              className="px-2 py-0.5 rounded-full text-caption text-white"
+                              style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                            >
+                              {reg.modulo}
+                            </span>
+                            <span className="text-caption truncate text-muted-foreground">
+                              {MODULO_META[reg.modulo].label}
+                            </span>
+                          </>
+                        )}
+                        meta={[formatFecha(reg.fecha)]}
+                        titulo={reg.rancho_nombre}
+                        tituloTexto={reg.rancho_nombre}
+                        tituloClassName="break-words"
+                        contenido={(
+                          <p
+                            className="text-caption mt-0.5 line-clamp-2 text-muted-foreground"
+                            style={{ overflowWrap: 'anywhere' }}
+                            title={reg.resumen}
                           >
-                            {reg.modulo}
-                          </span>
-                          <span className="text-caption truncate" style={{ color: 'var(--muted-foreground)' }}>
-                            {MODULO_META[reg.modulo].label}
-                          </span>
-                        </div>
-                        <p
-                          className="text-body truncate font-semibold"
-                          style={{ overflowWrap: 'anywhere' }}
-                          title={reg.rancho_nombre}
-                        >
-                          {reg.rancho_nombre}
-                        </p>
-                        <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
-                          {formatFecha(reg.fecha)}
-                        </p>
-                        <p
-                          className="text-caption mt-0.5 line-clamp-2"
-                          style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
-                          title={reg.resumen}
-                        >
-                          {reg.resumen}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDescargarPDF(reg)}
-                        disabled={descargandoPDF === reg.key || generandoPaquete}
-                        className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
-                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                        title="Descargar PDF"
-                      >
-                        {descargandoPDF === reg.key
-                          ? <Loader2 className="w-4 h-4 animate-spin" />
-                          : <FileText className="w-4 h-4" />
-                        }
-                      </button>
+                            {reg.resumen}
+                          </p>
+                        )}
+                        acciones={(
+                          <button
+                            type="button"
+                            onClick={() => handleDescargarPDF(reg)}
+                            disabled={descargandoPDF === reg.key || generandoPaquete}
+                            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-primary text-primary disabled:opacity-40"
+                            title="Descargar PDF"
+                            aria-label={`Descargar PDF de ${reg.modulo} ${reg.rancho_nombre}`}
+                            aria-busy={descargandoPDF === reg.key || undefined}
+                          >
+                            {descargandoPDF === reg.key
+                              ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+                              : <FileText className="w-4 h-4" />
+                            }
+                          </button>
+                        )}
+                      />
                     </motion.div>
                   )
                 })}
-              </AnimatePresence>
+              </ListaTarjetas>
             </motion.div>
           )}
         </AnimatePresence>
