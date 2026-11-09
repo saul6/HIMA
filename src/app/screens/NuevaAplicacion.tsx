@@ -50,13 +50,14 @@ const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT };
 
 // En escritorio el formulario del paso va en una sola tarjeta; en celular y tablet, sin envoltura.
 function ContenedorPaso({ esLg, titulo, paso, children, entrada }: { esLg: boolean; titulo: string; paso: number; children: ReactNode; entrada: ReturnType<ReturnType<typeof useEntradaPantalla>> }) {
-  if (!esLg) return <>{children}</>
+  // Misma estructura en ambos anchos (solo cambian clases y props): si el tipo de elemento cambiara
+  // al cruzar `lg`, React remontaría los pasos y se perdería el producto a medio capturar.
   return (
-    <motion.div className="min-w-0" {...entrada}>
+    <motion.div className="min-w-0" {...(esLg ? entrada : {})}>
     <Panel
-      titulo={titulo}
-      acciones={<span className="text-xs text-muted-foreground">Paso {paso} de 4</span>}
-      className="p-6"
+      titulo={esLg ? titulo : undefined}
+      acciones={esLg ? <span className="text-xs text-muted-foreground">Paso {paso} de 4</span> : undefined}
+      className={esLg ? 'p-6' : 'rounded-none border-0 bg-transparent p-0'}
     >
       {children}
     </Panel>
