@@ -109,7 +109,7 @@ function PendientesPanel({
   onClose: () => void
 }) {
   return (
-    <BottomSheet onClose={onClose} title="Pendientes">
+    <BottomSheet open onClose={onClose} title="Pendientes">
       <div className="flex flex-col gap-4 pb-6">
         {operaciones.map(op => {
           const pendientesDest = preguntas.flatMap(p =>
@@ -701,7 +701,7 @@ export function EjecucionJornada() {
 
       {/* ── Menú de jornada ── */}
       {menuAbierto && (
-        <BottomSheet onClose={() => setMenuAbierto(false)} title="Jornada">
+        <BottomSheet open onClose={() => setMenuAbierto(false)} title="Jornada">
           <div className="flex flex-col gap-1 pb-6">
 
             {/* Agregar operación */}
