@@ -80,7 +80,7 @@ export function FilaNavegador({ item, activa, onClick }: {
       onClick={onClick}
       data-nav-id={item.id}
       aria-current={activa ? 'step' : undefined}
-      className="w-full text-left px-4 py-2.5 flex items-center gap-2.5 focus-visible:outline-offset-[-2px] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
+      className="relative w-full text-left px-4 py-2.5 flex items-center gap-2.5 focus-visible:outline-offset-[-2px] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
       style={{
         backgroundColor: activa ? 'var(--agro-success-fill)' : 'transparent',
         borderBottom: '1px solid var(--border)',
