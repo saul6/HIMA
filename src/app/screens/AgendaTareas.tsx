@@ -1814,7 +1814,8 @@ export function AgendaTareas() {
                     <EstadoVacio icono={ClipboardList} titulo={filtroSeleccionado.vacio} />
                   </motion.div>
                 ) : (
-                  <ListaTarjetas key="lista">
+                  <div key="lista">
+                  <ListaTarjetas>
                     {filtroSeleccionado.lista.map((t, index) => (
                       <motion.div
                         key={t.id}
@@ -1829,6 +1830,7 @@ export function AgendaTareas() {
                       </motion.div>
                     ))}
                   </ListaTarjetas>
+                  </div>
                 )}
               </AnimatePresence>
             </div>
