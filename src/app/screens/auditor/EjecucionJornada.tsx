@@ -109,7 +109,7 @@ function PendientesPanel({
   onClose: () => void
 }) {
   return (
-    <BottomSheet onClose={onClose} title="Pendientes">
+    <BottomSheet open onClose={onClose} title="Pendientes">
       <div className="flex flex-col gap-4 pb-6">
         {operaciones.map(op => {
           const pendientesDest = preguntas.flatMap(p =>
@@ -271,6 +271,22 @@ export function EjecucionJornada() {
   }, [jornadaId, cargarDetalle, cargarPreguntas])
 
   useEffect(() => { cargar() }, [cargar])
+
+  // Relee conteos y respuestas de la jornada tras guardar una respuesta (sin pantalla de carga ni
+  // mover la pregunta/operación activa). Una respuesta vieja no pisa a una más reciente.
+  const refrescoSeqRef = useRef(0)
+  const refrescar = useCallback(async () => {
+    if (!jornadaId) return
+    const seq = ++refrescoSeqRef.current
+    try {
+      const [det, preg] = await Promise.all([cargarDetalle(jornadaId), cargarPreguntas(jornadaId)])
+      if (refrescoSeqRef.current !== seq || !det) return
+      setDetalle(det)
+      setPreguntas(preg)
+    } catch (e) {
+      console.error('[EjecucionJornada] refrescar', e)
+    }
+  }, [jornadaId, cargarDetalle, cargarPreguntas])
 
   // ── Guardar contexto con debounce ──
 
@@ -652,6 +668,7 @@ export function EjecucionJornada() {
                 ref={capturaRef}
                 auditoriaId={auditoriaActiva}
                 preguntaId={preguntaIdActivo}
+                onScoringInvalidated={refrescar}
               />
             </div>
           )}
@@ -701,7 +718,7 @@ export function EjecucionJornada() {
 
       {/* ── Menú de jornada ── */}
       {menuAbierto && (
-        <BottomSheet onClose={() => setMenuAbierto(false)} title="Jornada">
+        <BottomSheet open onClose={() => setMenuAbierto(false)} title="Jornada">
           <div className="flex flex-col gap-1 pb-6">
 
             {/* Agregar operación */}
