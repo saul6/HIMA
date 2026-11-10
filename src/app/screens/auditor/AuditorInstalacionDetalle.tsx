@@ -71,8 +71,8 @@ export function AuditorInstalacionDetalle() {
   const [auditorias, setAuditorias] = useState<AuditoriaItem[]>([])
   const [cargando, setCargando] = useState(true)
   const mostrarSkeleton = useMostrarCarga(cargando, instalacion !== null)
-  const ent = useEntradaPantalla(!cargando && !error)
   const [error, setError] = useState<string | null>(null)
+  const ent = useEntradaPantalla(!cargando && !error)
 
   // — Sheet: vincular a org M.A.D.Y. —
   const [sheetVincular, setSheetVincular] = useState(false)
