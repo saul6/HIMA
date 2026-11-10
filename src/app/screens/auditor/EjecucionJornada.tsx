@@ -272,6 +272,22 @@ export function EjecucionJornada() {
 
   useEffect(() => { cargar() }, [cargar])
 
+  // Relee conteos y respuestas de la jornada tras guardar una respuesta (sin pantalla de carga ni
+  // mover la pregunta/operación activa). Una respuesta vieja no pisa a una más reciente.
+  const refrescoSeqRef = useRef(0)
+  const refrescar = useCallback(async () => {
+    if (!jornadaId) return
+    const seq = ++refrescoSeqRef.current
+    try {
+      const [det, preg] = await Promise.all([cargarDetalle(jornadaId), cargarPreguntas(jornadaId)])
+      if (refrescoSeqRef.current !== seq || !det) return
+      setDetalle(det)
+      setPreguntas(preg)
+    } catch (e) {
+      console.error('[EjecucionJornada] refrescar', e)
+    }
+  }, [jornadaId, cargarDetalle, cargarPreguntas])
+
   // ── Guardar contexto con debounce ──
 
   function guardarCtx(audId: string, qId: string) {
@@ -652,6 +668,7 @@ export function EjecucionJornada() {
                 ref={capturaRef}
                 auditoriaId={auditoriaActiva}
                 preguntaId={preguntaIdActivo}
+                onScoringInvalidated={refrescar}
               />
             </div>
           )}
