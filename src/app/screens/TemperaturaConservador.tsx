@@ -15,7 +15,7 @@ import { codigoFormato } from '@/lib/codigoFormato'
 import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
 import {
-  useM85Conservador, registrarLecturaM85, documentarM85, corregirM85, mensajeErrorM85, type M85Lectura,
+  useM85Conservador, registrarLecturaM85, documentarM85, corregirM85, verificarDiaM85, mensajeErrorM85, type M85Lectura,
 } from '@/hooks/useM85Conservador'
 import { calcularRevision, parsearTemperatura, horaLocal, instanteLocal, fmtF } from '@/lib/pdf/m85/conservadorLogica'
 import { generarTemperaturaConservadorPDF } from '@/lib/pdf/m85/generarTemperaturaConservadorPDF'
@@ -36,10 +36,11 @@ export function TemperaturaConservador() {
   const { profile, codigoClave } = useAuthContext()
   const orgId = profile?.org_id ?? null
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  const puedeVerificar = esAdmin || profile?.rol === 'asesor_tecnico'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const [fecha, setFecha] = useState(hoyMX())
-  const { config, delDia, pendientes, loading, error, refetch } = useM85Conservador(fecha)
+  const { config, delDia, pendientes, verificacion, loading, error, refetch } = useM85Conservador(fecha)
   const [ranchoId, setRanchoId] = useState('')
   useEffect(() => { if (ranchos.length >= 1 && !ranchoId) setRanchoId(ranchos[0].id) }, [ranchos, ranchoId])
   const codigoFmt = codigoFormato('F-FRUS-PRO-05', codigoClave)
@@ -114,6 +115,16 @@ export function TemperaturaConservador() {
       await corregirM85({ lectura: cor.id, motivo: corMotivo, temperatura: t !== null && t !== cor.temperatura_f ? t : null, medidaEn })
       toast.success('Lectura corregida; el valor anterior queda en el historial'); setCor(null); await refetch()
     } catch (e) { avisar(e) } finally { setGuardando(false) }
+  }
+
+  // ── Verificación del encargado de turno
+  const [verificando, setVerificando] = useState(false)
+  async function verificarDia() {
+    if (!ranchoId) return
+    if (!window.confirm(`¿Verificar como encargado de turno las lecturas del ${fechaCorta(fecha)}?`)) return
+    setVerificando(true)
+    try { const r = await verificarDiaM85(ranchoId, fecha); toast.success(`Día verificado (${r.lecturas} lecturas)`); await refetch() }
+    catch (e) { avisar(e) } finally { setVerificando(false) }
   }
 
   // ── PDF
@@ -233,6 +244,20 @@ export function TemperaturaConservador() {
               <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} /> PDF
             </button>
           </div>
+          {(verificacion || (puedeVerificar && listaDia.length > 0)) && (
+            <div className="flex items-center justify-between gap-2 rounded-[0.625rem] border border-border bg-card px-3 py-2">
+              <span className="text-xs text-muted-foreground">
+                {verificacion
+                  ? <>Verificó (encargado de turno): <b>{verificacion.nombre}</b> · {horaLocal(verificacion.verificado_en)} · {verificacion.lecturas} lecturas</>
+                  : 'Sin verificar por el encargado de turno'}
+              </span>
+              {puedeVerificar && listaDia.length > 0 && (
+                <Boton type="button" tamano="sm" variante={verificacion ? 'secundario' : 'primario'} cargando={verificando} onClick={verificarDia}>
+                  {verificacion ? 'Volver a verificar' : 'Verificar día'}
+                </Boton>
+              )}
+            </div>
+          )}
           {loading ? <ListaSkeleton rows={3} /> : listaDia.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin lecturas en esta fecha.</p>
           ) : (
