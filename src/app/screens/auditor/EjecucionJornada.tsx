@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, useSyncExternalStore } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
   AlertCircle, Loader, RefreshCw,
@@ -13,6 +13,15 @@ import type {
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/app/components/ui/sheet'
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator,
+} from '@/app/components/ui/dropdown-menu'
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
+} from '@/app/components/ui/alert-dialog'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
@@ -34,6 +43,20 @@ function avancePct(conteo: JornadaConteo): number {
 }
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
+
+// Escritorio = `lg` en adelante (1024 px): ahí Pendientes y el menú ⋮ no son hojas desde abajo.
+const MQ_ESCRITORIO = '(min-width: 1024px)'
+function useEsEscritorio(): boolean {
+  return useSyncExternalStore(
+    cb => {
+      const mq = window.matchMedia(MQ_ESCRITORIO)
+      mq.addEventListener('change', cb)
+      return () => mq.removeEventListener('change', cb)
+    },
+    () => window.matchMedia(MQ_ESCRITORIO).matches,
+    () => false,
+  )
+}
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
@@ -108,95 +131,115 @@ function PendientesPanel({
   onAbrir: (auditoriaId: string) => void
   onClose: () => void
 }) {
-  return (
-    <BottomSheet open onClose={onClose} title="Pendientes">
-      <div className="flex flex-col gap-4 pb-6">
-        {operaciones.map(op => {
-          const pendientesDest = preguntas.flatMap(p =>
-            p.destinos.filter(d => d.auditoria_id === op.auditoria_id && !d.respuesta)
-              .map(d => ({ question_id: p.question_id, pregunta_id: d.pregunta_id, texto: p.texto }))
-          )
-          const herenciasDest = preguntas.flatMap(p =>
-            p.destinos.filter(d => d.auditoria_id === op.auditoria_id && d.herencia_pendiente)
-              .map(d => ({ question_id: p.question_id, pregunta_id: d.pregunta_id, texto: p.texto }))
-          )
+  const esEscritorio = useEsEscritorio()
+  const total = operaciones.reduce((acc, op) => acc + (op.conteo.pendientes ?? 0) + op.herencia_pendiente + op.issues_abiertos, 0)
 
-          return (
-            <div key={op.auditoria_id} className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-                    {op.productor} · {op.operacion}
-                  </p>
-                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    {pendientesDest.length} sin responder
-                    {herenciasDest.length > 0 ? ` · ${herenciasDest.length} por confirmar` : ''}
-                    {op.issues_abiertos > 0 ? ` · ${op.issues_abiertos} revisión` : ''}
-                  </p>
-                </div>
+  const contenido = (
+    <div className="flex flex-col gap-4 px-4 pt-4 pb-6 overflow-y-auto min-h-0 flex-1">
+      {operaciones.map(op => {
+        const pendientesDest = preguntas.flatMap(p =>
+          p.destinos.filter(d => d.auditoria_id === op.auditoria_id && !d.respuesta)
+            .map(d => ({ question_id: p.question_id, pregunta_id: d.pregunta_id, texto: p.texto }))
+        )
+        const herenciasDest = preguntas.flatMap(p =>
+          p.destinos.filter(d => d.auditoria_id === op.auditoria_id && d.herencia_pendiente)
+            .map(d => ({ question_id: p.question_id, pregunta_id: d.pregunta_id, texto: p.texto }))
+        )
+
+        return (
+          <div key={op.auditoria_id} className="flex flex-col gap-2 min-w-0">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2.5">
+              <div className="flex flex-col min-w-0">
+                <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
+                  {op.productor} · {op.operacion}
+                </p>
+                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                  {pendientesDest.length} sin responder
+                  {herenciasDest.length > 0 ? ` · ${herenciasDest.length} por confirmar` : ''}
+                  {op.issues_abiertos > 0 ? ` · ${op.issues_abiertos} revisión` : ''}
+                </p>
+              </div>
+              <button
+                onClick={() => onAbrir(op.auditoria_id)}
+                className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative flex-shrink-0 whitespace-nowrap before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+              >
+                <ExternalLink aria-hidden="true" size={10} />
+                Abrir auditoría
+              </button>
+            </div>
+
+            {pendientesDest.slice(0, 5).map(p => (
+              <button
+                key={p.question_id}
+                onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
+                className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-start gap-2 active:opacity-70"
+                style={{ backgroundColor: 'var(--card)' }}
+              >
+                <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ backgroundColor: 'var(--border)' }} />
+                <span className="text-caption font-mono flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{p.question_id}</span>
+                <span className="text-caption flex-1 min-w-0 line-clamp-2 break-words" style={{ color: 'var(--foreground)' }}>{p.texto}</span>
+              </button>
+            ))}
+
+            {herenciasDest.slice(0, 3).map(p => (
+              <button
+                key={`h-${p.question_id}`}
+                onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
+                className="w-full text-left rounded-xl border px-3 py-2 flex items-center gap-2 active:opacity-70"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--agro-menta)' }}
+              >
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--agro-menta)' }} />
+                <span className="text-caption font-mono flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{p.question_id}</span>
+                <span className="text-caption min-w-0" style={{ color: 'var(--foreground)' }}>Dato por confirmar</span>
+              </button>
+            ))}
+
+            {op.issues_abiertos > 0 && (
+              <div className="rounded-xl px-3 py-2 flex items-center justify-between gap-2"
+                style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-info-text)' }}>
+                <p className="text-small min-w-0" style={{ color: 'var(--agro-info-text)' }}>
+                  {op.issues_abiertos} {op.issues_abiertos === 1 ? 'observación de revisión abierta' : 'observaciones de revisión abiertas'}
+                </p>
                 <button
                   onClick={() => onAbrir(op.auditoria_id)}
-                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+                  className="text-caption font-semibold underline flex-shrink-0"
+                  style={{ color: 'var(--agro-info-text)' }}
                 >
-                  <ExternalLink aria-hidden="true" size={10} />
-                  Abrir auditoría
+                  Resolver
                 </button>
               </div>
+            )}
+          </div>
+        )
+      })}
 
-              {pendientesDest.slice(0, 5).map(p => (
-                <button
-                  key={p.question_id}
-                  onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
-                  className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-center gap-2 active:opacity-70"
-                  style={{ backgroundColor: 'var(--card)' }}
-                >
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--border)' }} />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-caption font-mono mr-1" style={{ color: 'var(--muted-foreground)' }}>{p.question_id}</span>
-                    <span className="text-caption truncate" style={{ color: 'var(--foreground)' }}>{p.texto}</span>
-                  </div>
-                </button>
-              ))}
+      {operaciones.every(op => op.conteo.pendientes === 0 && op.herencia_pendiente === 0 && op.issues_abiertos === 0) && (
+        <EstadoVacio icono={CheckCircle} titulo="Sin pendientes" ayuda="Todas las operaciones están al día." />
+      )}
+    </div>
+  )
 
-              {herenciasDest.slice(0, 3).map(p => (
-                <button
-                  key={`h-${p.question_id}`}
-                  onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
-                  className="w-full text-left rounded-xl border px-3 py-2 flex items-center gap-2 active:opacity-70"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--agro-menta)' }}
-                >
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--agro-menta)' }} />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-caption font-mono mr-1" style={{ color: 'var(--muted-foreground)' }}>{p.question_id}</span>
-                    <span className="text-caption" style={{ color: 'var(--foreground)' }}>Dato por confirmar</span>
-                  </div>
-                </button>
-              ))}
-
-              {op.issues_abiertos > 0 && (
-                <div className="rounded-xl px-3 py-2 flex items-center justify-between"
-                  style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-info-text)' }}>
-                  <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
-                    {op.issues_abiertos} {op.issues_abiertos === 1 ? 'observación de revisión abierta' : 'observaciones de revisión abiertas'}
-                  </p>
-                  <button
-                    onClick={() => onAbrir(op.auditoria_id)}
-                    className="text-caption font-semibold underline"
-                    style={{ color: 'var(--agro-info-text)' }}
-                  >
-                    Resolver
-                  </button>
-                </div>
-              )}
+  if (esEscritorio) {
+    return (
+      <Sheet open onOpenChange={o => { if (!o) onClose() }}>
+        <SheetContent side="right" className="w-full sm:max-w-[440px] gap-0 p-0 bg-card">
+          <div className="flex flex-col gap-0.5 px-4 pt-4 pb-3 pr-12 border-b border-border flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <SheetTitle className="text-base">Pendientes</SheetTitle>
+              <Etiqueta tono={total > 0 ? 'sky' : 'neutral'}>{total}</Etiqueta>
             </div>
-          )
-        })}
+            <SheetDescription className="text-caption">Preguntas sin responder en esta jornada</SheetDescription>
+          </div>
+          {contenido}
+        </SheetContent>
+      </Sheet>
+    )
+  }
 
-        {operaciones.every(op => op.conteo.pendientes === 0 && op.herencia_pendiente === 0 && op.issues_abiertos === 0) && (
-          <EstadoVacio icono={CheckCircle} titulo="Sin pendientes" ayuda="Todas las operaciones están al día." />
-        )}
-      </div>
+  return (
+    <BottomSheet open onClose={onClose} title="Pendientes">
+      {contenido}
     </BottomSheet>
   )
 }
@@ -207,6 +250,7 @@ export function EjecucionJornada() {
   const { jornadaId } = useParams<{ jornadaId: string }>()
   const navigate = useNavigate()
   const jornada_ = useAuditorJornada()
+  const esEscritorio = useEsEscritorio()
   const { cargarDetalle, cargarPreguntas, agregarOperacion, retirarOperacion, terminarJornada, guardarContexto } = jornada_
 
   const [detalle, setDetalle] = useState<JornadaDetalle | null>(null)
@@ -532,11 +576,37 @@ export function EjecucionJornada() {
               <span className="sr-only sm:not-sr-only">Pendientes</span>
               <Etiqueta tono={totalPendientes > 0 ? 'sky' : 'neutral'}>{totalPendientes}</Etiqueta>
             </Boton>
-            {!terminada && (
+            {!terminada && (esEscritorio ? (
+              <DropdownMenu open={menuAbierto} onOpenChange={setMenuAbierto}>
+                <DropdownMenuTrigger asChild>
+                  <Boton variante="icono" aria-label="Más opciones">
+                    <MoreVertical aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
+                  </Boton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel className="text-caption uppercase tracking-wide text-muted-foreground">Jornada</DropdownMenuLabel>
+                  <DropdownMenuItem onSelect={() => navigate('/auditor/jornada/nueva')}>
+                    <Plus aria-hidden="true" />
+                    Agregar operación
+                  </DropdownMenuItem>
+                  {auditoriaActiva && (
+                    <DropdownMenuItem onSelect={() => setConfirmRetirar(auditoriaActiva)}>
+                      <Minus aria-hidden="true" />
+                      <span className="truncate">Quitar "{operacionActiva?.operacion}" de la jornada</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onSelect={() => setConfirmTerminar(true)}>
+                    <XCircle aria-hidden="true" />
+                    Terminar jornada
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
               <Boton variante="icono" aria-label="Más opciones" aria-haspopup="dialog" aria-expanded={menuAbierto} onClick={() => setMenuAbierto(m => !m)}>
                 <MoreVertical aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
               </Boton>
-            )}
+            ))}
           </>
         )}
       />
@@ -717,9 +787,9 @@ export function EjecucionJornada() {
       </motion.main>
 
       {/* ── Menú de jornada ── */}
-      {menuAbierto && (
+      {menuAbierto && !esEscritorio && (
         <BottomSheet open onClose={() => setMenuAbierto(false)} title="Jornada">
-          <div className="flex flex-col gap-1 pb-6">
+          <div className="flex flex-col gap-1 px-4 pt-3 pb-6 overflow-y-auto min-h-0">
 
             {/* Agregar operación */}
             <button
@@ -728,7 +798,7 @@ export function EjecucionJornada() {
               style={{ backgroundColor: 'var(--muted)' }}
             >
               <Plus aria-hidden="true" size={16} style={{ color: 'var(--primary)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+              <span className="text-sm font-medium min-w-0" style={{ color: 'var(--foreground)' }}>
                 Agregar operación
               </span>
             </button>
@@ -766,7 +836,7 @@ export function EjecucionJornada() {
                   style={{ backgroundColor: 'var(--muted)' }}
                 >
                   <Minus aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  <span className="text-sm font-medium min-w-0 break-words" style={{ color: 'var(--foreground)' }}>
                     Quitar "{operacionActiva?.operacion}" de la jornada
                   </span>
                 </button>
@@ -814,6 +884,46 @@ export function EjecucionJornada() {
             )}
           </div>
         </BottomSheet>
+      )}
+
+      {/* ── Confirmaciones del menú en escritorio (mismos handlers que en celular) ── */}
+      {esEscritorio && (
+        <>
+          <AlertDialog open={confirmRetirar !== null} onOpenChange={o => { if (!o && !retirando) setConfirmRetirar(null) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Quitar "{operacionActiva?.operacion}"?</AlertDialogTitle>
+                <AlertDialogDescription>La auditoría no se modifica.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={retirando}
+                  onClick={e => { e.preventDefault(); if (confirmRetirar) handleRetirar(confirmRetirar) }}
+                >
+                  {retirando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <AlertDialog open={confirmTerminar} onOpenChange={o => { if (!o && !terminando) setConfirmTerminar(false) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Terminar la jornada?</AlertDialogTitle>
+                <AlertDialogDescription>Las auditorías no se cierran; puedes seguir editándolas individualmente.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={terminando}
+                  onClick={e => { e.preventDefault(); handleTerminar() }}
+                >
+                  {terminando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       )}
 
       {/* ── Panel de pendientes ── */}
