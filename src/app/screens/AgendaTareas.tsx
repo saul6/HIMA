@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { CSSProperties } from 'react'
+import type * as React from 'react'
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
-  Plus, Loader2, AlertTriangle,
+  ClipboardList, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
   Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine, Copy,
 } from 'lucide-react'
@@ -21,14 +21,25 @@ import { useAgendaTareas } from '@/hooks/useAgendaTareas'
 import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDetalle } from '@/hooks/useAgendaTareas'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
-import { Portal } from '@/app/components/Portal'
-import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
+import { Fab } from '@/app/components/Fab'
+import { SPRING_SUAVE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { fechaCorta, fechaHora } from '@/lib/formato'
+
+const CLASE_SELECT =
+  'h-10 w-full min-w-0 rounded-lg border border-border-control bg-input-background px-3 text-sm focus:border-primary focus:outline-none'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -117,79 +128,79 @@ function TareaCard({
   tarea,
   esAdmin,
   onClick,
-  style,
 }: {
   tarea: TareaListada
   esAdmin: boolean
   onClick: () => void
-  style?: CSSProperties
 }) {
+  const lineasMeta: React.ReactNode[] = []
+  if (esAdmin) {
+    lineasMeta.push(
+      <span key="para">
+        Para: <span className="text-foreground">{tarea.asignado_nombre}</span>
+      </span>,
+    )
+  }
+  if (tarea.rancho_nombre) {
+    lineasMeta.push(
+      <span key="sitio" className="inline-flex items-center gap-1 align-bottom">
+        <MapPin className="w-3 h-3" aria-hidden="true" />
+        {tarea.rancho_nombre}
+      </span>,
+    )
+  }
+  if (tarea.modulo_nombre) {
+    lineasMeta.push(
+      <span key="modulo" className="inline-flex items-center gap-1 align-bottom">
+        <FileText className="w-3 h-3" aria-hidden="true" />
+        {tarea.modulo_nombre}
+      </span>,
+    )
+  }
+
   return (
-    <button
-      onClick={onClick}
-      style={style}
-      className="w-full text-left rounded-xl border border-border bg-card p-4 flex flex-col gap-2 transition-colors hover:border-primary/30"
-    >
-      {tarea.regresada && (
+    <TarjetaRegistro
+      sinFirmas
+      className="hover:border-primary/30 transition-colors"
+      alHacerClic={onClick}
+      titulo={tarea.titulo}
+      tituloTexto={tarea.titulo}
+      meta={lineasMeta}
+      acciones={<ChipPrioridad prioridad={tarea.prioridad} />}
+      encima={tarea.regresada ? (
         <div
-          className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
+          className="mb-2 flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
         >
           <RotateCcw className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <span>Regresada: {tarea.motivo_regreso ?? '—'}</span>
         </div>
+      ) : undefined}
+      chips={(
+        <>
+          <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
+          {esTareaDeChecklist(tarea) && <ChipChecklist />}
+          {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
+              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+            >
+              <PenLine className="w-2.5 h-2.5" />
+              Firma pendiente
+            </span>
+          )}
+          {tarea.fecha_limite && (
+            <span
+              className="inline-flex items-center gap-1 text-xs"
+              style={{ color: tarea.vencida ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
+            >
+              <Calendar className="w-3 h-3" />
+              {formatFechaLimite(tarea.fecha_limite)}
+            </span>
+          )}
+        </>
       )}
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
-          {tarea.titulo}
-        </p>
-        <ChipPrioridad prioridad={tarea.prioridad} />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
-        {esTareaDeChecklist(tarea) && <ChipChecklist />}
-        {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
-            style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-          >
-            <PenLine className="w-2.5 h-2.5" />
-            Firma pendiente
-          </span>
-        )}
-        {tarea.fecha_limite && (
-          <span
-            className="inline-flex items-center gap-1 text-xs"
-            style={{ color: tarea.vencida ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
-          >
-            <Calendar className="w-3 h-3" />
-            {formatFechaLimite(tarea.fecha_limite)}
-          </span>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-        {esAdmin && (
-          <span className="inline-flex items-center gap-1">
-            <span>Para:</span>
-            <span style={{ color: 'var(--foreground)' }}>{tarea.asignado_nombre}</span>
-          </span>
-        )}
-        {tarea.rancho_nombre && (
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            {tarea.rancho_nombre}
-          </span>
-        )}
-        {tarea.modulo_nombre && (
-          <span className="inline-flex items-center gap-1">
-            <FileText className="w-3 h-3" />
-            {tarea.modulo_nombre}
-          </span>
-        )}
-      </div>
-    </button>
+    />
   )
 }
 
@@ -518,8 +529,12 @@ function DetalleSheet({
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--primary)' }} />
+      <div className="space-y-3 px-4 py-6" aria-busy="true">
+        <Skeleton className="h-5 w-2/3" />
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <AvisoCargaLenta onReintentar={cargarDetalle} />
       </div>
     )
   }
@@ -655,7 +670,7 @@ function DetalleSheet({
         {tarea.descripcion && (
           <div>
             <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>Descripción</p>
-            <p className="text-sm" style={{ color: 'var(--foreground)' }}>{tarea.descripcion}</p>
+            <TextoColapsable texto={tarea.descripcion} lineas={4} className="text-sm text-foreground" />
           </div>
         )}
 
@@ -1292,6 +1307,9 @@ interface TareaFormState {
   modulo_codigo?: string
 }
 
+const CLASE_CONTROL =
+  'w-full rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-60'
+
 function EditarForm({
   form,
   onChange,
@@ -1302,10 +1320,13 @@ function EditarForm({
   onSave,
   guardando,
   bloqueado = false,
+  embebido = false,
 }: {
   form: TareaFormState
   /** Tarea nacida de un hallazgo: responsable y fecha se cambian desde el hallazgo */
   bloqueado?: boolean
+  /** true: solo los campos (sin caja, título ni botones); quien lo usa pone el PieFormulario */
+  embebido?: boolean
   onChange: (f: TareaFormState) => void
   colaboradores: { id: string; nombre: string }[]
   ranchos: { id: string; nombre: string }[]
@@ -1314,126 +1335,125 @@ function EditarForm({
   onSave: () => void
   guardando: boolean
 }) {
-  const inputSt: React.CSSProperties = {
-    backgroundColor: 'var(--input-background)',
-    border: '1px solid var(--border)',
-    color: 'var(--foreground)',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 0.75rem',
-    fontSize: '0.875rem',
-    width: '100%',
-    outline: 'none',
-  }
   return (
-    <div className="space-y-3 rounded-xl border border-border p-4">
-      <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Editar tarea</p>
+    <div className={embebido ? 'space-y-3' : 'space-y-3 rounded-xl border border-border p-4'}>
+      {!embebido && <p className="text-sm font-semibold text-foreground">Editar tarea</p>}
 
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Título *</label>
-        <input maxLength={160}
-          type="text"
-          value={form.titulo}
-          onChange={e => onChange({ ...form, titulo: e.target.value })}
-          style={{ ...inputSt, marginTop: '0.25rem' }}
-          placeholder="Título de la tarea"
-        />
-      </div>
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Descripción</label>
-        <textarea
-          value={form.descripcion}
-          onChange={e => onChange({ ...form, descripcion: e.target.value })}
-          rows={2}
-          style={{ ...inputSt, marginTop: '0.25rem', resize: 'none' }}
-          placeholder="Detalles adicionales"
-        />
-      </div>
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Prioridad</label>
-        <select
-          value={form.prioridad}
-          onChange={e => onChange({ ...form, prioridad: e.target.value as PrioridadTarea })}
-          style={{ ...inputSt, marginTop: '0.25rem' }}
-        >
-          <option value="">Seleccionar...</option>
-          <option value="alta">Alta</option>
-          <option value="media">Media</option>
-          <option value="baja">Baja</option>
-        </select>
-      </div>
-      {colaboradores.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Asignada a *</label>
+      <Campo etiqueta="Título" requerido className="gap-1">
+        {({ id }) => (
+          <input
+            id={id}
+            maxLength={160}
+            type="text"
+            value={form.titulo}
+            onChange={e => onChange({ ...form, titulo: e.target.value })}
+            className={`${CLASE_CONTROL} h-10`}
+            placeholder="Título de la tarea"
+          />
+        )}
+      </Campo>
+      <Campo etiqueta="Descripción" className="gap-1">
+        {({ id }) => (
+          <textarea
+            id={id}
+            value={form.descripcion}
+            onChange={e => onChange({ ...form, descripcion: e.target.value })}
+            rows={2}
+            className={`${CLASE_CONTROL} py-2 resize-none`}
+            placeholder="Detalles adicionales"
+          />
+        )}
+      </Campo>
+      <Campo etiqueta="Prioridad" className="gap-1">
+        {({ id }) => (
           <select
-            value={form.asignado_a}
-            disabled={bloqueado}
-            onChange={e => onChange({ ...form, asignado_a: e.target.value })}
-            style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
+            id={id}
+            value={form.prioridad}
+            onChange={e => onChange({ ...form, prioridad: e.target.value as PrioridadTarea })}
+            className={`${CLASE_CONTROL} h-10`}
           >
             <option value="">Seleccionar...</option>
-            {colaboradores.map(c => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
           </select>
-        </div>
-      )}
-      <div>
-        <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Fecha límite</label>
-        <input
-          type="date"
-          value={form.fecha_limite}
-          disabled={bloqueado}
-          onChange={e => onChange({ ...form, fecha_limite: e.target.value })}
-          style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
-        />
-        {bloqueado && (
-          <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-            Se cambia desde el hallazgo
-          </p>
         )}
-      </div>
+      </Campo>
+      {colaboradores.length > 0 && (
+        <Campo etiqueta="Asignada a" requerido className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.asignado_a}
+              disabled={bloqueado}
+              onChange={e => onChange({ ...form, asignado_a: e.target.value })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Seleccionar...</option>
+              {colaboradores.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
+      )}
+      <Campo
+        etiqueta="Fecha límite"
+        className="gap-1"
+        ayuda={bloqueado ? 'Se cambia desde el hallazgo' : undefined}
+      >
+        {({ id, describedBy }) => (
+          <input
+            id={id}
+            aria-describedby={describedBy}
+            type="date"
+            value={form.fecha_limite}
+            disabled={bloqueado}
+            onChange={e => onChange({ ...form, fecha_limite: e.target.value })}
+            className={`${CLASE_CONTROL} h-10`}
+          />
+        )}
+      </Campo>
       {ranchos.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Sitio</label>
-          <select
-            value={form.rancho_id ?? ''}
-            onChange={e => onChange({ ...form, rancho_id: e.target.value || undefined })}
-            style={{ ...inputSt, marginTop: '0.25rem' }}
-          >
-            <option value="">Sin sitio</option>
-            {ranchos.map(r => (
-              <option key={r.id} value={r.id}>{r.nombre}</option>
-            ))}
-          </select>
-        </div>
+        <Campo etiqueta="Sitio" className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.rancho_id ?? ''}
+              onChange={e => onChange({ ...form, rancho_id: e.target.value || undefined })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Sin sitio</option>
+              {ranchos.map(r => (
+                <option key={r.id} value={r.id}>{r.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
       )}
       {modulos.length > 0 && (
-        <div>
-          <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Formato / módulo</label>
-          <select
-            value={form.modulo_codigo ?? ''}
-            onChange={e => onChange({ ...form, modulo_codigo: e.target.value || undefined })}
-            style={{ ...inputSt, marginTop: '0.25rem' }}
-          >
-            <option value="">Sin formato</option>
-            {modulos.map(m => (
-              <option key={m.codigo} value={m.codigo}>{m.nombre}</option>
-            ))}
-          </select>
+        <Campo etiqueta="Formato / módulo" className="gap-1">
+          {({ id }) => (
+            <select
+              id={id}
+              value={form.modulo_codigo ?? ''}
+              onChange={e => onChange({ ...form, modulo_codigo: e.target.value || undefined })}
+              className={`${CLASE_CONTROL} h-10`}
+            >
+              <option value="">Sin formato</option>
+              {modulos.map(m => (
+                <option key={m.codigo} value={m.codigo}>{m.nombre}</option>
+              ))}
+            </select>
+          )}
+        </Campo>
+      )}
+      {!embebido && (
+        <div className="flex gap-2 pt-1">
+          <Boton variante="secundario" onClick={onCancel} className="flex-1">Cancelar</Boton>
+          <Boton onClick={onSave} cargando={guardando} disabled={!form.titulo.trim()} className="flex-1">Guardar</Boton>
         </div>
       )}
-      <div className="flex gap-2 pt-1">
-        <button
-          onClick={onCancel}
-          className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted transition-colors"
-          style={{ color: 'var(--foreground)' }}
-        >
-          Cancelar
-        </button>
-        <Boton onClick={onSave} cargando={guardando} disabled={!form.titulo.trim()} className="flex-1">
-          {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
-        </Boton>
-      </div>
     </div>
   )
 }
@@ -1448,6 +1468,7 @@ export function AgendaTareas() {
   const { ranchos } = useRanchos()
   const hook = useAgendaTareas()
   const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(!hook.loading)
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -1588,10 +1609,10 @@ export function AgendaTareas() {
                 </div>
               ))}
             </div>
-            <Skeleton className="h-9 w-full rounded-xl" />
             <Skeleton className="h-9 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-xl" />
-            <ListaSkeleton rows={4} />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-72 max-w-full rounded-xl" />
+            <ListaSkeleton rejilla rows={4} onReintentar={refrescar} />
           </div>
         ) : (
           /* ── VISTA ADMIN ── */
@@ -1604,7 +1625,6 @@ export function AgendaTareas() {
                   valorPrimero
                   valor={resumen.por_verificar ?? 0}
                   etiqueta="Por verificar"
-                  tono={resumen.por_verificar ? 'info' : 'normal'}
                 />
                 <TarjetaContador
                   indice={1}
@@ -1622,40 +1642,41 @@ export function AgendaTareas() {
               </div>
             )}
 
-            {/* Chip sin acuse org */}
+            {/* Nota sin acuse org */}
             {resumen && (resumen.sin_acuse_org ?? 0) > 0 && (
               <div
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
+                className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
                 style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
-                <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
-                {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}
+                <PenLine className="w-4 h-4 mt-px flex-shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}
+                </div>
               </div>
             )}
 
             {/* Filtro por colaborador */}
             {hook.colaboradores.length > 0 && (
+              <motion.div {...ent(1)}>
               <select
+                aria-label="Colaborador"
                 value={filtroColaborador}
                 onChange={e => { dirTabRef.current = 0; setFiltroColaborador(e.target.value) }}
-                className="w-full h-9 rounded-lg text-sm"
-                style={{
-                  backgroundColor: 'var(--input-background)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--foreground)',
-                  padding: '0 0.75rem',
-                }}
+                className={CLASE_SELECT}
               >
                 <option value="">Todos los colaboradores</option>
                 {hook.colaboradores.map(c => (
                   <option key={c.id} value={c.id}>{c.nombre}</option>
                 ))}
               </select>
+              </motion.div>
             )}
 
             {/* Pestañas */}
+            <motion.div {...ent(2)}>
+            {/* Celular y tablet: 4 pestañas del mismo ancho, sin scroll */}
             <LayoutGroup id="agenda-admin-tabs">
-              <div className="flex gap-1 rounded-xl p-1 overflow-x-auto" style={{ backgroundColor: 'var(--muted)' }}>
+              <div className="flex gap-1 rounded-xl p-1 overflow-x-auto lg:hidden" style={{ backgroundColor: 'var(--muted)' }}>
                 {tabsAdmin.map((t, i) => (
                   <button
                     key={t.key}
@@ -1683,6 +1704,21 @@ export function AgendaTareas() {
                 ))}
               </div>
             </LayoutGroup>
+            {/* Escritorio (desde lg) */}
+            <div className="hidden lg:block">
+              <SelectorSegmentado<typeof tabAdmin>
+                ariaLabel="Estado de las tareas"
+                value={tabAdmin}
+                onChange={k => {
+                  const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
+                  const nuevo = tabsAdmin.findIndex(x => x.key === k)
+                  dirTabRef.current = nuevo > actual ? 1 : -1
+                  setTabAdmin(k)
+                }}
+                options={tabsAdmin.map(t => ({ value: t.key, label: t.label }))}
+              />
+            </div>
+            </motion.div>
 
             {/* Lista de tareas */}
             <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
@@ -1699,30 +1735,29 @@ export function AgendaTareas() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="space-y-2"
               >
                 {tareasTab.length === 0 ? (
-                  <motion.p
+                  <motion.div
                     initial={reducedMotion ? false : { opacity: 0 }}
                     animate={{ opacity: 1, transition: { duration: DUR.base, ease: EASE_OUT } }}
-                    className="text-sm text-center py-8"
-                    style={{ color: 'var(--muted-foreground)' }}
                   >
-                    Sin tareas
-                  </motion.p>
+                    <EstadoVacio icono={ClipboardList} titulo="Sin tareas" />
+                  </motion.div>
                 ) : (
-                  tareasTab.map((t, index) => (
-                    <motion.div
-                      key={t.id}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{
-                        opacity: 1, y: 0,
-                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-                      }}
-                    >
-                      <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
-                    </motion.div>
-                  ))
+                  <ListaTarjetas>
+                    {tareasTab.map((t, index) => (
+                      <motion.div
+                        key={t.id}
+                        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                        animate={{
+                          opacity: 1, y: 0,
+                          transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
+                        }}
+                      >
+                        <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
+                      </motion.div>
+                    ))}
+                  </ListaTarjetas>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -1739,7 +1774,7 @@ export function AgendaTareas() {
                   </div>
                 ))}
               </div>
-              <ListaSkeleton rows={4} />
+              <ListaSkeleton rejilla rows={4} onReintentar={refrescar} />
             </div>
           ) : (
           /* ── VISTA COLABORADOR ── */
@@ -1770,30 +1805,32 @@ export function AgendaTareas() {
               </p>
               <AnimatePresence mode="popLayout" initial={false}>
                 {filtroSeleccionado.lista.length === 0 ? (
-                  <motion.p
+                  <motion.div
                     key="vacio"
                     initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0, transition: { duration: DUR.base, ease: EASE_OUT } }}
                     exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido } }}
-                    className="text-sm text-center py-10"
-                    style={{ color: 'var(--muted-foreground)' }}
                   >
-                    {filtroSeleccionado.vacio}
-                  </motion.p>
+                    <EstadoVacio icono={ClipboardList} titulo={filtroSeleccionado.vacio} />
+                  </motion.div>
                 ) : (
-                  filtroSeleccionado.lista.map((t, index) => (
-                    <motion.div
-                      key={t.id}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{
-                        opacity: 1, y: 0,
-                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 },
-                      }}
-                      exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
-                    >
-                      <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
-                    </motion.div>
-                  ))
+                  <div key="lista">
+                  <ListaTarjetas>
+                    {filtroSeleccionado.lista.map((t, index) => (
+                      <motion.div
+                        key={t.id}
+                        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                        animate={{
+                          opacity: 1, y: 0,
+                          transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 },
+                        }}
+                        exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
+                      >
+                        <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
+                      </motion.div>
+                    ))}
+                  </ListaTarjetas>
+                  </div>
                 )}
               </AnimatePresence>
             </div>
@@ -1804,16 +1841,7 @@ export function AgendaTareas() {
 
       {/* FAB (solo admin) */}
       {esAdmin && (
-        <Portal>
-        <button
-          onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }}
-          className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 group no-press"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-          aria-label="Nueva tarea"
-        >
-          <Plus className="w-6 h-6 transition-transform duration-100 ease-[var(--ease-out)] motion-safe:group-active:scale-90" />
-        </button>
-        </Portal>
+        <Fab onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }} aria-label="Nueva tarea" />
       )}
 
       {/* Sheet nueva tarea */}
@@ -1821,8 +1849,9 @@ export function AgendaTareas() {
         <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>Nueva tarea</p>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           <EditarForm
+            embebido
             form={nuevaForm}
             onChange={setNuevaForm}
             colaboradores={hook.colaboradores}
@@ -1833,6 +1862,13 @@ export function AgendaTareas() {
             guardando={guardandoNueva}
           />
         </div>
+        <PieFormulario
+          textoPrincipal="Guardar"
+          onPrincipal={handleCrearTarea}
+          onCancelar={() => setSheetNueva(false)}
+          cargando={guardandoNueva}
+          deshabilitado={!nuevaForm.titulo.trim()}
+        />
       </BottomSheet>
 
       {/* Sheet detalle */}

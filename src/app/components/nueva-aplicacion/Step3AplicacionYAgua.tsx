@@ -1,6 +1,8 @@
-import { FormField } from "../FormField";
-import { FormSelect } from "../FormSelect";
+import { CampoTexto, CampoSelect, SeccionPaso, Fila, PiePaso, EtiquetaGrupo } from "./controles";
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { cn } from '@/app/components/ui/utils'
 
 interface Props {
   formData: any;
@@ -8,6 +10,8 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
   esCampo?: boolean;
+  /** Escritorio (≥ lg): acomodo en columnas y piezas estándar. */
+  esLg?: boolean;
 }
 
 // cloro_ml = 5 × (total_agua_l / 200)  — se almacena en ml, limitado a 4 decimales
@@ -43,7 +47,28 @@ const ppeItems = [
 
 const metodoGgItems = ["Aspersión", "Espolvoreo", "Cloro", "Riego"];
 
-export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack, esCampo }: Props) {
+// Opción de EPP en escritorio: píldora que se enciende y apaga (selección múltiple, igual que antes).
+function PildoraEpp({ activa, onClick, children }: { activa: boolean; onClick: () => void; children: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={activa}
+      onClick={onClick}
+      className={cn(
+        "h-9 px-4 rounded-full whitespace-nowrap text-sm border transition-colors",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        activa
+          ? "border-transparent bg-accent text-accent-foreground font-semibold"
+          : "border-border bg-card text-foreground hover:bg-muted",
+      )}
+      style={{ transitionDuration: 'var(--motion-fast)' }}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack, esCampo, esLg = false }: Props) {
   const cloroMl = calcularCloroMl(formData.totalWater)
 
   const togglePPE = (item: string) => {
@@ -55,28 +80,60 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
     });
   };
 
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          {esCampo ? "MÉTODO DE APLICACIÓN (GlobalG.A.P.)" : "TIPO DE APLICACIÓN"}
-        </h3>
-      </div>
+  // Botas / Lentes — toggle ambos simultáneamente
+  const toggleBotasLentes = () => {
+    const nuevo = !formData.ppe["Botas"];
+    updateFormData({
+      ppe: {
+        ...formData.ppe,
+        "Botas": nuevo,
+        "Googles": nuevo,
+      },
+    });
+  };
 
-      {esCampo ? (
+  const elegirMetodoGg = (metodo: string) => {
+    const esCloro = metodo === "Cloro";
+    updateFormData({
+      metodoAplicacionGg: metodo,
+      chlorination: esCloro,
+    });
+  };
+
+  return (
+    <div className={esLg ? "flex flex-col gap-5" : "flex flex-col gap-4"}>
+      <SeccionPaso
+        esLg={esLg}
+        primera
+        titulo={esCampo ? "Método de aplicación (GlobalG.A.P.)" : "Tipo de aplicación"}
+        movil={esCampo ? "MÉTODO DE APLICACIÓN (GlobalG.A.P.)" : "TIPO DE APLICACIÓN"}
+      />
+
+      {esLg ? (
+        esCampo ? (
+          <SelectorSegmentado
+            ariaLabel="Método de aplicación"
+            className="self-start"
+            value={formData.metodoAplicacionGg}
+            onChange={elegirMetodoGg}
+            options={metodoGgItems.map((m) => ({ value: m, label: m }))}
+          />
+        ) : (
+          <SelectorSegmentado
+            ariaLabel="Tipo de aplicación"
+            className="self-start"
+            value={formData.applicationType}
+            onChange={(v) => updateFormData({ applicationType: v })}
+            options={[{ value: "Foliar", label: "Foliar" }, { value: "Drench", label: "Drench" }]}
+          />
+        )
+      ) : esCampo ? (
         /* GlobalG.A.P.: 4 chips de método */
         <div className="flex gap-2 overflow-x-auto pb-1">
           {metodoGgItems.map((metodo) => (
             <button
               key={metodo}
-              onClick={() => {
-                const esCloro = metodo === "Cloro";
-                updateFormData({
-                  metodoAplicacionGg: metodo,
-                  chlorination: esCloro,
-                });
-              }}
+              onClick={() => elegirMetodoGg(metodo)}
               className={`flex-shrink-0 px-5 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
                 formData.metodoAplicacionGg === metodo
                   ? "bg-primary text-primary-foreground"
@@ -116,109 +173,114 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
         </div>
       )}
 
-      <FormSelect
-        label="Equipo utilizado"
-        value={formData.equipment}
-        onChange={(value) => updateFormData({ equipment: value })}
-        options={equipmentOptions}
-      />
+      <Fila esLg={esLg}>
+        <CampoSelect esLg={esLg} label="Equipo utilizado" value={formData.equipment} onChange={(value) => updateFormData({ equipment: value })} options={equipmentOptions} />
+        <CampoTexto esLg={esLg} label="Total agua utilizada (L)" type="number" value={formData.totalWater} onChange={(value) => updateFormData({ totalWater: value })} placeholder="Litros" />
+      </Fila>
 
-      <FormField
-        label="Total agua utilizada (L)"
-        type="number"
-        value={formData.totalWater}
-        onChange={(value) => updateFormData({ totalWater: value })}
-        placeholder="Litros"
-      />
-
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          PREPARACIÓN DE AGUA
-        </h3>
-      </div>
+      <SeccionPaso esLg={esLg} titulo="Preparación de agua" movil="PREPARACIÓN DE AGUA" />
 
       {/* Chlorination Toggle */}
       <div>
         <label className="text-xs text-muted-foreground mb-2 block font-semibold">
           Cloración
         </label>
-        <div className="flex gap-3">
-          <button
-            onClick={() => updateFormData({ chlorination: true })}
-            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-              formData.chlorination
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border-control text-foreground"
-            }`}
-            style={{ fontWeight: 600 }}
-          >
-            Sí
-          </button>
-          <button
-            onClick={() => updateFormData({ chlorination: false })}
-            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-              !formData.chlorination
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border-control text-foreground"
-            }`}
-            style={{ fontWeight: 600 }}
-          >
-            No
-          </button>
-        </div>
+        {esLg ? (
+          <SelectorSegmentado
+            ariaLabel="Cloración"
+            value={formData.chlorination ? "si" : "no"}
+            onChange={(v) => updateFormData({ chlorination: v === "si" })}
+            options={[{ value: "si", label: "Sí" }, { value: "no", label: "No" }]}
+          />
+        ) : (
+          <div className="flex gap-3">
+            <button
+              onClick={() => updateFormData({ chlorination: true })}
+              className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                formData.chlorination
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border-control text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              Sí
+            </button>
+            <button
+              onClick={() => updateFormData({ chlorination: false })}
+              className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                !formData.chlorination
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border-control text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              No
+            </button>
+          </div>
+        )}
       </div>
 
       {formData.chlorination && (
-        <div className="grid grid-cols-2 gap-3">
-          <FormField
+        <Fila esLg={esLg} movil2>
+          <CampoTexto
+            esLg={esLg}
             label="Cloro calculado (ml)"
             value={cloroMl || (formData.totalWater ? '—' : 'Captura el agua primero')}
             onChange={() => {}}
             disabled
           />
-          <FormField
-            label="pH"
-            type="number"
-            value={formData.pH}
-            onChange={(value) => updateFormData({ pH: value })}
+          <CampoTexto esLg={esLg} label="pH" type="number" value={formData.pH} onChange={(value) => updateFormData({ pH: value })} />
+        </Fila>
+      )}
+
+      <SeccionPaso esLg={esLg} titulo="Condiciones climáticas" movil="CONDICIONES CLIMÁTICAS" />
+
+      {/* Weather Chips */}
+      {esLg ? (
+        <div className="flex flex-wrap gap-2">
+          <FiltroPildoras
+            options={weatherConditions}
+            value={formData.weather}
+            onChange={(condition) => updateFormData({ weather: condition })}
           />
+        </div>
+      ) : (
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {weatherConditions.map((condition) => (
+            <button
+              key={condition}
+              onClick={() => updateFormData({ weather: condition })}
+              className={`flex-shrink-0 px-4 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
+                formData.weather === condition
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border-control text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              {condition}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          CONDICIONES CLIMÁTICAS
-        </h3>
-      </div>
+      <SeccionPaso esLg={esLg} titulo="Equipo de protección personal (EPP)" movil="EQUIPO DE PROTECCIÓN PERSONAL (EPP)" />
 
-      {/* Weather Chips */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {weatherConditions.map((condition) => (
-          <button
-            key={condition}
-            onClick={() => updateFormData({ weather: condition })}
-            className={`flex-shrink-0 px-4 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
-              formData.weather === condition
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border-control text-foreground"
-            }`}
-            style={{ fontWeight: 600 }}
-          >
-            {condition}
-          </button>
-        ))}
-      </div>
-
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          EQUIPO DE PROTECCIÓN PERSONAL (EPP)
-        </h3>
-      </div>
-
-      {esCampo ? (
+      {esLg ? (
+        <div className="flex flex-wrap gap-2">
+          {esCampo ? (
+            <>
+              <PildoraEpp activa={!!formData.ppe["Traje protector"]} onClick={() => togglePPE("Traje protector")}>Traje</PildoraEpp>
+              <PildoraEpp activa={!!formData.ppe["Mascarillas"]} onClick={() => togglePPE("Mascarillas")}>Mascarilla</PildoraEpp>
+              <PildoraEpp activa={!!formData.ppe["Botas"]} onClick={toggleBotasLentes}>Botas / Lentes</PildoraEpp>
+              <PildoraEpp activa={!!formData.ppe["Guantes"]} onClick={() => togglePPE("Guantes")}>Guantes de nitrilo</PildoraEpp>
+            </>
+          ) : (
+            ppeItems.map((item) => (
+              <PildoraEpp key={item} activa={!!formData.ppe[item]} onClick={() => togglePPE(item)}>{item}</PildoraEpp>
+            ))
+          )}
+        </div>
+      ) : esCampo ? (
         /* Campo: 4 items GlobalG.A.P. */
         <div className="grid grid-cols-2 gap-3">
           {/* Traje */}
@@ -247,16 +309,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           </button>
           {/* Botas / Lentes — toggle ambos simultáneamente */}
           <button
-            onClick={() => {
-              const nuevo = !formData.ppe["Botas"];
-              updateFormData({
-                ppe: {
-                  ...formData.ppe,
-                  "Botas": nuevo,
-                  "Googles": nuevo,
-                },
-              });
-            }}
+            onClick={toggleBotasLentes}
             className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Botas"]
                 ? "bg-primary text-primary-foreground"
@@ -300,20 +353,24 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={onBack}
-          className="flex-1 h-14 border border-border-control text-foreground rounded-3xl font-semibold"
-        >
-          Atrás
-        </button>
-        <Boton
-          onClick={onNext}
-          className="flex-1 h-14 rounded-3xl"
-        >
-          Continuar
-        </Boton>
-      </div>
+      {esLg ? (
+        <PiePaso onBack={onBack} onNext={onNext} />
+      ) : (
+        <div className="flex gap-3 pt-4">
+          <button
+            onClick={onBack}
+            className="flex-1 h-14 border border-border-control text-foreground rounded-3xl font-semibold"
+          >
+            Atrás
+          </button>
+          <Boton
+            onClick={onNext}
+            className="flex-1 h-14 rounded-3xl"
+          >
+            Continuar
+          </Boton>
+        </div>
+      )}
     </div>
   );
 }

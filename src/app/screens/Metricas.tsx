@@ -10,7 +10,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useMetricas } from '@/hooks/useMetricas'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { hoyMX } from '@/lib/fecha'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT, entrada, useEntradaPantalla } from '@/lib/motion'
 import type {
   MetProductividad,
   MetAgenda,
@@ -24,6 +24,11 @@ import type {
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { formatoNumero, formatoPct } from '@/lib/formato'
 
 // Mismo timing/curva que el resto de la app (tokens de @/lib/motion).
@@ -88,22 +93,23 @@ function ChipPct({ pct }: { pct: number }) {
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
-function Skeleton({ className = '' }: { className?: string }) {
-  return (
-    <div
-      className={`rounded-md animate-pulse ${className}`}
-      style={{ backgroundColor: 'var(--muted)' }}
-    />
-  )
-}
-
 function TabSkeleton() {
   return (
-    <div className="space-y-3 p-4">
-      <Skeleton className="h-20 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
+    <div className="space-y-4 px-4 pt-4 pb-8">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="space-y-2 rounded-xl border border-border bg-card p-4">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-7 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
       <AvisoCargaLenta />
     </div>
   )
@@ -122,36 +128,6 @@ function AnimatedNumber({
 }: { value: number | null; format: (n: number) => string; reducedMotion: boolean }) {
   const spanRef = useContadorAnimado(value, format, reducedMotion)
   return <span ref={spanRef}>{value === null ? '—' : format(value)}</span>
-}
-
-// ── Entrada escalonada reutilizable (tarjetas y filas de listas) ─────────────
-
-function EntradaEscalonada({
-  index, reducedMotion, children, className, style,
-}: {
-  index: number
-  reducedMotion: boolean
-  children: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <motion.div
-      className={className}
-      style={style}
-      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index * 0.04, 0.4) }}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-// ── Tarjeta resumen ───────────────────────────────────────────────────────────
-
-function TarjetaResumen({ label, valor, sub }: { label: string; valor: React.ReactNode; sub?: string }) {
-  return <TarjetaContador etiqueta={label} valor={valor} sub={sub} />
 }
 
 // ── Pestaña Productividad ─────────────────────────────────────────────────────
@@ -188,78 +164,72 @@ function TabProductividad({
   return (
     <div className="space-y-4 pb-8">
       {/* Tarjetas resumen */}
-      <div className="grid grid-cols-2 gap-3 px-4 pt-4">
+      <div className="grid grid-cols-2 gap-3 px-4 pt-4 lg:grid-cols-4">
         {esAdmin ? (
           <>
-            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Total capturas"
-                valor={<AnimatedNumber value={totalCapturas} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-              />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Colaboradores con capturas"
-                valor={<>
-                  <AnimatedNumber value={colConCapturas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
-                  <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                </>}
-              />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Con corrección"
-                valor={<AnimatedNumber value={pctCorreccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />}
-                sub={`${totalCorrecciones} registros`}
-              />
-            </EntradaEscalonada>
+            <TarjetaContador
+              indice={0}
+              etiqueta="Total capturas"
+              valor={totalCapturas}
+              format={n => formatoNumero(Math.round(n))}
+            />
+            <TarjetaContador
+              indice={1}
+              etiqueta="Colaboradores con capturas"
+              valor={<>
+                <AnimatedNumber value={colConCapturas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
+                <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+              </>}
+            />
+            <TarjetaContador
+              indice={2}
+              etiqueta="Con corrección"
+              valor={pctCorreccion}
+              format={n => formatoPct(n)}
+              sub={`${totalCorrecciones} registros`}
+            />
           </>
         ) : (
           <>
-            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Mis capturas"
-                valor={<AnimatedNumber value={mr?.capturas ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-              />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Mi posición"
-                valor={miPosicion != null ? (
-                  <>
-                    #<AnimatedNumber value={miPosicion} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
-                    <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                  </>
-                ) : '—'}
-              />
-            </EntradaEscalonada>
-            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
-              <TarjetaResumen
-                label="Con corrección"
-                valor={mr?.pct_correccion != null ? (
-                  <AnimatedNumber value={mr.pct_correccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
-                ) : '—'}
-              />
-            </EntradaEscalonada>
+            <TarjetaContador
+              indice={0}
+              etiqueta="Mis capturas"
+              valor={mr?.capturas ?? 0}
+              format={n => formatoNumero(Math.round(n))}
+            />
+            <TarjetaContador
+              indice={1}
+              etiqueta="Mi posición"
+              valor={miPosicion != null ? (
+                <>
+                  #<AnimatedNumber value={miPosicion} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
+                  <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                </>
+              ) : '—'}
+            />
+            <TarjetaContador
+              indice={2}
+              etiqueta="Con corrección"
+              valor={mr?.pct_correccion != null ? mr.pct_correccion : null}
+              format={n => formatoPct(n)}
+            />
           </>
         )}
         {v && (
-          <EntradaEscalonada index={3} reducedMotion={reducedMotion}>
-            <TarjetaResumen
-              label="Verificados"
-              valor={<AnimatedNumber value={v.verificados} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-              sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
-            />
-          </EntradaEscalonada>
+          <TarjetaContador
+            indice={3}
+            etiqueta="Verificados"
+            valor={v.verificados}
+            format={n => formatoNumero(Math.round(n))}
+            sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
+          />
         )}
       </div>
 
       {/* Ranking */}
       <div className="px-4">
-        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
-          RANKING DE COLABORADORES
-        </p>
-        <div className="space-y-2">
+        <Panel titulo="Ranking de colaboradores">
+        <div className="divide-y divide-border">
           {colaboradores.map((c: ColaboradorProductividad, i: number) => {
             const tieneDetalle = c.detalle_visible
             const tieneDesglose = tieneDetalle && c.por_modulo != null && Object.keys(c.por_modulo).length > 0
@@ -376,12 +346,12 @@ function TabProductividad({
                 initial={animarEntrada ? { opacity: 0, y: 8 } : false}
                 animate={{ opacity: c.activo ? 1 : 0.6, y: 0 }}
                 transition={animarEntrada ? { duration: DUR.base, ease: EASE_OUT, delay: delayFila } : { duration: 0 }}
-                className="rounded-xl border border-border overflow-hidden"
-                style={{ backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : 'var(--card)' }}
+                className="overflow-hidden"
+                style={{ backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : undefined }}
               >
                 {tieneDesglose ? (
                   <button
-                    className="w-full text-left px-4 py-3 transition-colors hover:bg-muted"
+                    className="w-full text-left px-2 py-3 transition-colors hover:bg-muted"
                     style={{ transitionDuration: 'var(--motion-fast)' }}
                     onClick={() => setExpandido(abierto ? null : c.profile_id)}
                     aria-expanded={abierto}
@@ -389,7 +359,7 @@ function TabProductividad({
                     {rowInner}
                   </button>
                 ) : (
-                  <div className="px-4 py-3">{rowInner}</div>
+                  <div className="px-2 py-3">{rowInner}</div>
                 )}
 
                 {/* Desglose por módulo — mismo patrón de desplegable (accordion-rows) */}
@@ -397,12 +367,10 @@ function TabProductividad({
                   <div className={`accordion-rows ${abierto ? 'is-open' : ''}`}>
                     <div>
                       <div
-                        className="px-4 pb-3 pt-0 border-t border-border"
+                        className="px-2 pb-3 pt-0 border-t border-border"
                         style={{ backgroundColor: 'var(--muted)' }}
                       >
-                        <p className="text-xs font-semibold mt-2 mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                          DESGLOSE POR MÓDULO
-                        </p>
+                        <TituloSeccion variante="subtitulo" as="p" className="mt-2 mb-2">Desglose por módulo</TituloSeccion>
                         <div className="space-y-1">
                           {porModuloEntries.map(([codigo, n]) => {
                             const mod = modulos.find(m => m.codigo === codigo)
@@ -426,6 +394,7 @@ function TabProductividad({
             )
           })}
         </div>
+        </Panel>
       </div>
     </div>
   )
@@ -439,56 +408,33 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
   if (colaboradores.length === 0) return <Vacio />
 
   return (
-    <div className="space-y-3 px-4 pt-4 pb-8">
+    <div className="grid gap-4 px-4 pt-4 pb-8 lg:grid-cols-2">
       {colaboradores.map((c, i) => {
         const pctATiempo = c.cerradas > 0 ? (c.a_tiempo / c.cerradas) * 100 : null
         return (
-          <EntradaEscalonada key={c.profile_id} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-4 space-y-3">
-            <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{c.nombre}</p>
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">Asignadas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
-                  <AnimatedNumber value={c.asignadas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                </p>
+          <motion.div key={c.profile_id} {...entrada(i, reducedMotion)} className="min-w-0">
+            <Panel titulo={c.nombre}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <TarjetaContador etiqueta="Asignadas" valor={c.asignadas} />
+                <TarjetaContador etiqueta="Cerradas" valor={c.cerradas} />
+                <TarjetaContador
+                  etiqueta="% a tiempo"
+                  valor={pctATiempo != null ? <ChipPct pct={pctATiempo} /> : '—'}
+                />
+                <TarjetaContador
+                  etiqueta="Vencidas"
+                  valor={c.vencidas_abiertas}
+                  tono={c.vencidas_abiertas > 0 ? 'alertaTexto' : 'normal'}
+                />
+                <TarjetaContador etiqueta="Regresadas" valor={c.regresadas} />
+                <TarjetaContador
+                  etiqueta="Días prom."
+                  valor={c.dias_promedio_cierre}
+                  format={n => n.toFixed(1)}
+                />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Cerradas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
-                  <AnimatedNumber value={c.cerradas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">% a tiempo</p>
-                {pctATiempo != null
-                  ? <ChipPct pct={pctATiempo} />
-                  : <span className="text-xs text-muted-foreground">—</span>}
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Vencidas</p>
-                <p
-                  className="tabular-nums font-semibold"
-                  style={{ color: c.vencidas_abiertas > 0 ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
-                >
-                  <AnimatedNumber value={c.vencidas_abiertas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Regresadas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
-                  <AnimatedNumber value={c.regresadas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Días prom.</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
-                  {c.dias_promedio_cierre != null
-                    ? <AnimatedNumber value={c.dias_promedio_cierre} format={n => n.toFixed(1)} reducedMotion={reducedMotion} />
-                    : '—'}
-                </p>
-              </div>
-            </div>
-          </EntradaEscalonada>
+            </Panel>
+          </motion.div>
         )
       })}
     </div>
@@ -648,7 +594,7 @@ function GrupoAuditoriasInternas({
   })
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
+    <Panel className="overflow-hidden p-0">
       <button
         type="button"
         className="w-full flex items-center gap-2 px-4 py-3 text-left"
@@ -657,9 +603,7 @@ function GrupoAuditoriasInternas({
         aria-expanded={abierto}
       >
         <cfg.Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
-        <span className="flex-1 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-          {cfg.label}
-        </span>
+        <TituloSeccion as="p" className="mb-0 flex-1">{cfg.label}</TituloSeccion>
         <span
           className="text-xs tabular-nums px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
           style={{ color, backgroundColor: bg }}
@@ -688,13 +632,10 @@ function GrupoAuditoriasInternas({
               const b = bandaCumplimiento(a.porcentaje, a.posibles)
               const { color: bc, bg: bbg } = estilosBanda(b)
               return (
-                <EntradaEscalonada
+                <motion.div {...entrada(i, reducedMotion)}
                   key={i}
-                  index={i}
-                  reducedMotion={reducedMotion}
                   className="flex items-center justify-between gap-3 px-4 py-3"
-                  style={{ backgroundColor: 'var(--card)' }}
-                >
+                  style={{ backgroundColor: 'var(--card)' }}>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{a.nombre}</p>
                     <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
@@ -718,13 +659,13 @@ function GrupoAuditoriasInternas({
                       <span className="text-xs tabular-nums" style={{ color: 'var(--muted-foreground)' }}>0/0 pts</span>
                     )}
                   </div>
-                </EntradaEscalonada>
+                </motion.div>
               )
             })}
           </div>
         </div>
       </div>
-    </div>
+    </Panel>
   )
 }
 
@@ -742,55 +683,33 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
   }
 
   return (
-    <div className="space-y-6 px-4 pt-4 pb-8">
+    <div className="space-y-4 px-4 pt-4 pb-8">
       {/* Auditorías internas */}
       {internas.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
-            AUDITORÍAS INTERNAS
-          </p>
-
+        <Panel titulo="Auditorías internas">
           {/* Tarjetas de promedio por módulo */}
           {datos.internas_resumen && datos.internas_resumen.length > 0 && (() => {
             const resumen = datos.internas_resumen!
             return (
               <>
-                <div
-                  className="gap-3 mb-3"
-                  style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}
-                >
+                <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
                   {resumen.map((r, i) => {
                     const banda = r.promedio != null
                       ? bandaCumplimiento(r.promedio, r.con_puntaje > 0 ? 1 : 0)
                       : 'sin_puntaje'
                     const { color, bg } = estilosBanda(banda)
                     return (
-                      <EntradaEscalonada
+                      <TarjetaContador
                         key={r.modulo}
-                        index={i}
-                        reducedMotion={reducedMotion}
-                        className="rounded-xl border border-border bg-card p-3 flex flex-col gap-1.5"
-                      >
-                        <p
-                          className="text-xs line-clamp-2"
-                          style={{ color: 'var(--muted-foreground)' }}
-                          title={r.nombre}
-                        >
-                          {r.nombre}
-                        </p>
-                        <span
-                          className="text-2xl tabular-nums font-bold self-start px-2 py-0.5 rounded-lg"
-                          style={{ color, backgroundColor: bg }}
-                        >
-                          {r.promedio != null
-                            ? <AnimatedNumber value={r.promedio} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
-                            : '—'}
-                        </span>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                          {r.auditorias} auditoría{r.auditorias !== 1 ? 's' : ''}
-                          {r.sin_puntaje > 0 && ` · ${r.sin_puntaje} sin puntaje`}
-                        </p>
-                      </EntradaEscalonada>
+                        indice={i}
+                        etiqueta={r.nombre}
+                        valor={r.promedio != null ? (
+                          <span className="rounded-lg px-2 py-0.5" style={{ color, backgroundColor: bg }}>
+                            <AnimatedNumber value={r.promedio} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
+                          </span>
+                        ) : '—'}
+                        sub={`${r.auditorias} auditoría${r.auditorias !== 1 ? 's' : ''}${r.sin_puntaje > 0 ? ` · ${r.sin_puntaje} sin puntaje` : ''}`}
+                      />
                     )
                   })}
                 </div>
@@ -833,18 +752,15 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
               </div>
             )
           })()}
-        </section>
+        </Panel>
       )}
 
       {/* Auditorías externas */}
       {externas.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
-            AUDITORÍAS EXTERNAS
-          </p>
-          <div className="space-y-2">
+        <Panel titulo="Auditorías externas">
+          <div className="divide-y divide-border">
             {externas.map((a, i) => (
-              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-3 space-y-1">
+              <motion.div key={i} {...entrada(i, reducedMotion)} className="space-y-1 py-2.5 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{a.fecha}</p>
                   <span className="text-xs px-2 py-0.5 rounded-md" style={{
@@ -864,64 +780,56 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                     {a.nc_abiertas} NC{a.nc_abiertas > 1 ? 's' : ''} abiertas
                   </p>
                 )}
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </Panel>
       )}
 
       {/* Incidencias M13 por mes */}
       {datos.incidencias && porMes.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
-            INCIDENCIAS M13 POR MES
-          </p>
+        <Panel titulo="Incidencias M13 por mes">
           {porMes.length <= 1 ? (
-            <div className="space-y-2 mt-3">
+            <div className="space-y-2">
               <div className="grid grid-cols-2 gap-3">
-                <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
-                  <TarjetaResumen
-                    label="Reportes"
-                    valor={<AnimatedNumber value={datos.incidencias.reportes} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-                  />
-                </EntradaEscalonada>
-                <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
-                  <TarjetaResumen
-                    label="Incidencias"
-                    valor={<AnimatedNumber value={datos.incidencias.incidencias} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-                  />
-                </EntradaEscalonada>
+                <TarjetaContador
+                  indice={0}
+                  etiqueta="Reportes"
+                  valor={datos.incidencias.reportes}
+                  format={n => formatoNumero(Math.round(n))}
+                />
+                <TarjetaContador
+                  indice={1}
+                  etiqueta="Incidencias"
+                  valor={datos.incidencias.incidencias}
+                  format={n => formatoNumero(Math.round(n))}
+                />
               </div>
               <p className="text-xs text-muted-foreground">Un reporte puede tener varias incidencias</p>
             </div>
           ) : (
-            <div className="mt-3">
-              <GraficaBarrasMes
-                series={[
-                  { label: 'Reportes', color: 'var(--primary)', valores: porMes.map(p => p.reportes) },
-                  { label: 'Incidencias', color: 'var(--secondary)', valores: porMes.map(p => p.incidencias) },
-                ]}
-                meses={porMes.map(p => p.mes)}
-                ariaLabel={porMes.map(p => {
-                  const mo = parseInt(p.mes.split('-')[1]) - 1
-                  const ns = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-                  return `${ns[mo]}: ${p.reportes} reportes, ${p.incidencias} incidencias`
-                }).join('; ')}
-              />
-            </div>
+            <GraficaBarrasMes
+              series={[
+                { label: 'Reportes', color: 'var(--primary)', valores: porMes.map(p => p.reportes) },
+                { label: 'Incidencias', color: 'var(--secondary)', valores: porMes.map(p => p.incidencias) },
+              ]}
+              meses={porMes.map(p => p.mes)}
+              ariaLabel={porMes.map(p => {
+                const mo = parseInt(p.mes.split('-')[1]) - 1
+                const ns = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+                return `${ns[mo]}: ${p.reportes} reportes, ${p.incidencias} incidencias`
+              }).join('; ')}
+            />
           )}
-        </section>
+        </Panel>
       )}
 
       {/* Fallas recurrentes */}
       {fallas.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
-            PUNTOS DE FALLA RECURRENTES (TOP {fallas.length})
-          </p>
-          <div className="space-y-1.5">
+        <Panel titulo={`Puntos de falla recurrentes (top ${fallas.length})`}>
+          <div className="divide-y divide-border">
             {fallas.map((f, i) => (
-              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="flex items-start justify-between gap-3 py-1.5 border-b border-border last:border-0">
+              <motion.div key={i} {...entrada(i, reducedMotion)} className="flex items-start justify-between gap-3 py-2 first:pt-0 last:pb-0">
                 <div className="min-w-0">
                   <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
                     {f.modulo}
@@ -931,10 +839,10 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                 <span className="text-sm tabular-nums flex-shrink-0 font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                   ×<AnimatedNumber value={f.veces} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
                 </span>
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   )
@@ -957,36 +865,29 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
 
   return (
     <div className="px-4 pt-4 pb-8 space-y-4">
-      <div className="space-y-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {modulos.map((m, i) => {
           const huecos = m.huecos_recientes ?? []
           return (
-            <EntradaEscalonada
+            <motion.div
               key={`${m.modulo}-${m.rancho_id}-${i}`}
-              index={i}
-              reducedMotion={reducedMotion}
-              className="rounded-xl border border-border bg-card overflow-hidden"
+              {...entrada(i, reducedMotion)}
+              className="min-w-0"
             >
-              <div className="p-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{m.nombre}</p>
+              <Panel titulo={m.nombre} acciones={<ChipPct pct={m.pct} />}>
+                <div className="flex items-center justify-between gap-3">
                   <p className="text-xs text-muted-foreground">{m.rancho} · {m.frecuencia}</p>
-                </div>
-                <div className="text-right flex-shrink-0 space-y-1">
-                  <ChipPct pct={m.pct} />
-                  <p className="text-xs text-muted-foreground tabular-nums">
+                  <p className="text-xs text-muted-foreground tabular-nums flex-shrink-0">
                     <AnimatedNumber value={m.cubiertos} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />/{m.esperados}
                   </p>
                 </div>
-              </div>
-              {huecos.length > 0 && (
-                <div className="px-3 pb-3 border-t border-border pt-2" style={{ backgroundColor: 'var(--muted)' }}>
-                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
+                {huecos.length > 0 && (
+                  <p className="mt-2.5 rounded-lg px-3 py-2 text-xs" style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}>
                     Sin registro: {huecos.map(formatFechaCorta).join(', ')}
                   </p>
-                </div>
-              )}
-            </EntradaEscalonada>
+                )}
+              </Panel>
+            </motion.div>
           )
         })}
       </div>
@@ -1009,27 +910,24 @@ function TabCampo({ datos }: { datos: MetCampo }) {
   if (meses.length === 0 && productosTop.length === 0) return <Vacio />
 
   return (
-    <div className="space-y-6 px-4 pt-4 pb-8">
+    <div className="space-y-4 px-4 pt-4 pb-8">
       {/* Aplicaciones por mes */}
       {meses.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
-            APLICACIONES POR MES
-          </p>
+        <Panel titulo="Aplicaciones por mes">
           {meses.length <= 1 ? (
             <div className="grid grid-cols-2 gap-3">
-              <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
-                <TarjetaResumen
-                  label="Aplicaciones"
-                  valor={<AnimatedNumber value={porMes[meses[0]]?.aplicaciones ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
-                />
-              </EntradaEscalonada>
-              <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
-                <TarjetaResumen
-                  label="Hectáreas"
-                  valor={<AnimatedNumber value={porMes[meses[0]]?.ha ?? 0} format={n => n.toFixed(1)} reducedMotion={reducedMotion} />}
-                />
-              </EntradaEscalonada>
+              <TarjetaContador
+                indice={0}
+                etiqueta="Aplicaciones"
+                valor={porMes[meses[0]]?.aplicaciones ?? 0}
+                format={n => formatoNumero(Math.round(n))}
+              />
+              <TarjetaContador
+                indice={1}
+                etiqueta="Hectáreas"
+                valor={porMes[meses[0]]?.ha ?? 0}
+                format={n => n.toFixed(1)}
+              />
             </div>
           ) : (
             <GraficaBarrasMes
@@ -1044,21 +942,18 @@ function TabCampo({ datos }: { datos: MetCampo }) {
               }).join('; ')}
             />
           )}
-        </section>
+        </Panel>
       )}
 
       {/* Top productos */}
       {productosTop.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
-            TOP PRODUCTOS
-          </p>
+        <Panel titulo="Top productos">
           <div className="space-y-2">
             {productosTop.map((p, i) => {
               const maxP = productosTop[0]?.aplicaciones ?? 1
               const pct = (p.aplicaciones / maxP) * 100
               return (
-                <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="space-y-1">
+                <motion.div key={i} {...entrada(i, reducedMotion)} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="truncate" style={{ color: 'var(--foreground)' }}>{p.producto}</span>
                     <span className="tabular-nums flex-shrink-0 ml-2 text-xs font-semibold" style={{ color: 'var(--primary)' }}>
@@ -1074,26 +969,22 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                       transition={reducedMotion ? { duration: 0 } : { ...SPRING_SUAVE_SIN_REBOTE, delay: Math.min(i * 0.04, 0.4) + 0.1 }}
                     />
                   </div>
-                </EntradaEscalonada>
+                </motion.div>
               )
             })}
           </div>
-        </section>
+        </Panel>
       )}
 
       {/* Cosechas en intervalo de seguridad */}
       {cosechasEnIntervalo.length > 0 && (
-        <section>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--agro-danger-text)' }}>
-            COSECHAS DENTRO DEL INTERVALO DE SEGURIDAD
-          </p>
-          <div className="space-y-2">
+        <Panel titulo="Cosechas dentro del intervalo de seguridad">
+          <div className="grid gap-3 lg:grid-cols-2">
             {cosechasEnIntervalo.map((c, i) => (
-              <EntradaEscalonada
+              <motion.div
                 key={i}
-                index={i}
-                reducedMotion={reducedMotion}
-                className="rounded-xl border p-3 space-y-1"
+                {...entrada(i, reducedMotion)}
+                className="rounded-lg border p-3 space-y-1"
                 style={{ borderColor: 'var(--agro-danger-fill)', backgroundColor: 'var(--agro-danger-fill)' }}
               >
                 <div className="flex items-center justify-between">
@@ -1108,10 +999,10 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                 <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
                   Permitida desde: {c.cosecha_permitida_desde}
                 </p>
-              </EntradaEscalonada>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   )
@@ -1134,6 +1025,9 @@ interface FiltrosProps {
   pestanaActiva: string
 }
 
+const CLASE_CONTROL =
+  'w-full rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none'
+
 function Filtros({
   periodo, setPeriodo,
   desdePersonalizado, hastaPersonalizado,
@@ -1142,41 +1036,15 @@ function Filtros({
   ranchos, terminoSingular, esAdmin, pestanaActiva,
 }: FiltrosProps) {
   const mostrarRancho = esAdmin && pestanaActiva !== 'agenda'
-  const reducedMotion = useReducedMotion()
   return (
-    <div
-      className="sticky top-0 z-10 px-4 py-3 border-b border-border"
-      style={{ backgroundColor: 'var(--card)' }}
-    >
-      {/* Selector de periodo — fondo deslizante (layoutId + SPRING_SUAVE) */}
+    <div>
+      {/* Selector de periodo */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
-        {PERIODOS.map(p => {
-          const activo = periodo === p.key
-          return (
-            <button
-              key={p.key}
-              onClick={() => setPeriodo(p.key)}
-              className="relative isolate flex-shrink-0 text-xs px-3 py-1.5 rounded-full"
-              style={{
-                color: activo ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                fontWeight: activo ? 600 : 400,
-              }}
-            >
-              {activo && (
-                <motion.span
-                  layoutId="metricas-periodo-pill"
-                  className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
-                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                />
-              )}
-              {!activo && (
-                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
-              )}
-              <span className="relative">{p.label}</span>
-            </button>
-          )
-        })}
+        <FiltroPildoras<PeriodoKey>
+          options={PERIODOS.map(p => ({ value: p.key, label: p.label }))}
+          value={periodo}
+          onChange={setPeriodo}
+        />
       </div>
 
       {/* Fechas personalizadas — desplegable, cerrado = 0 real */}
@@ -1187,23 +1055,15 @@ function Filtros({
               type="date"
               value={desdePersonalizado}
               onChange={e => setDesdePersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'var(--input-background)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-              }}
+              aria-label="Desde"
+              className={`${CLASE_CONTROL} h-10 flex-1`}
             />
             <input
               type="date"
               value={hastaPersonalizado}
               onChange={e => setHastaPersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'var(--input-background)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-              }}
+              aria-label="Hasta"
+              className={`${CLASE_CONTROL} h-10 flex-1`}
             />
           </div>
         </div>
@@ -1214,12 +1074,8 @@ function Filtros({
         <select
           value={ranchoId}
           onChange={e => setRanchoId(e.target.value)}
-          className="w-full h-9 px-3 rounded-lg text-sm mt-3"
-          style={{
-            backgroundColor: 'var(--input-background)',
-            border: '1px solid var(--border)',
-            color: 'var(--foreground)',
-          }}
+          aria-label={terminoSingular}
+          className={`${CLASE_CONTROL} mt-3 h-10`}
         >
           <option value="">Todos los {terminoSingular.toLowerCase()}s</option>
           {ranchos.map(r => (
@@ -1289,6 +1145,7 @@ export function Metricas() {
   const [datosConst, setDatosConst] = useState<MetConstancia | null>(null)
   const [datosCampo, setDatosCampo] = useState<MetCampo | null>(null)
   const [cargando, setCargando] = useState(false)
+  const ent = useEntradaPantalla(!cargando)
 
   const resolverFechas = useCallback((): { desde: string; hasta: string } => {
     if (periodo === 'personalizado') {
@@ -1407,57 +1264,37 @@ export function Metricas() {
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <EncabezadoPantalla titulo="Métricas" fijo={false} />
 
-      {/* Filtros */}
-      <Filtros
-        periodo={periodo}
-        setPeriodo={p => { setPeriodo(p) }}
-        desdePersonalizado={desdePersonalizado}
-        hastaPersonalizado={hastaPersonalizado}
-        setDesdePersonalizado={setDesdePersonalizado}
-        setHastaPersonalizado={setHastaPersonalizado}
-        ranchoId={ranchoId}
-        setRanchoId={setRanchoId}
-        ranchos={ranchos}
-        terminoSingular={terminosSitio.singular}
-        esAdmin={esAdmin}
-        pestanaActiva={pestanaActiva}
-      />
+      <div className="space-y-3 px-4 pt-4 flex-shrink-0">
+        {/* Filtros */}
+        <motion.div {...ent(0)}>
+          <Filtros
+            periodo={periodo}
+            setPeriodo={p => { setPeriodo(p) }}
+            desdePersonalizado={desdePersonalizado}
+            hastaPersonalizado={hastaPersonalizado}
+            setDesdePersonalizado={setDesdePersonalizado}
+            setHastaPersonalizado={setHastaPersonalizado}
+            ranchoId={ranchoId}
+            setRanchoId={setRanchoId}
+            ranchos={ranchos}
+            terminoSingular={terminosSitio.singular}
+            esAdmin={esAdmin}
+            pestanaActiva={pestanaActiva}
+          />
+        </motion.div>
 
-      {/* Pestañas — fondo deslizante (layoutId + SPRING_SUAVE) */}
-      <div
-        className="flex gap-1 overflow-x-auto no-scrollbar px-4 py-2 border-b border-border flex-shrink-0"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
-        {pestanas.map(p => {
-          const activa = pestanaActiva === p.key
-          return (
-            <button
-              key={p.key}
-              onClick={() => cambiarPestana(p.key)}
-              className="relative isolate flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
-              style={{
-                color: activa ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                fontWeight: activa ? 600 : 400,
-              }}
-            >
-              {activa && (
-                <motion.span
-                  layoutId="metricas-pestana-pill"
-                  className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
-                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                />
-              )}
-              {!activa && (
-                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
-              )}
-              <span className="relative flex items-center gap-1.5">
-                {p.icon}
-                {p.label}
-              </span>
-            </button>
-          )
-        })}
+        {/* Pestañas */}
+        <motion.div {...ent(1)}>
+          <SelectorSegmentado<PestanaKey>
+            ariaLabel="Secciones de métricas"
+            value={pestanaActiva}
+            onChange={cambiarPestana}
+            options={pestanas.map(p => ({
+              value: p.key,
+              label: <span className="flex items-center gap-1.5">{p.icon}{p.label}</span>,
+            }))}
+          />
+        </motion.div>
       </div>
 
       {/* Contenido — entra desde el lado de la pestaña elegida */}

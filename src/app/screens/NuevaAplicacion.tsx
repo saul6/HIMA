@@ -28,7 +28,7 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { marcarCapturaEnCurso } from '@/lib/offline/actualizacionSegura'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -36,6 +36,9 @@ import { opInsert } from '@/lib/offline/construirOperaciones'
 import { leerSaldosInventarioCache, deltaPendienteInventario } from '@/lib/offline/saldosInventario'
 import type { Aplicacion } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { PanelPasos, PASOS } from '@/app/components/nueva-aplicacion/PanelPasos'
+import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -45,11 +48,30 @@ const r4 = (n: number) => parseFloat(n.toFixed(4));
 const PASOS_NOMBRE = ["Parcela y cultivo", "Productos", "Aplicación y agua", "Cierre"] as const
 const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT };
 
+// En escritorio el formulario del paso va en una sola tarjeta; en celular y tablet, sin envoltura.
+function ContenedorPaso({ esLg, titulo, paso, children, entrada }: { esLg: boolean; titulo: string; paso: number; children: ReactNode; entrada: ReturnType<ReturnType<typeof useEntradaPantalla>> }) {
+  // Misma estructura en ambos anchos (solo cambian clases y props): si el tipo de elemento cambiara
+  // al cruzar `lg`, React remontaría los pasos y se perdería el producto a medio capturar.
+  return (
+    <motion.div className="min-w-0" {...(esLg ? entrada : {})}>
+    <Panel
+      titulo={esLg ? titulo : undefined}
+      acciones={esLg ? <span className="text-xs text-muted-foreground">Paso {paso} de 4</span> : undefined}
+      className={esLg ? 'p-6' : 'rounded-none border-0 bg-transparent p-0'}
+    >
+      {children}
+    </Panel>
+    </motion.div>
+  )
+}
+
 export function NuevaAplicacion() {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
+  const esLg = useEsEscritorio();
+  const ent = useEntradaPantalla(true);
 
   // Dirección de la transición entre pasos — compara contra el paso anterior
   // para decidir si el contenido entra desde la derecha (avanzar) o la
@@ -194,6 +216,14 @@ export function NuevaAplicacion() {
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
+
+  const rutaRancho = ranchos.find((r) => r.id === formData.huerto)
+  const resumenPasos = [
+    { etiqueta: 'Rancho', valor: rutaRancho?.nombre ?? '—' },
+    { etiqueta: 'Cultivo', valor: formData.crop || '—' },
+    { etiqueta: 'Superficie', valor: formData.surface ? `${formData.surface} ha` : '—' },
+    { etiqueta: 'Productos', valor: String(formData.products.length) },
+  ]
 
   const nextStep = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
@@ -486,7 +516,7 @@ export function NuevaAplicacion() {
         titulo="Nueva Aplicación"
         alRegresar={() => navigate("/")}
         debajoCentrado
-        debajo={
+        debajo={esLg ? undefined :
         <div className="flex flex-col items-center gap-2">
           <div className="relative inline-flex items-center gap-2">
             {/* Línea de fondo */}
@@ -547,15 +577,19 @@ export function NuevaAplicacion() {
         </div>
       )}
 
-      {/* Pasos del formulario */}
-      <div className="p-4 overflow-hidden">
+      {/* Pasos del formulario: en escritorio, panel de pasos + resumen a la izquierda y el formulario en un Panel */}
+      <div className={currentStep <= 4 ? 'p-4 overflow-hidden lg:overflow-visible lg:grid lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6' : 'p-4 overflow-hidden'}>
+        {esLg && currentStep <= 4 && (
+          <PanelPasos pasoActual={currentStep} alIrAPaso={(n) => setCurrentStep(n)} resumen={resumenPasos} />
+        )}
+        <ContenedorPaso esLg={esLg && currentStep <= 4} titulo={PASOS[Math.min(currentStep, 4) - 1].nombre} paso={currentStep} entrada={ent(0)}>
         <AnimatePresence mode="wait" initial={false}>
           {currentStep === 1 && (
             <motion.div
               key={1}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step1ParcelaYCultivo
@@ -563,15 +597,16 @@ export function NuevaAplicacion() {
                 updateFormData={updateFormData}
                 onNext={nextStep}
                 esCampo={esCampo}
+                esLg={esLg}
               />
             </motion.div>
           )}
           {currentStep === 2 && (
             <motion.div
               key={2}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step2Productos
@@ -581,15 +616,16 @@ export function NuevaAplicacion() {
                 onBack={prevStep}
                 productosEnInventario={productosEnInventario}
                 inventarioAl={inventarioAl}
+                esLg={esLg}
               />
             </motion.div>
           )}
           {currentStep === 3 && (
             <motion.div
               key={3}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step3AplicacionYAgua
@@ -598,15 +634,16 @@ export function NuevaAplicacion() {
                 onNext={nextStep}
                 onBack={prevStep}
                 esCampo={esCampo}
+                esLg={esLg}
               />
             </motion.div>
           )}
           {currentStep === 4 && (
             <motion.div
               key={4}
-              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              initial={reducedMotion ? false : { opacity: 0, x: esLg ? 0 : direccion * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: esLg ? 0 : -direccion * 24 }}
               transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
             >
               <Step4CierreYObservaciones
@@ -615,10 +652,12 @@ export function NuevaAplicacion() {
                 onSave={handleSave}
                 onBack={prevStep}
                 saving={saving}
+                esLg={esLg}
               />
             </motion.div>
           )}
         </AnimatePresence>
+        </ContenedorPaso>
       </div>
 
       {currentStep === 5 && aplicacionGuardada?.pendiente && (

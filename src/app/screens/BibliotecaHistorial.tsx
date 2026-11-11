@@ -8,9 +8,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
-import { Portal } from '@/app/components/Portal'
+import { Progress } from '@/app/components/ui/progress'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT, useEntradaPantalla } from '@/lib/motion'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
@@ -21,7 +21,15 @@ import {
   mergePDFBlobs,
 } from '@/lib/pdf/generarBlobHistorial'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { fechaCorta, formatoPct, mesAnio } from '@/lib/formato'
+
+const CLASE_CONTROL =
+  'h-10 w-full min-w-0 rounded-lg border border-border-control bg-input-background px-3 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-60'
 
 // ── Metadatos de módulo ───────────────────────────────────────────────────────
 
@@ -964,6 +972,7 @@ export function BibliotecaHistorial() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(!loading)
   // true solo durante el render provocado por una búsqueda recién terminada
   // (ver cargar()) — decide si las filas entran escalonadas o solo con fade.
   const freshSearchRef = useRef(false)
@@ -1121,55 +1130,49 @@ export function BibliotecaHistorial() {
       <div className="p-4 space-y-4">
 
         {/* Barra de filtros */}
-        <div className="bg-card rounded-xl border border-border p-4">
+        <motion.div {...ent(0)} className="bg-card rounded-xl border border-border p-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:items-end">
-            <div className="min-w-0">
-              <label htmlFor="historial-desde" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                Desde
-              </label>
-              <input
-                id="historial-desde"
-                type="date"
-                value={inputDesde}
-                onChange={(e) => setInputDesde(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              />
-            </div>
-            <div className="min-w-0">
-              <label htmlFor="historial-hasta" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                Hasta
-              </label>
-              <input
-                id="historial-hasta"
-                type="date"
-                value={inputHasta}
-                onChange={(e) => setInputHasta(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              />
-            </div>
+            <Campo etiqueta="Desde" className="min-w-0 gap-1.5">
+              {({ id }) => (
+                <input
+                  id={id}
+                  type="date"
+                  value={inputDesde}
+                  onChange={(e) => setInputDesde(e.target.value)}
+                  className={`${CLASE_CONTROL} [&::-webkit-date-and-time-value]:text-left appearance-none`}
+                />
+              )}
+            </Campo>
+            <Campo etiqueta="Hasta" className="min-w-0 gap-1.5">
+              {({ id }) => (
+                <input
+                  id={id}
+                  type="date"
+                  value={inputHasta}
+                  onChange={(e) => setInputHasta(e.target.value)}
+                  className={`${CLASE_CONTROL} [&::-webkit-date-and-time-value]:text-left appearance-none`}
+                />
+              )}
+            </Campo>
 
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <label htmlFor="historial-sitio" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                {terminosSitio.singular}
-              </label>
-              <select
-                id="historial-sitio"
-                value={filtroRancho}
-                onChange={(e) => setFiltroRancho(e.target.value)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
-              >
-                <option value="todos">{terminosSitio.plural}</option>
-                {ranchos.map(([id, nombre]) => (
-                  <option key={id} value={id}>{nombre}</option>
-                ))}
-              </select>
-            </div>
+            <Campo etiqueta={terminosSitio.singular} className="col-span-2 md:col-span-1 min-w-0 gap-1.5">
+              {({ id }) => (
+                <select
+                  id={id}
+                  value={filtroRancho}
+                  onChange={(e) => setFiltroRancho(e.target.value)}
+                  className={CLASE_CONTROL}
+                >
+                  <option value="todos">{terminosSitio.plural}</option>
+                  {ranchos.map(([id, nombre]) => (
+                    <option key={id} value={id}>{nombre}</option>
+                  ))}
+                </select>
+              )}
+            </Campo>
 
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <span id="historial-modulos-label" className="text-caption block" style={{ color: 'var(--muted-foreground)' }}>
+            <div className="col-span-2 md:col-span-1 min-w-0 flex flex-col gap-1.5">
+              <span id="historial-modulos-label" className="text-xs font-semibold text-muted-foreground block">
                 Módulos
               </span>
               <button
@@ -1177,11 +1180,7 @@ export function BibliotecaHistorial() {
                 aria-labelledby="historial-modulos-label"
                 aria-haspopup="dialog"
                 onClick={() => setModulosSheetOpen(true)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{
-                  background: 'var(--input-background)',
-                  borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
-                }}
+                className={`${CLASE_CONTROL} ${todosSeleccionados ? '' : 'border-ring'}`}
               >
                 <span className="flex items-center justify-between gap-2 w-full">
                   <span className="truncate">
@@ -1191,7 +1190,7 @@ export function BibliotecaHistorial() {
                         ? 'Todos los módulos'
                         : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
                   </span>
-                  <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                  <ChevronDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
                 </span>
               </button>
             </div>
@@ -1206,7 +1205,7 @@ export function BibliotecaHistorial() {
               Buscando…
             </p>
           ) : null}
-        </div>
+        </motion.div>
 
         {/* Resumen de módulos filtrados — solo escritorio (ver móvil abajo) */}
         {!todosSeleccionados && (
@@ -1251,16 +1250,19 @@ export function BibliotecaHistorial() {
 
         {/* Exportar paquete PDF — fila propia, a todo lo ancho */}
         {filtrados.length > 0 && (
-          <button
+          <Boton
+            variante="secundario"
+            type="button"
             onClick={handleExportarPaquete}
-            disabled={generandoPaquete || !!descargandoPDF}
-            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled: focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
+            disabled={!!descargandoPDF}
+            cargando={generandoPaquete}
+            className="w-full h-auto min-h-11 py-2 border-primary text-primary"
           >
-            {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
-            <span className="text-center leading-snug">
+            <Package className="w-4 h-4 flex-shrink-0" />
+            <span className="text-center leading-snug whitespace-normal">
               Exportar paquete PDF (<ContadorRegistros value={filtrados.length} reducedMotion={!!reducedMotion} /> registros)
             </span>
-          </button>
+          </Boton>
         )}
 
         {/* Lista de registros — crossfade rápido entre estados (cargando,
@@ -1272,30 +1274,16 @@ export function BibliotecaHistorial() {
               key="cargando"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
-              {[0, 1, 2, 3, 4].map(i => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
-                  <div className="flex-1 min-w-0 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-10 rounded-full" style={{ backgroundColor: 'var(--muted)' }} />
-                      <div className="h-3 w-24 rounded" style={{ backgroundColor: 'var(--muted)' }} />
-                    </div>
-                    <div className="h-3.5 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                  </div>
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
-                </div>
-              ))}
+              <ListaSkeleton rejilla rows={6} onReintentar={cargar} />
             </motion.div>
           ) : error ? (
             <motion.div
               key="error"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-8 text-center text-sm"
-              style={{ color: 'var(--destructive)' }}
+              role="alert"
+              className="py-8 text-center text-sm text-agro-danger-text"
             >
               {error}
             </motion.div>
@@ -1304,49 +1292,34 @@ export function BibliotecaHistorial() {
               key="sin-modulos"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
-              <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Elige los módulos para ver los registros
-              </p>
+              <EstadoVacio icono={Filter} titulo="Elige los módulos para ver los registros" />
             </motion.div>
           ) : filtrados.length === 0 ? (
             <motion.div
               key="sin-resultados"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
-              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Sin registros en este periodo
-              </p>
-              <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
-                Prueba un rango de fechas más amplio
-              </p>
+              <EstadoVacio icono={FilterX} titulo="Sin registros en este periodo" ayuda="Prueba un rango de fechas más amplio" />
             </motion.div>
           ) : (
             <motion.div
               key="lista"
               exit={reducedMotion ? undefined : { opacity: 0 }}
               transition={{ duration: DUR.rapido }}
-              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
-              <AnimatePresence initial={false}>
+              <ListaTarjetas>
                 {filtrados.map((reg, index) => {
                   const escalonado = !reducedMotion && freshSearchRef.current
                   return (
                     <motion.div
                       key={reg.key}
-                      layout
+                      className="min-w-0"
                       initial={
                         reducedMotion ? false : escalonado ? { opacity: 0, y: 8 } : { opacity: 0 }
                       }
                       animate={escalonado ? { opacity: 1, y: 0 } : { opacity: 1 }}
-                      exit={reducedMotion ? undefined : { opacity: 0 }}
                       transition={
                         reducedMotion
                           ? { duration: 0 }
@@ -1354,86 +1327,75 @@ export function BibliotecaHistorial() {
                             ? { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 }
                             : { duration: DUR.rapido, ease: EASE_OUT }
                       }
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
-                      style={{ transitionDuration: 'var(--motion-fast)' }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className="px-2 py-0.5 rounded-full text-caption text-white"
-                            style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                      <TarjetaRegistro
+                        sinFirmas
+                        etiquetas={(
+                          <>
+                            <span
+                              className="px-2 py-0.5 rounded-full text-caption text-white"
+                              style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                            >
+                              {reg.modulo}
+                            </span>
+                            <span className="text-caption truncate text-muted-foreground">
+                              {MODULO_META[reg.modulo].label}
+                            </span>
+                          </>
+                        )}
+                        meta={[formatFecha(reg.fecha)]}
+                        titulo={reg.rancho_nombre}
+                        tituloTexto={reg.rancho_nombre}
+                        tituloClassName="break-words"
+                        contenido={(
+                          <p
+                            className="text-caption mt-0.5 line-clamp-2 text-muted-foreground"
+                            style={{ overflowWrap: 'anywhere' }}
+                            title={reg.resumen}
                           >
-                            {reg.modulo}
-                          </span>
-                          <span className="text-caption truncate" style={{ color: 'var(--muted-foreground)' }}>
-                            {MODULO_META[reg.modulo].label}
-                          </span>
-                        </div>
-                        <p
-                          className="text-body truncate font-semibold"
-                          style={{ overflowWrap: 'anywhere' }}
-                          title={reg.rancho_nombre}
-                        >
-                          {reg.rancho_nombre}
-                        </p>
-                        <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
-                          {formatFecha(reg.fecha)}
-                        </p>
-                        <p
-                          className="text-caption mt-0.5 line-clamp-2"
-                          style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
-                          title={reg.resumen}
-                        >
-                          {reg.resumen}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDescargarPDF(reg)}
-                        disabled={descargandoPDF === reg.key || generandoPaquete}
-                        className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
-                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                        title="Descargar PDF"
-                      >
-                        {descargandoPDF === reg.key
-                          ? <Loader2 className="w-4 h-4 animate-spin" />
-                          : <FileText className="w-4 h-4" />
-                        }
-                      </button>
+                            {reg.resumen}
+                          </p>
+                        )}
+                        acciones={(
+                          <button
+                            type="button"
+                            onClick={() => handleDescargarPDF(reg)}
+                            disabled={descargandoPDF === reg.key || generandoPaquete}
+                            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-primary text-primary disabled:opacity-40"
+                            title="Descargar PDF"
+                            aria-label={`Descargar PDF de ${reg.modulo} ${reg.rancho_nombre}`}
+                            aria-busy={descargandoPDF === reg.key || undefined}
+                          >
+                            {descargandoPDF === reg.key
+                              ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+                              : <FileText className="w-4 h-4" />
+                            }
+                          </button>
+                        )}
+                      />
                     </motion.div>
                   )
                 })}
-              </AnimatePresence>
+              </ListaTarjetas>
             </motion.div>
           )}
         </AnimatePresence>
 
       </div>
 
-      {/* Overlay de progreso */}
-      {generandoPaquete && (
-        <Portal>
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)' }}>
-          <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
-            <div>
-              <p className="text-seccion font-semibold">Generando paquete PDF</p>
-              <p className="text-small mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                {progresoActual} de {progresoTotal} registros
-              </p>
-            </div>
-            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
-              <div
-                className="h-2 w-full rounded-full transition-transform duration-300 ease-[var(--ease-out)]"
-                style={{
-                  background: 'var(--primary)',
-                  transform: `translateX(-${progresoTotal > 0 ? 100 - (progresoActual / progresoTotal) * 100 : 100}%)`,
-                }}
-              />
-            </div>
+      {/* Ventana de progreso: no hay cancelación, así que Escape y el fondo no la cierran */}
+      <BottomSheet open={generandoPaquete} onClose={() => {}}>
+        <div role="status" aria-live="polite" className="p-6 text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto text-primary" aria-hidden="true" />
+          <div>
+            <p className="text-seccion font-semibold">Generando paquete PDF</p>
+            <p className="text-small mt-1 text-muted-foreground">
+              {progresoActual} de {progresoTotal} registros
+            </p>
           </div>
+          <Progress value={progresoTotal > 0 ? (progresoActual / progresoTotal) * 100 : 0} />
         </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* Ventana de módulos */}
       <BottomSheet open={modulosSheetOpen} onClose={cerrarModulosSheet} height="85%">
@@ -1447,7 +1409,7 @@ export function BibliotecaHistorial() {
               animate={{ scale: 1 }}
               transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
               className="px-2 py-0.5 rounded-full text-caption"
-              style={{ backgroundColor: 'rgba(42, 173, 149, 0.16)', color: 'var(--primary)', fontWeight: 700 }}
+              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 700 }}
             >
               {filtroModulos.size}
             </motion.span>

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
-import { FormField } from "../FormField";
+import { CampoTexto, SeccionPaso, Fila, PiePaso } from "./controles";
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 
 interface Props {
   formData: any;
@@ -11,9 +12,13 @@ interface Props {
   onSave: () => void;
   onBack: () => void;
   saving?: boolean;
+  /** Escritorio (≥ lg): acomodo en columnas y piezas estándar. */
+  esLg?: boolean;
 }
 
-export function Step4CierreYObservaciones({ formData, updateFormData, onSave, onBack, saving = false }: Props) {
+const OPCIONES_SI_NO = [{ value: "si", label: "Sí" }, { value: "no", label: "No" }]
+
+export function Step4CierreYObservaciones({ formData, updateFormData, onSave, onBack, saving = false, esLg = false }: Props) {
   const [showSummary, setShowSummary] = useState(false);
 
   // Check if any PPE is missing
@@ -21,7 +26,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
   const hasPPEWarning = missingPPE.length > 0;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={esLg ? "flex flex-col gap-5" : "flex flex-col gap-4"}>
       {/* PPE Warning */}
       {hasPPEWarning && (
         <div className="bg-agro-danger-fill border border-agro-danger-text/20 rounded-xl p-4 flex items-start gap-3">
@@ -37,133 +42,120 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         </div>
       )}
 
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          CALDOS SOBRANTES
-        </h3>
-      </div>
+      <SeccionPaso esLg={esLg} primera={!hasPPEWarning} titulo="Caldos sobrantes" movil="CALDOS SOBRANTES" />
 
       {/* Leftover Toggle */}
       <div>
         <label className="text-xs text-muted-foreground mb-2 block font-semibold">
           ¿Hubo caldos sobrantes?
         </label>
-        <div className="flex gap-3">
-          <button
-            onClick={() => updateFormData({ leftover: true })}
-            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-              formData.leftover
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border text-foreground"
-            }`}
-            style={{ fontWeight: 600 }}
-          >
-            Sí
-          </button>
-          <button
-            onClick={() => updateFormData({ leftover: false })}
-            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-              !formData.leftover
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border text-foreground"
-            }`}
-            style={{ fontWeight: 600 }}
-          >
-            No
-          </button>
-        </div>
+        {esLg ? (
+          <SelectorSegmentado
+            ariaLabel="¿Hubo caldos sobrantes?"
+            value={formData.leftover ? "si" : "no"}
+            onChange={(v) => updateFormData({ leftover: v === "si" })}
+            options={OPCIONES_SI_NO}
+          />
+        ) : (
+          <div className="flex gap-3">
+            <button
+              onClick={() => updateFormData({ leftover: true })}
+              className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                formData.leftover
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              Sí
+            </button>
+            <button
+              onClick={() => updateFormData({ leftover: false })}
+              className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                !formData.leftover
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              No
+            </button>
+          </div>
+        )}
       </div>
 
       {formData.leftover && (
         <>
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="Cantidad (L)"
-              type="number"
-              value={formData.leftoverQuantity}
-              onChange={(value) => updateFormData({ leftoverQuantity: value })}
-            />
-            <FormField
-              label="Agua de lavado (L)"
-              type="number"
-              value={formData.washWater}
-              onChange={(value) => updateFormData({ washWater: value })}
-            />
-          </div>
+          <Fila esLg={esLg} movil2>
+            <CampoTexto esLg={esLg} label="Cantidad (L)" type="number" value={formData.leftoverQuantity} onChange={(value) => updateFormData({ leftoverQuantity: value })} />
+            <CampoTexto esLg={esLg} label="Agua de lavado (L)" type="number" value={formData.washWater} onChange={(value) => updateFormData({ washWater: value })} />
+          </Fila>
 
           <div>
             <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               ¿Se eliminó en área designada?
             </label>
-            <div className="flex gap-3">
-              <button
-                onClick={() => updateFormData({ eliminatedDesignatedArea: true })}
-                className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-                  formData.eliminatedDesignatedArea
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border text-foreground"
-                }`}
-                style={{ fontWeight: 600 }}
-              >
-                Sí
-              </button>
-              <button
-                onClick={() => updateFormData({ eliminatedDesignatedArea: false })}
-                className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
-                  !formData.eliminatedDesignatedArea
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border text-foreground"
-                }`}
-                style={{ fontWeight: 600 }}
-              >
-                No
-              </button>
-            </div>
+            {esLg ? (
+              <SelectorSegmentado
+                ariaLabel="¿Se eliminó en área designada?"
+                value={formData.eliminatedDesignatedArea ? "si" : "no"}
+                onChange={(v) => updateFormData({ eliminatedDesignatedArea: v === "si" })}
+                options={OPCIONES_SI_NO}
+              />
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => updateFormData({ eliminatedDesignatedArea: true })}
+                  className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                    formData.eliminatedDesignatedArea
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card border border-border text-foreground"
+                  }`}
+                  style={{ fontWeight: 600 }}
+                >
+                  Sí
+                </button>
+                <button
+                  onClick={() => updateFormData({ eliminatedDesignatedArea: false })}
+                  className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
+                    !formData.eliminatedDesignatedArea
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card border border-border text-foreground"
+                  }`}
+                  style={{ fontWeight: 600 }}
+                >
+                  No
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
 
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          PERSONAL Y RESPONSABLES
-        </h3>
-      </div>
+      <SeccionPaso esLg={esLg} titulo="Personal y responsables" movil="PERSONAL Y RESPONSABLES" />
 
-      <FormField maxLength={limiteTexto('aplicaciones', 'aplicadores')}
+      <CampoTexto
+        esLg={esLg}
+        maxLength={limiteTexto('aplicaciones', 'aplicadores')}
         label="Aplicador(es)"
         value={formData.applicators}
         onChange={(value) => updateFormData({ applicators: value })}
         placeholder="Nombres separados por comas"
       />
 
-      <FormField
-        label="Asesor técnico"
-        value={formData.technicalAdvisor}
-        onChange={(value) => updateFormData({ technicalAdvisor: value })}
-        disabled
-      />
+      <Fila esLg={esLg}>
+        <CampoTexto esLg={esLg} label="Asesor técnico" value={formData.technicalAdvisor} onChange={(value) => updateFormData({ technicalAdvisor: value })} disabled />
+        <CampoTexto esLg={esLg} label="Responsable de inocuidad" value={formData.inocuidadResponsible} onChange={(value) => updateFormData({ inocuidadResponsible: value })} disabled />
+      </Fila>
 
-      <FormField
-        label="Responsable de inocuidad"
-        value={formData.inocuidadResponsible}
-        onChange={(value) => updateFormData({ inocuidadResponsible: value })}
-        disabled
-      />
-
-      {/* Section Header */}
-      <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text font-semibold">
-          OBSERVACIONES
-        </h3>
-      </div>
+      <SeccionPaso esLg={esLg} titulo="Observaciones" movil="OBSERVACIONES" />
 
       <div className="relative">
         <TextareaContador limite={limiteTexto('aplicaciones', 'observaciones')}
           value={formData.observations}
           onChange={(e) => updateFormData({ observations: e.target.value })}
           placeholder="Observaciones adicionales..."
+          aria-label="Observaciones"
           className="w-full min-h-[100px] px-4 py-3 rounded-lg border border-border-control bg-input-background text-foreground placeholder:text-muted-foreground
             focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
@@ -200,21 +192,25 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={onBack}
-          className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
-        >
-          Atrás
-        </button>
-        <Boton
-          onClick={onSave}
-          disabled={saving}
-          className="flex-1 h-14 rounded-3xl"
-        >
-          {saving ? "Guardando..." : "Guardar y generar PDF"}
-        </Boton>
-      </div>
+      {esLg ? (
+        <PiePaso onBack={onBack} onNext={onSave} deshabilitado={saving} textoNext={saving ? "Guardando..." : "Guardar y generar PDF"} />
+      ) : (
+        <div className="flex gap-3 pt-4">
+          <button
+            onClick={onBack}
+            className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
+          >
+            Atrás
+          </button>
+          <Boton
+            onClick={onSave}
+            disabled={saving}
+            className="flex-1 h-14 rounded-3xl"
+          >
+            {saving ? "Guardando..." : "Guardar y generar PDF"}
+          </Boton>
+        </div>
+      )}
     </div>
   );
 }
