@@ -44,7 +44,10 @@ export interface M86Tarima {
   id: string; numero: string; clasificacion: 'ORG' | 'CONV'; estado: 'CARGADA' | 'RETIRADA'
   confirmada_en: string; retirada_en: string | null; retiro_motivo: string | null; lineas: M86Linea[]
   cotejo_retencion: boolean; papeleta_id: string | null; papeleta_codigo?: string | null
+  tarima_id?: string | null; origen: { codigo: string; codigo_productor: string; cajas: number }[]
 }
+/** Tarima registrada (M87) disponible o reservada para este manifiesto. */
+export interface M86TarimaReg { id: string; numero: number; codigo: string; presentacion: string; clasificacion: 'ORG' | 'CONV'; codigo_productor: string; estado: string; manifiesto_id: string | null; cajas: number }
 export interface M86Muestra { id: string; tarima_numero: string; superior: number; medio: number; inferior: number; unidad: 'C' | 'F'; medida_en: string; capturo?: string }
 export interface M86SelloEvidencia {
   id: string; sello_folio: string; unidad_referencia: string; informa: string; soporte: string; fecha_informada: string | null
@@ -61,7 +64,7 @@ const normM = (m: any): M86Manifiesto => ({
 export async function cargarDetalleM86(id: string): Promise<M86Detalle> {
   const [m, t, mu, ev] = await Promise.all([
     tbl('m86_manifiestos').select('*').eq('id', id).single(),
-    tbl('m86_tarimas').select('*, m86_tarima_lineas(*), m84_papeletas(codigo)').eq('manifiesto_id', id).order('confirmada_en'),
+    tbl('m86_tarimas').select('*, m86_tarima_lineas(*), m84_papeletas(codigo), m86_tarima_origen(codigo, codigo_productor, cajas)').eq('manifiesto_id', id).order('confirmada_en'),
     tbl('m86_muestras').select('*').eq('manifiesto_id', id).order('medida_en'),
     tbl('m86_sello_evidencias').select('*').eq('manifiesto_id', id).order('recibido_en'),
   ])
@@ -73,7 +76,7 @@ export async function cargarDetalleM86(id: string): Promise<M86Detalle> {
   return {
     m: normM(m.data),
     tarimas: (t.data ?? []).map((x: any) => ({
-      ...x, papeleta_codigo: x.m84_papeletas?.codigo ?? null,
+      ...x, papeleta_codigo: x.m84_papeletas?.codigo ?? null, origen: x.m86_tarima_origen ?? [],
       lineas: ((x.m86_tarima_lineas ?? []) as M86Linea[]).slice().sort((a, b) => a.orden - b.orden),
     })),
     muestras: (mu.data ?? []).map((x: any) => ({ ...x, superior: Number(x.superior), medio: Number(x.medio), inferior: Number(x.inferior), capturo: nombres[x.creado_por] ?? '' })),
@@ -121,6 +124,20 @@ export async function cargarPapeletasM86(orgId: string): Promise<M86PapeletaRef[
   const desde = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
   const { data } = await tbl('m84_papeletas').select('id, codigo, embalaje, cajas, estado, fecha, empresa').eq('org_id', orgId).gte('fecha', desde).order('fecha', { ascending: false })
   return data ?? []
+}
+
+export async function cargarTarimasRegM86(rancho: string, empresa: string, manifiesto: string): Promise<M86TarimaReg[]> {
+  const { data, error } = await tbl('m87_tarimas').select('id, numero, codigo, presentacion, clasificacion, codigo_productor, estado, manifiesto_id, m87_aportaciones(cajas, vigente)')
+    .eq('rancho_id', rancho).eq('empresa', empresa).in('estado', ['ARMADA', 'EN_CONSERVADOR', 'RESERVADA']).order('numero')
+  if (error) throw error
+  return (data ?? [])
+    .filter((x: any) => x.estado !== 'RESERVADA' || x.manifiesto_id === manifiesto)
+    .map((x: any) => ({ ...x, cajas: (x.m87_aportaciones ?? []).filter((a: any) => a.vigente).reduce((a: number, b: any) => a + b.cajas, 0) }))
+}
+
+/** Productores de una línea cargada desde tarima registrada (vacío si fue captura manual). */
+export function productoresDe(t: M86Tarima, codigo: string): string {
+  return Array.from(new Set((t.origen ?? []).filter(o => o.codigo === codigo).map(o => o.codigo_productor))).join(', ')
 }
 
 export async function crearManifiestoM86(rancho: string, datos: Record<string, string>): Promise<string> {

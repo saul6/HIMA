@@ -12,9 +12,11 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { fechaCorta } from '@/lib/formato'
+import { hoyMX } from '@/lib/fecha'
 import {
   useM87Tarimas, agrupar, repartirCompletas, armarTarimas, anularTarima, editarNumeroTarima, corregirRecepcion, mensajeErrorM87,
-  type M87Grupo,
+  ingresarConservador, cerrarCiclo, cargarCuadre,
+  type M87Grupo, type M87Tarima, type M87CuadreFila,
 } from '@/hooks/useM87Tarimas'
 
 const nuevaClave = () => (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now().toString(16).padStart(8, '0').slice(-8)}-0000-4000-8000-${Math.random().toString(16).slice(2, 14).padEnd(12, '0')}`)
@@ -136,6 +138,113 @@ function GrupoCard({ g, ranchoId, puedeCorregir, onListo }: { g: M87Grupo; ranch
   )
 }
 
+function CierreCiclo({ ranchoId, numeroCiclo, tarimas, onListo }: { ranchoId: string; numeroCiclo: number; tarimas: M87Tarima[]; onListo: () => Promise<void> }) {
+  const [abierto, setAbierto] = useState(false)
+  const [confirmo, setConfirmo] = useState(false)   // sin preselección: decisión explícita
+  const [disp, setDisp] = useState<Record<string, { accion: 'TRASPASAR' | 'DISPONER'; motivo: string }>>({})
+  const [just, setJust] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const clave = useRef(nuevaClave())
+  const quedan = tarimas.filter(t => t.estado === 'ARMADA' || t.estado === 'EN_CONSERVADOR')
+  const bloquean = tarimas.filter(t => t.estado === 'RESERVADA' || t.estado === 'EN_PREFRIO')
+  const faltan = quedan.filter(t => !disp[t.id] || (disp[t.id].accion === 'DISPONER' && disp[t.id].motivo.trim().length < 3))
+
+  async function cerrar() {
+    if (!confirmo) { toast.error('Marca "Finalizar también el ciclo; no se esperan más tráileres"'); return }
+    if (faltan.length) { toast.error(`Falta decidir qué pasa con la tarima ${faltan[0].numero}`); return }
+    setGuardando(true)
+    try {
+      const r = await cerrarCiclo({ rancho: ranchoId, key: clave.current, confirmoFin: true,
+        disposiciones: quedan.map(t => ({ tarima_id: t.id, accion: disp[t.id].accion, motivo: disp[t.id].motivo || undefined })),
+        justificacion: just.trim() || null })
+      toast.success(`Ciclo ${r.ciclo_cerrado} cerrado${r.traspasadas ? ` · ${r.traspasadas} tarima(s) pasan al siguiente ciclo con número nuevo` : ''}`)
+      clave.current = nuevaClave(); setAbierto(false); setConfirmo(false); setDisp({}); setJust('')
+      await onListo()
+    } catch (e) { avisar(e); if (!/fetch|network/i.test(String((e as any)?.message))) clave.current = nuevaClave() } finally { setGuardando(false) }
+  }
+
+  if (!abierto) return <Boton type="button" variante="secundario" className="w-full" onClick={() => setAbierto(true)}>Cerrar ciclo {numeroCiclo}</Boton>
+  return (
+    <div className="rounded-[0.625rem] border border-border bg-card p-3 space-y-3">
+      <p className="text-sm font-semibold">Cerrar ciclo {numeroCiclo}</p>
+      {bloquean.length > 0 && <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>No se puede cerrar: {bloquean.map(t => `N.${t.numero} (${ESTADO_TXT[t.estado].toLowerCase()})`).join(', ')}. Termina el prefrío o libera la reserva.</p>}
+      {quedan.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">Tarimas sin cargar: decide una por una.</p>
+          {quedan.map(t => {
+            const d = disp[t.id]
+            return (
+              <div key={t.id} className="space-y-1">
+                <p className="text-xs"><b>N.{t.numero}</b> · #{t.codigo} · {t.cajas} cajas · {ESTADO_TXT[t.estado]}</p>
+                <div className="flex gap-3 text-xs">
+                  <label className="flex items-center gap-1"><input type="radio" name={`d-${t.id}`} checked={d?.accion === 'TRASPASAR'} onChange={() => setDisp(x => ({ ...x, [t.id]: { accion: 'TRASPASAR', motivo: '' } }))} />Pasar al siguiente ciclo</label>
+                  <label className="flex items-center gap-1"><input type="radio" name={`d-${t.id}`} checked={d?.accion === 'DISPONER'} onChange={() => setDisp(x => ({ ...x, [t.id]: { accion: 'DISPONER', motivo: x[t.id]?.motivo ?? '' } }))} />Disponer</label>
+                </div>
+                {d?.accion === 'DISPONER' && <input className="w-full h-9 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-xs" placeholder="Motivo (merma, destrucción, devolución...)" value={d.motivo} onChange={e => setDisp(x => ({ ...x, [t.id]: { accion: 'DISPONER', motivo: e.target.value } }))} />}
+              </div>
+            )
+          })}
+        </div>
+      )}
+      <div className="space-y-1">
+        <label className="text-xs text-muted-foreground font-semibold">Cajas recibidas sin armar (si las hay): cómo se resuelven</label>
+        <textarea className="w-full rounded-[0.625rem] border border-border-control bg-input-background p-2 text-xs" rows={2} value={just} onChange={e => setJust(e.target.value)} />
+      </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={confirmo} onChange={e => setConfirmo(e.target.checked)} />
+        <span>Finalizar también el ciclo; no se esperan más tráileres</span>
+      </label>
+      <div className="flex gap-2">
+        <Boton type="button" variante="secundario" className="flex-1" onClick={() => setAbierto(false)} disabled={guardando}>Cancelar</Boton>
+        <Boton type="button" className="flex-1" onClick={cerrar} cargando={guardando} disabled={!confirmo || bloquean.length > 0}>Cerrar ciclo</Boton>
+      </div>
+    </div>
+  )
+}
+
+function Cuadre({ ranchoId }: { ranchoId: string }) {
+  const [desde, setDesde] = useState(hoyMX())
+  const [hasta, setHasta] = useState(hoyMX())
+  const [filas, setFilas] = useState<M87CuadreFila[] | null>(null)
+  const [cargando, setCargando] = useState(false)
+  async function ver() {
+    setCargando(true)
+    try { setFilas(await cargarCuadre(ranchoId, desde, hasta)) } catch (e) { avisar(e) } finally { setCargando(false) }
+  }
+  const tot = (k: keyof M87CuadreFila) => (filas ?? []).reduce((a, f) => a + Number(f[k] ?? 0), 0)
+  const cols: [keyof M87CuadreFila, string][] = [['recibidas', 'Recib.'], ['sin_armar', 'Sin armar'], ['en_tarimas_no_cargadas', 'En tarimas'], ['cargadas', 'Cargadas'], ['dispuestas', 'Dispuestas'], ['prefrio_legado', 'Prefrío cajas'], ['retenidas', 'Retenidas']]
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2 items-end">
+        <div className="flex-1"><label className="text-xs text-muted-foreground">Desde</label><input type="date" className="w-full h-9 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm" value={desde} onChange={e => setDesde(e.target.value)} /></div>
+        <div className="flex-1"><label className="text-xs text-muted-foreground">Hasta</label><input type="date" className="w-full h-9 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm" value={hasta} onChange={e => setHasta(e.target.value)} /></div>
+        <Boton type="button" tamano="sm" onClick={ver} cargando={cargando}>Ver</Boton>
+      </div>
+      {filas && (filas.length === 0 ? <p className="text-xs text-muted-foreground">Sin recepción aceptada en el periodo.</p> : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead><tr className="text-muted-foreground"><th className="text-left py-1">Ítem</th>{cols.map(([, t]) => <th key={t} className="text-right px-1">{t}</th>)}<th className="text-right px-1">Dif.</th></tr></thead>
+            <tbody>
+              {filas.map(f => {
+                const dif = f.recibidas - (f.sin_armar + f.en_tarimas_no_cargadas + f.cargadas + f.dispuestas + f.prefrio_legado + f.retenidas)
+                return (
+                  <tr key={f.codigo} className="border-t border-border">
+                    <td className="py-1">#{f.codigo} {f.presentacion ?? ''} · {f.clasificacion}</td>
+                    {cols.map(([k]) => <td key={k} className="text-right px-1">{f[k] as number}</td>)}
+                    <td className="text-right px-1" style={dif !== 0 ? { color: 'var(--agro-danger-text)' } : undefined}>{dif}</td>
+                  </tr>
+                )
+              })}
+              <tr className="border-t border-border font-semibold"><td className="py-1">Total</td>{cols.map(([k]) => <td key={k} className="text-right px-1">{tot(k)}</td>)}<td /></tr>
+            </tbody>
+          </table>
+          <p className="text-xs text-muted-foreground mt-1">Cada caja cae en una sola categoría. Dif. distinta de 0 indica algo por revisar.</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function TarimasConsolidacion() {
   const { profile } = useAuthContext()
   const puedeCorregir = ['admin_org', 'asesor_tecnico', 'super_admin'].includes(profile?.rol ?? '')
@@ -145,6 +254,13 @@ export function TarimasConsolidacion() {
   const { saldos, ciclo, tarimas, loading, error, refetch } = useM87Tarimas(ranchoId)
   const grupos = useMemo(() => agrupar(saldos), [saldos])
   const activas = tarimas.filter(t => t.estado !== 'ANULADA')
+  const [selCons, setSelCons] = useState<string[]>([])
+  const [ingresando, setIngresando] = useState(false)
+  async function aConservador() {
+    setIngresando(true)
+    try { const n = await ingresarConservador(selCons); toast.success(`${n} tarima(s) ingresaron al conservador`); setSelCons([]); await refetch() }
+    catch (e) { avisar(e) } finally { setIngresando(false) }
+  }
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
@@ -171,6 +287,9 @@ export function TarimasConsolidacion() {
             <ul className="space-y-1">
               {tarimas.map(t => (
                 <li key={t.id} className={`rounded-[0.625rem] border border-border bg-card px-3 py-2 flex items-center gap-3 text-sm ${t.estado === 'ANULADA' ? 'opacity-50' : ''}`}>
+                  {t.estado === 'ARMADA'
+                    ? <input type="checkbox" aria-label={`Elegir tarima ${t.numero}`} checked={selCons.includes(t.id)} onChange={() => setSelCons(x => x.includes(t.id) ? x.filter(y => y !== t.id) : [...x, t.id])} />
+                    : <span className="w-[13px]" />}
                   <b className="w-12 text-lg">{t.numero}</b>
                   <div className="flex-1 min-w-0">
                     <p className="truncate">#{t.codigo} {t.presentacion} · {t.clasificacion} · <b>{t.cajas}</b> cajas</p>
@@ -196,7 +315,25 @@ export function TarimasConsolidacion() {
             </ul>
           )}
           {activas.length > 0 && <p className="text-xs text-muted-foreground">{activas.length} tarima(s) · {activas.reduce((a, t) => a + t.cajas, 0)} cajas en el ciclo.</p>}
+          {selCons.length > 0 && (
+            <Boton type="button" className="w-full" onClick={aConservador} cargando={ingresando}>Ingresar {selCons.length} al conservador (ya preenfriadas)</Boton>
+          )}
+          <p className="text-xs text-muted-foreground">Las que van a prefrío se eligen en Prefrío; al salir pasan solas al conservador.</p>
         </section>
+
+        {ciclo && (
+          <section className="space-y-2">
+            <TituloSeccion>Cierre del ciclo</TituloSeccion>
+            <CierreCiclo ranchoId={ranchoId} numeroCiclo={ciclo.numero_ciclo} tarimas={tarimas} onListo={refetch} />
+          </section>
+        )}
+
+        {ranchoId && (
+          <section className="space-y-2">
+            <TituloSeccion>Cuadre de jornada</TituloSeccion>
+            <Cuadre ranchoId={ranchoId} />
+          </section>
+        )}
       </div>
     </div>
   )

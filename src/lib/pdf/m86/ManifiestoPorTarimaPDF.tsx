@@ -48,7 +48,8 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
     { texto: 'Cotejo de retención', ancho: 75, align: 'center' },
   ]
   const cotejo = (t: M86Detalle['tarimas'][number]) => t.papeleta_id ? `PRO-07 liberada${t.papeleta_codigo ? ` #${t.papeleta_codigo}` : ''}` : t.cotejo_retencion ? 'Manual' : ''
-  const filasTarimas: CeldaDato[][] = cargadas.flatMap(t => t.lineas.map(l => [t.numero, t.clasificacion, l.fruta ?? '', `${l.presentacion} (#${l.codigo})`, String(l.cajas), cotejo(t)]))
+  const prodDe = (t: any, codigo: string) => { const p = Array.from(new Set(((t.origen ?? []) as any[]).filter(o => o.codigo === codigo).map(o => o.codigo_productor))).join(', '); return p ? ` · Prod. ${p}` : '' }
+  const filasTarimas: CeldaDato[][] = cargadas.flatMap(t => t.lineas.map(l => [t.numero, t.clasificacion, l.fruta ?? '', `${l.presentacion} (#${l.codigo})${prodDe(t, l.codigo)}`, String(l.cajas), cotejo(t)]))
 
   const siNo = (v: boolean | null, conforme: boolean): [CeldaDato, CeldaDato] =>
     v === null ? ['', ''] : v ? [v === conforme ? X : XNeg, ''] : ['', v === conforme ? X : XNeg]
