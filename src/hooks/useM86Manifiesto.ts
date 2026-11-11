@@ -1,0 +1,125 @@
+// M86 · Manifiesto de embarque por tarima (formato PRO-01). Escritura solo por RPC (m86_crear / m86_accion).
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/context/AuthContext'
+
+const tbl = (name: string) => (supabase as any).from(name)
+const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc(fn, args)
+
+export type EstadoManifiesto = 'BORRADOR' | 'LLEGADA_INSPECCIONADA' | 'EN_CARGA' | 'CARGA_COMPLETA' | 'PENDIENTE_CONFORMIDADES' | 'CERRADO' | 'SUSPENDIDO'
+
+export interface M86Manifiesto {
+  id: string
+  rancho_id: string
+  fecha: string
+  folio: string | null
+  empresa: string
+  transportista: string | null
+  chofer: string | null
+  tractor_placas: string | null
+  tractor_economico: string | null
+  caja_pies: string | null
+  caja_economico: string | null
+  estado: EstadoManifiesto
+  temp_unidad: 'C' | 'F'
+  llegada_en: string | null; llegada_temp: number | null
+  carga_en: string | null; carga_temp: number | null
+  salida_en: string | null; salida_temp: number | null
+  it_buen_estado: boolean | null; it_limpio: boolean | null; it_plagas: boolean | null
+  itar_remontado: boolean | null; itar_flejado: boolean | null; itar_limpieza: boolean | null; itar_condicion: boolean | null; itar_distribucion: boolean | null
+  termografo_folio: string | null
+  sello_estado: 'COLOCADO' | 'PENDIENTE_CONSOLIDADO' | null
+  sello_folio: string | null
+  observaciones: string | null
+  conf_emergent_nombre: string | null; conf_emergent_en: string | null
+  conf_cliente_nombre: string | null; conf_cliente_en: string | null
+  conf_chofer_nombre: string | null; conf_chofer_en: string | null
+  suspendido_motivo: string | null
+}
+
+export interface M86Linea { id: string; codigo: string; fruta: string | null; presentacion: string; clasificacion: string; cajas: number; orden: number }
+export interface M86Tarima {
+  id: string; numero: string; clasificacion: 'ORG' | 'CONV'; estado: 'CARGADA' | 'RETIRADA'
+  confirmada_en: string; retirada_en: string | null; retiro_motivo: string | null; lineas: M86Linea[]
+}
+export interface M86Muestra { id: string; tarima_numero: string; superior: number; medio: number; inferior: number; unidad: 'C' | 'F'; medida_en: string }
+export interface M86Detalle { m: M86Manifiesto; tarimas: M86Tarima[]; muestras: M86Muestra[] }
+
+const numOrNull = (v: any) => (v === null || v === undefined ? null : Number(v))
+const normM = (m: any): M86Manifiesto => ({
+  ...m, llegada_temp: numOrNull(m.llegada_temp), carga_temp: numOrNull(m.carga_temp), salida_temp: numOrNull(m.salida_temp),
+})
+
+export async function cargarDetalleM86(id: string): Promise<M86Detalle> {
+  const [m, t, mu] = await Promise.all([
+    tbl('m86_manifiestos').select('*').eq('id', id).single(),
+    tbl('m86_tarimas').select('*, m86_tarima_lineas(*)').eq('manifiesto_id', id).order('confirmada_en'),
+    tbl('m86_muestras').select('*').eq('manifiesto_id', id).order('medida_en'),
+  ])
+  if (m.error) throw m.error
+  if (t.error) throw t.error
+  return {
+    m: normM(m.data),
+    tarimas: (t.data ?? []).map((x: any) => ({
+      ...x, lineas: ((x.m86_tarima_lineas ?? []) as M86Linea[]).slice().sort((a, b) => a.orden - b.orden),
+    })),
+    muestras: (mu.data ?? []).map((x: any) => ({ ...x, superior: Number(x.superior), medio: Number(x.medio), inferior: Number(x.inferior) })),
+  }
+}
+
+export function useM86Lista() {
+  const { profile } = useAuthContext()
+  const orgId = profile?.org_id ?? null
+  const [manifiestos, setManifiestos] = useState<M86Manifiesto[]>([])
+  const [historial, setHistorial] = useState<Record<string, string[]>>({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const refetch = useCallback(async () => {
+    if (!orgId) return
+    setLoading(true)
+    try {
+      const desde = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+      const { data, error } = await tbl('m86_manifiestos').select('*').eq('org_id', orgId)
+        .or(`fecha.gte.${desde},estado.neq.CERRADO`).order('created_at', { ascending: false }).limit(200)
+      if (error) throw error
+      const lista = (data ?? []).map(normM)
+      setManifiestos(lista)
+      // Historial de transporte: solo sugerencias (siempre se confirma contra la unidad real)
+      const campos = ['empresa', 'transportista', 'chofer', 'tractor_placas', 'tractor_economico', 'caja_pies', 'caja_economico'] as const
+      const h: Record<string, string[]> = {}
+      for (const c of campos) h[c] = Array.from(new Set(lista.map((x: any) => x[c]).filter(Boolean))).slice(0, 30) as string[]
+      setHistorial(h)
+      setError(null)
+    } catch (e: any) {
+      setError(e?.message ?? 'Error al cargar')
+    } finally {
+      setLoading(false)
+    }
+  }, [orgId])
+
+  useEffect(() => { refetch() }, [refetch])
+  return { manifiestos, historial, loading, error, refetch }
+}
+
+export async function crearManifiestoM86(rancho: string, datos: Record<string, string>): Promise<string> {
+  const { data, error } = await rpc('m86_crear', { p_rancho: rancho, p_datos: datos })
+  if (error) throw error
+  return data as string
+}
+
+export async function accionM86(id: string, accion: string, datos: Record<string, unknown> = {}): Promise<any> {
+  const { data, error } = await rpc('m86_accion', { p_manifiesto: id, p_accion: accion, p_datos: datos })
+  if (error) throw error
+  return data
+}
+
+export function mensajeErrorM86(e: any): { tipo: 'warning' | 'error'; texto: string } {
+  const msg: string = e?.message ?? String(e ?? '')
+  const m = /(M86_[A-Z_]+|FORBIDDEN|VALOR_INVALIDO):\s*(.*)$/s.exec(msg)
+  if (m) return { tipo: m[1] === 'FORBIDDEN' ? 'error' : 'warning', texto: m[2].trim() }
+  if (/fetch|network/i.test(msg)) return { tipo: 'error', texto: 'Sin conexión: no se guardó. Vuelve a intentar.' }
+  return { tipo: 'error', texto: msg || 'Error al guardar' }
+}
+
+export { totalesPorPresentacion } from '@/lib/pdf/m86/manifiestoLogica'
