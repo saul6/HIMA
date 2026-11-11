@@ -60,6 +60,7 @@ export interface M83Grupo {
   estado: 'POR_ENTRAR' | 'EN_PRE_FRIO' | 'FINALIZADO' | 'CANCELADO'
   creado_por: string | null
   salidas: M83Salida[]
+  tarimas_det: { tarima_id: string; numero: number; salio: boolean }[]
   quedan_tarimas: number
   quedan_cajas: number
 }
@@ -73,12 +74,13 @@ function normalizar(g: any): M83Grupo {
     ...g,
     temp_entrada_valor: Number(g.temp_entrada_valor),
     salidas: salidas.map((s) => ({ ...s, temp_salida_valor: Number(s.temp_salida_valor) })),
+    tarimas_det: ((g.m83_grupo_tarimas ?? []) as any[]).map(x => ({ tarima_id: x.tarima_id, numero: x.m87_tarimas?.numero ?? 0, salio: !!x.salida_id })).sort((a, b) => a.numero - b.numero),
     quedan_tarimas: g.tarimas - st,
     quedan_cajas: g.cajas - sc,
   }
 }
 
-const SELECT_GRUPO = '*, m83_salidas(id, salida_en, tarimas, cajas, temp_salida_valor, temp_salida_unidad, duracion_min)'
+const SELECT_GRUPO = '*, m83_salidas(id, salida_en, tarimas, cajas, temp_salida_valor, temp_salida_unidad, duracion_min), m83_grupo_tarimas(tarima_id, salida_id, m87_tarimas(numero))'
 
 export async function cargarGruposM83(orgId: string, fecha: string): Promise<M83Grupo[]> {
   const { data, error } = await tbl('m83_grupos').select(SELECT_GRUPO)
@@ -159,6 +161,31 @@ export async function declararEntradaM83(p: {
   })
   if (error) throw error
   return data as string
+}
+
+export interface M83TarimaDisp { id: string; numero: number; codigo: string; presentacion: string; fruta: string | null; clasificacion: 'ORG' | 'CONV'; empresa: string; codigo_productor: string; estado: string; cajas: number }
+
+/** Tarimas armadas o en conservador que pueden entrar a prefrío. */
+export async function cargarTarimasDispM83(ranchoId: string): Promise<M83TarimaDisp[]> {
+  const { data, error } = await tbl('m87_tarimas').select('id, numero, codigo, presentacion, fruta, clasificacion, empresa, codigo_productor, estado, m87_aportaciones(cajas, vigente)')
+    .eq('rancho_id', ranchoId).in('estado', ['ARMADA', 'EN_CONSERVADOR']).order('numero')
+  if (error) throw error
+  return (data ?? []).map((x: any) => ({ ...x, cajas: (x.m87_aportaciones ?? []).filter((a: any) => a.vigente).reduce((a: number, b: any) => a + b.cajas, 0) }))
+}
+
+export async function declararTarimasM83(p: { rancho: string; turbina: number; tarimas: string[]; unidad: Unidad; lecturas?: Lectura[] | null; temp?: number | null }): Promise<string> {
+  const { data, error } = await rpc('m83_declarar_tarimas', {
+    p_rancho: p.rancho, p_turbina: p.turbina, p_tarimas: p.tarimas, p_unidad: p.unidad,
+    p_lecturas: p.lecturas && p.lecturas.length ? p.lecturas : null, p_temp: p.lecturas && p.lecturas.length ? null : p.temp ?? null,
+  })
+  if (error) throw error
+  return data as string
+}
+
+export async function finalizarTarimasM83(p: { grupo: string; tarimas: string[]; temp: number; unidad: Unidad; salidaEn?: string | null }) {
+  const { data, error } = await rpc('m83_finalizar_tarimas', { p_grupo: p.grupo, p_tarimas: p.tarimas, p_temp: p.temp, p_unidad: p.unidad, p_salida_en: p.salidaEn ?? null })
+  if (error) throw error
+  return data as { duracion_min: number; finalizado: boolean; quedan_tarimas: number }
 }
 
 /** Iniciar prefrío: solo la hora de entrada. */

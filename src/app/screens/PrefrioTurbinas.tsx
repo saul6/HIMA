@@ -17,9 +17,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { hoyMX } from '@/lib/fecha'
 import {
-  useM83Prefrio, cargarDisponiblesM83, declararEntradaM83, iniciarGrupoM83, finalizarPrefrioM83, cancelarPrefrioM83, mensajeErrorM83,
+  useM83Prefrio, cargarDisponiblesM83, declararEntradaM83, iniciarGrupoM83, finalizarPrefrioM83, cargarTarimasDispM83, declararTarimasM83, finalizarTarimasM83, cancelarPrefrioM83, mensajeErrorM83,
   isoDesdeHoraLocal, horaLocal, duracionHHMM, fmtTemp,
-  type M83Disponible, type M83Grupo, type Unidad, type Lectura,
+  type M83Disponible, type M83Grupo, type Unidad, type Lectura, type M83TarimaDisp,
 } from '@/hooks/useM83Prefrio'
 import { generarPrefrioTurbinasPDF } from '@/lib/pdf/m83/generarPrefrioTurbinasPDF'
 
@@ -70,6 +70,9 @@ export function PrefrioTurbinas() {
   const [disp, setDisp] = useState<M83Disponible[]>([])
   const [cargandoDisp, setCargandoDisp] = useState(false)
   const [sel, setSel] = useState<Record<string, string>>({})  // linea_id -> cajas
+  const [fuente, setFuente] = useState<'TARIMAS' | 'CAJAS'>('TARIMAS')
+  const [tDisp, setTDisp] = useState<M83TarimaDisp[]>([])
+  const [tSelIds, setTSelIds] = useState<string[]>([])
   const [turbina, setTurbina] = useState<number | null>(null)
   const [tarimas, setTarimas] = useState('')
   const [unidad, setUnidad] = useState<Unidad>((leer(K_UNIDAD) as Unidad) || 'C')
@@ -82,11 +85,11 @@ export function PrefrioTurbinas() {
   async function cargarDisp(r: string) {
     if (!r) { setDisp([]); return }
     setCargandoDisp(true)
-    try { setDisp(await cargarDisponiblesM83(r)) } catch (e) { avisar(e) } finally { setCargandoDisp(false) }
+    try { const [d, t] = await Promise.all([cargarDisponiblesM83(r), cargarTarimasDispM83(r)]); setDisp(d); setTDisp(t); setFuente(t.length > 0 || d.length === 0 ? 'TARIMAS' : 'CAJAS') } catch (e) { avisar(e) } finally { setCargandoDisp(false) }
   }
 
   function abrirIniciar() {
-    setSel({}); setTurbina(null); setTarimas(''); setModo('GUIADO'); setLect([]); setPromedio('')
+    setSel({}); setTSelIds([]); setTurbina(null); setTarimas(''); setModo('GUIADO'); setLect([]); setPromedio('')
     const r = ranchos.length === 1 ? ranchos[0].id : ranchoId
     setRanchoId(r); cargarDisp(r)
     setSheet('declarar')
@@ -97,18 +100,24 @@ export function PrefrioTurbinas() {
   // Un grupo puede combinar presentaciones (ítems) de la misma empresa y la misma clasificación ORG/CONV
   const compatible = (d: M83Disponible) => !ref || (d.empresa === ref.empresa && d.clasificacion === ref.clasificacion)
   const codigosElegidos = Array.from(new Set(elegidas.map(d => d.codigo)))
-  const turbinasValidas = ref ? (ref.clasificacion === 'ORG' ? config.turbinas_org : config.turbinas_conv) : []
-  const nTarimas = /^\d+$/.test(tarimas) ? Number(tarimas) : 0
+  const tSel = tSelIds.map(id => tDisp.find(t => t.id === id)).filter(Boolean) as M83TarimaDisp[]
+  const refX = fuente === 'TARIMAS'
+    ? (tSel[0] ? { key: tSel[0].id, clasificacion: tSel[0].clasificacion, empresa: tSel[0].empresa, codigo: tSel[0].codigo } : null)
+    : (ref ? { key: ref.linea_id, clasificacion: ref.clasificacion, empresa: ref.empresa, codigo: ref.codigo } : null)
+  const compatibleT = (t: M83TarimaDisp) => !refX || fuente !== 'TARIMAS' || (t.empresa === refX.empresa && t.clasificacion === refX.clasificacion)
+  const etiquetaLect = (i: number) => fuente === 'TARIMAS' ? (tSel[i] ? `N.${tSel[i].numero}` : `T${i + 1}`) : `T${i + 1}`
+  const turbinasValidas = refX ? (refX.clasificacion === 'ORG' ? config.turbinas_org : config.turbinas_conv) : []
+  const nTarimas = fuente === 'TARIMAS' ? tSel.length : (/^\d+$/.test(tarimas) ? Number(tarimas) : 0)
   const muestraMin = nTarimas > 0 ? Math.ceil(nTarimas * 0.4) : 0
   const totalCajas = elegidas.reduce((a, d) => a + (Number(sel[d.linea_id]) || 0), 0)
 
   // al elegir la primera fruta, turbina sugerida
   useEffect(() => {
-    if (!ref) { setTurbina(null); return }
+    if (!refX) { setTurbina(null); return }
     if (turbina && turbinasValidas.includes(turbina)) return
-    if (ref.clasificacion === 'ORG') setTurbina(config.turbinas_org[0] ?? null)
+    if (refX.clasificacion === 'ORG') setTurbina(config.turbinas_org[0] ?? null)
     else { const u = Number(leer(K_TURBINA)); setTurbina(config.turbinas_conv.includes(u) ? u : null) }
-  }, [ref?.linea_id, ref?.clasificacion]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refX?.key, refX?.clasificacion]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // filas de lectura guiada = muestra mínima (se pueden agregar más)
   useEffect(() => {
@@ -131,6 +140,23 @@ export function PrefrioTurbinas() {
 
   async function declarar() {
     if (!ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
+    if (fuente === 'TARIMAS') {
+      if (tSel.length === 0) { toast.error('Elige las tarimas que entran'); return }
+      if (!turbina) { toast.error('Elige la turbina'); return }
+      if (modo === 'GUIADO' && !lecturasLlenas) { toast.error('Completa las lecturas superior, medio e inferior'); return }
+      if (modo === 'COMPACTO' && !esNum(promedio)) { toast.error('Captura el promedio medido de la fruta'); return }
+      setGuardando(true)
+      try {
+        await declararTarimasM83({ rancho: ranchoId, turbina, tarimas: tSel.map(t => t.id), unidad,
+          lecturas: modo === 'GUIADO' ? lect.flatMap((f, i) => f.map((v, j) => ({ tarima: etiquetaLect(i), posicion: POS[j], valor: num(v) }))) : null,
+          temp: modo === 'COMPACTO' ? num(promedio) : null })
+        guardar(K_UNIDAD, unidad)
+        if (refX?.clasificacion === 'CONV') guardar(K_TURBINA, String(turbina))
+        toast.success(`Entrada declarada: ${tSel.length} tarima(s) en turbina ${turbina}. Inicia el prefrío cuando entren`)
+        setSheet(null); await refetch()
+      } catch (e) { avisar(e) } finally { setGuardando(false) }
+      return
+    }
     if (!ref) { toast.error('Selecciona la fruta que entra a prefrío'); return }
     for (const d of elegidas) {
       const c = sel[d.linea_id]
@@ -179,6 +205,7 @@ export function PrefrioTurbinas() {
   const [grupo, setGrupo] = useState<M83Grupo | null>(null)
   const [sTar, setSTar] = useState('')
   const [sCaj, setSCaj] = useState('')
+  const [sTarIds, setSTarIds] = useState<string[]>([])
   const [sTemp, setSTemp] = useState('')
   const [sUnidad, setSUnidad] = useState<Unidad>('C')
   const [horaSal, setHoraSal] = useState(horaAhora())
@@ -186,12 +213,28 @@ export function PrefrioTurbinas() {
 
   function abrirFinalizar(g: M83Grupo) {
     setGrupo(g); setSTar(String(g.quedan_tarimas)); setSCaj(String(g.quedan_cajas)); setSTemp('')
+    setSTarIds(g.tarimas_det.filter(t => !t.salio).map(t => t.tarima_id))
     setSUnidad(g.temp_entrada_unidad); setHoraSal(horaAhora()); setCambiarHoraSal(false)
     setSheet('finalizar')
   }
 
   async function finalizar() {
     if (!grupo) return
+    const porTarimas = grupo.tarimas_det.length > 0
+    if (porTarimas) {
+      if (sTarIds.length === 0) { toast.error('Elige las tarimas que salen'); return }
+      if (!esNum(sTemp)) { toast.error('Captura la temperatura de salida de la fruta'); return }
+      setGuardando(true)
+      try {
+        const r = await finalizarTarimasM83({ grupo: grupo.id, tarimas: sTarIds, temp: num(sTemp), unidad: sUnidad,
+          salidaEn: cambiarHoraSal ? isoDesdeHoraLocal(hoyMX(), horaSal) : null })
+        toast.success(r.finalizado
+          ? `Prefrío finalizado · ${duracionHHMM(r.duracion_min)} h · tarimas pasan a conservador`
+          : `Salida parcial · quedan ${r.quedan_tarimas} tarima(s) en prefrío`)
+        setSheet(null); await refetch()
+      } catch (e) { avisar(e) } finally { setGuardando(false) }
+      return
+    }
     if (!/^\d+$/.test(sTar) || !/^\d+$/.test(sCaj) || Number(sTar) <= 0 || Number(sCaj) <= 0) { toast.error('Indica tarimas y cajas que salen'); return }
     if (!esNum(sTemp)) { toast.error('Captura la temperatura de salida de la fruta'); return }
     setGuardando(true)
@@ -310,6 +353,7 @@ export function PrefrioTurbinas() {
                       <span>Entrada {horaLocal(g.entrada_en ?? '')} · {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)}</span>
                       <span className="text-muted-foreground">{duracionHHMM(min)} h en prefrío</span>
                     </div>
+                    {g.tarimas_det.length > 0 && <p className="text-xs text-muted-foreground">Tarimas: {g.tarimas_det.filter(t => !t.salio).map(t => 'N.' + t.numero).join(', ')}</p>}
                     <div className="flex gap-2">
                       <Boton type="button" tamano="sm" className="flex-1" onClick={() => abrirFinalizar(g)}>Finalizar prefrío</Boton>
                       {g.salidas.length === 0 && (
@@ -371,8 +415,37 @@ export function PrefrioTurbinas() {
             </div>
           )}
 
+          <div className="flex gap-2">
+            <Chip activo={fuente === 'TARIMAS'} onClick={() => { setFuente('TARIMAS'); setSel({}) }}>Por tarimas</Chip>
+            <Chip activo={fuente === 'CAJAS'} onClick={() => { setFuente('CAJAS'); setTSelIds([]) }}>Por cajas (sin tarima registrada)</Chip>
+          </div>
+          {fuente === 'TARIMAS' ? (
           <section className="space-y-2">
-            <TituloSeccion>1 · Fruta aceptada disponible</TituloSeccion>
+            <TituloSeccion>1 · Tarimas disponibles</TituloSeccion>
+            {cargandoDisp ? <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /> : tDisp.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No hay tarimas armadas. Ármalas en Tarimas y Consolidación.</p>
+            ) : (
+              <ul className="space-y-1">
+                {tDisp.map(t => {
+                  const on = tSelIds.includes(t.id)
+                  const ok = on || compatibleT(t)
+                  return (
+                    <li key={t.id}>
+                      <label className={`flex items-center gap-2 rounded-[0.625rem] border p-2 ${on ? 'border-primary' : 'border-border'} ${ok ? '' : 'opacity-40'}`}>
+                        <input type="checkbox" checked={on} disabled={!ok} onChange={() => setTSelIds(s => on ? s.filter(x => x !== t.id) : [...s, t.id])} />
+                        <span className="text-sm"><b>N.{t.numero}</b> · #{t.codigo} {t.presentacion} · {t.clasificacion} · {t.cajas} cajas</span>
+                        <span className="text-xs text-muted-foreground ml-auto">{t.estado === 'EN_CONSERVADOR' ? 'En conservador' : 'Armada'}</span>
+                      </label>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+            {tSel.length > 0 && <p className="text-xs">Grupo: <b>{tSel.length}</b> tarima(s) · {tSel.reduce((a, t) => a + t.cajas, 0)} cajas · {refX?.clasificacion}</p>}
+          </section>
+          ) : (
+          <section className="space-y-2">
+            <TituloSeccion>1 · Fruta aceptada disponible (cajas sin tarima)</TituloSeccion>
             {cargandoDisp ? <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /> : disp.length === 0 ? (
               <p className="text-xs text-muted-foreground">No hay fruta aceptada con cajas disponibles (últimos 3 días). Acepta la entrega en Recepción por ítem.</p>
             ) : (
@@ -400,8 +473,9 @@ export function PrefrioTurbinas() {
             )}
             {ref && <p className="text-xs">Grupo: <b>{totalCajas}</b> cajas · {codigosElegidos.length > 1 ? `Combinada (${codigosElegidos.map(c => '#' + c).join(', ')})` : `#${ref.codigo}`} · {ref.clasificacion}</p>}
           </section>
+          )}
 
-          {ref && (<>
+          {refX && (<>
             <section className="space-y-2">
               <TituloSeccion>2 · Turbina y tarimas</TituloSeccion>
               <div className="flex gap-2 flex-wrap">
@@ -409,13 +483,13 @@ export function PrefrioTurbinas() {
                   <Chip key={t} activo={turbina === t} disabled={!turbinasValidas.includes(t)} onClick={() => setTurbina(t)}>Turbina {t}</Chip>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">{ref.clasificacion === 'ORG' ? 'Orgánico: solo turbina ' + config.turbinas_org.join(', ') : 'Convencional: turbinas ' + config.turbinas_conv.join(', ')}</p>
-              <div className="flex gap-3 items-end">
+              <p className="text-xs text-muted-foreground">{refX.clasificacion === 'ORG' ? 'Orgánico: solo turbina ' + config.turbinas_org.join(', ') : 'Convencional: turbinas ' + config.turbinas_conv.join(', ')}</p>
+              {fuente === 'CAJAS' && <div className="flex gap-3 items-end">
                 <div className="flex-1 space-y-1">
                   <label className="text-xs text-muted-foreground font-semibold">N° de tarimas que entran *</label>
                   <input inputMode="numeric" className={numCls} value={tarimas} onChange={e => setTarimas(e.target.value.replace(/\D/g, ''))} />
                 </div>
-              </div>
+              </div>}
             </section>
 
             <section className="space-y-2">
@@ -433,7 +507,7 @@ export function PrefrioTurbinas() {
                     <p className="text-xs text-muted-foreground">Muestra mínima: <b>{muestraMin}</b> de {nTarimas} tarima(s), superior, medio e inferior.</p>
                     {lect.map((f, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="text-xs font-semibold w-8">T{i + 1}</span>
+                        <span className="text-xs font-semibold w-10">{etiquetaLect(i)}</span>
                         {f.map((v, j) => (
                           <input key={j} inputMode="decimal" placeholder={POS_TXT[POS[j]]} aria-label={`Tarima ${i + 1} ${POS_TXT[POS[j]]}`} className={numCls}
                             value={v} onChange={e => { const val = e.target.value.replace(/[^0-9.,-]/g, ''); setLect(L => L.map((r, a) => a === i ? r.map((x, b) => b === j ? val : x) : r)) }} />
@@ -461,7 +535,7 @@ export function PrefrioTurbinas() {
             </section>
           </>)}
 
-          <Boton type="button" onClick={declarar} cargando={guardando} className="w-full" disabled={!ref}>Guardar declaración</Boton>
+          <Boton type="button" onClick={declarar} cargando={guardando} className="w-full" disabled={!refX}>Guardar declaración</Boton>
         </div>
       </BottomSheet>
 
@@ -503,6 +577,23 @@ export function PrefrioTurbinas() {
             </div>
             <section className="space-y-2">
               <TituloSeccion>Lo que sale</TituloSeccion>
+              {grupo.tarimas_det.length > 0 ? (<>
+                <ul className="space-y-1">
+                  {grupo.tarimas_det.filter(t => !t.salio).map(t => {
+                    const on = sTarIds.includes(t.tarima_id)
+                    return (
+                      <li key={t.tarima_id}>
+                        <label className={`flex items-center gap-2 rounded-[0.625rem] border p-2 ${on ? 'border-primary' : 'border-border'}`}>
+                          <input type="checkbox" checked={on} onChange={() => setSTarIds(x => on ? x.filter(y => y !== t.tarima_id) : [...x, t.tarima_id])} />
+                          <span className="text-sm">Tarima <b>N.{t.numero}</b></span>
+                        </label>
+                      </li>
+                    )
+                  })}
+                </ul>
+                {sTarIds.length < grupo.tarimas_det.filter(t => !t.salio).length && <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Salida parcial: el resto sigue en prefrío con su hora de entrada.</p>}
+                <p className="text-xs text-muted-foreground">Al salir, las tarimas pasan a conservador.</p>
+              </>) : (<>
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-xs text-muted-foreground font-semibold">Tarimas</label>
@@ -514,6 +605,7 @@ export function PrefrioTurbinas() {
                 </div>
               </div>
               {(Number(sTar) < grupo.quedan_tarimas) && <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Salida parcial: el resto sigue en prefrío con su hora de entrada.</p>}
+              </>)}
             </section>
             <section className="space-y-2">
               <TituloSeccion>Temperatura de salida de la fruta</TituloSeccion>

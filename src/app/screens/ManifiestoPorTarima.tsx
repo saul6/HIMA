@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X, Loader2, FileDown, Truck, ChevronDown, ChevronLeft, Plus, Trash2, Search, Thermometer } from 'lucide-react'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
 import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -20,8 +21,8 @@ import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
 import { useM82Catalogo } from '@/hooks/useM82Recepcion'
 import {
-  useM86Lista, cargarDetalleM86, crearManifiestoM86, accionM86, mensajeErrorM86, totalesPorPresentacion, cargarPapeletasM86,
-  type M86Detalle, type M86Manifiesto, type EstadoManifiesto, type M86PapeletaRef,
+  useM86Lista, cargarDetalleM86, crearManifiestoM86, accionM86, mensajeErrorM86, totalesPorPresentacion, cargarPapeletasM86, cargarTarimasRegM86, productoresDe,
+  type M86Detalle, type M86Manifiesto, type EstadoManifiesto, type M86PapeletaRef, type M86TarimaReg,
 } from '@/hooks/useM86Manifiesto'
 import { horaLocal, fmtT } from '@/lib/pdf/m86/manifiestoLogica'
 import { generarManifiestoPorTarimaPDF } from '@/lib/pdf/m86/generarManifiestoPorTarimaPDF'
@@ -168,11 +169,20 @@ export function ManifiestoPorTarima() {
   const [det, setDet] = useState<M86Detalle | null>(null)
   const [cargandoDet, setCargandoDet] = useState(false)
   const [abierta, setAbierta] = useState<'A' | 'B' | 'C'>('A')
+  const navigate = useNavigate()
+  // ── Tarimas registradas (M87): reservar ≠ cargar
+  const [regs, setRegs] = useState<M86TarimaReg[]>([])
+  const [regSel, setRegSel] = useState<string[]>([])
+  const [regCotejo, setRegCotejo] = useState(false)
+  const [regGuardando, setRegGuardando] = useState(false)
+  const regClave = useRef(nuevaClave())
+  const [manualOpen, setManualOpen] = useState(false)
   async function recargar(id = selId) {
     if (!id) return
     setCargandoDet(true)
     try {
       const d = await cargarDetalleM86(id); setDet(d)
+      cargarTarimasRegM86(d.m.rancho_id, d.m.empresa, d.m.id).then(setRegs).catch(() => setRegs([]))
       setAbierta(d.m.carga_en ? (d.m.salida_en || d.m.estado === 'CARGA_COMPLETA' ? 'C' : 'B') : 'A')
     } catch (e) { avisar(e) } finally { setCargandoDet(false) }
   }
@@ -257,6 +267,21 @@ export function ManifiestoPorTarima() {
       claveRef.current = nuevaClave()
       setSugeridas(ls); setNumero(''); setLineas([{ codigo: '', cajas: '' }]); setCotejo(false); setPapeletaId(''); numRef.current?.focus()
     }
+  }
+
+  async function accionReg(tipo: 'RESERVAR' | 'LIBERAR_RESERVA' | 'CARGAR_TARIMAS') {
+    const ids = regSel.filter(id => {
+      const t = regs.find(x => x.id === id); if (!t) return false
+      return tipo === 'LIBERAR_RESERVA' ? t.estado === 'RESERVADA' : tipo === 'RESERVAR' ? t.estado !== 'RESERVADA' : true
+    })
+    if (ids.length === 0) { toast.error(tipo === 'LIBERAR_RESERVA' ? 'Elige tarimas reservadas' : 'Elige tarimas'); return }
+    if (tipo === 'CARGAR_TARIMAS' && !regCotejo) { toast.error('Marca el cotejo físico de las tarimas'); return }
+    setRegGuardando(true)
+    const datos: Record<string, unknown> = { tarimas: ids }
+    if (tipo === 'CARGAR_TARIMAS') { datos.key = regClave.current; datos.cotejo = true }
+    const ok = await accion(tipo, datos, tipo === 'RESERVAR' ? `${ids.length} tarima(s) reservadas` : tipo === 'LIBERAR_RESERVA' ? 'Reserva liberada' : `${ids.length} tarima(s) cargadas`)
+    setRegGuardando(false)
+    if (ok) { setRegSel([]); if (tipo === 'CARGAR_TARIMAS') { regClave.current = nuevaClave(); setRegCotejo(false) } }
   }
 
   // ── Muestra
@@ -383,7 +408,49 @@ export function ManifiestoPorTarima() {
           <Etapa titulo={`B · Carga (${cargadas.length} tarimas · ${totales.reduce((a, t) => a + t.cajas, 0)} cajas)`} hecho={!!m.carga_en && tarimasOk && cargadas.length > 0} abierta={abierta === 'B'} onToggle={() => setAbierta('B')}>
             <EventoCamion etiqueta="Carga" en={m.carga_en} t={m.carga_temp} unidad={u} deshabilitado={!m.llegada_en || !transporteOk || cerrado || suspendido}
               onGuardar={async (t, en) => { await accion('CARGA', { temp: t, en }, 'Inicio de carga registrado') }} />
-            {m.carga_en && !m.salida_en && !cerrado && !suspendido && (
+            {!m.salida_en && !cerrado && !suspendido && (
+              <div className="rounded-[0.625rem] border border-border p-3 space-y-2">
+                <p className="text-xs font-semibold">Tarimas registradas de {m.empresa}</p>
+                {regs.length === 0 ? <p className="text-xs text-muted-foreground">No hay tarimas armadas disponibles para esta empresa.</p> : (
+                  <ul className="space-y-1">
+                    {regs.map(t => {
+                      const on = regSel.includes(t.id)
+                      return (
+                        <li key={t.id}>
+                          <label className={`flex items-center gap-2 rounded-[0.625rem] border p-2 text-sm ${on ? 'border-primary' : 'border-border'}`}>
+                            <input type="checkbox" checked={on} onChange={() => setRegSel(x => on ? x.filter(y => y !== t.id) : [...x, t.id])} />
+                            <span className="min-w-0 truncate"><b>N.{t.numero}</b> · #{t.codigo} {t.presentacion} · {t.clasificacion} · {t.cajas} cajas · Prod. {t.codigo_productor}</span>
+                            <span className="text-xs ml-auto flex-shrink-0" style={t.estado === 'RESERVADA' ? { color: 'var(--agro-info-text)' } : { color: 'var(--muted-foreground)' }}>
+                              {t.estado === 'RESERVADA' ? 'Reservada aquí' : t.estado === 'EN_CONSERVADOR' ? 'En conservador' : 'Armada'}
+                            </span>
+                          </label>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+                {regs.length > 0 && (<>
+                  <div className="flex gap-2">
+                    <Boton type="button" tamano="sm" variante="secundario" className="flex-1" disabled={regGuardando} onClick={() => accionReg('RESERVAR')}>Reservar</Boton>
+                    <Boton type="button" tamano="sm" variante="secundario" className="flex-1" disabled={regGuardando} onClick={() => accionReg('LIBERAR_RESERVA')}>Liberar reserva</Boton>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Reservar aparta la tarima para este manifiesto; no la cuenta como cargada.</p>
+                  {m.carga_en ? (<>
+                    <label className="flex items-start gap-2 text-xs">
+                      <input type="checkbox" className="mt-0.5" checked={regCotejo} onChange={e => setRegCotejo(e.target.checked)} />
+                      <span>Cotejé físicamente las tarimas elegidas: están arriba del tráiler, con su identificación y papeleta.</span>
+                    </label>
+                    <Boton type="button" className="w-full" cargando={regGuardando} onClick={() => accionReg('CARGAR_TARIMAS')}>Confirmar carga de {regSel.length || ''} tarima(s)</Boton>
+                  </>) : <p className="text-xs text-muted-foreground">Registra el inicio de carga para confirmar tarimas cargadas.</p>}
+                </>)}
+              </div>
+            )}
+            {m.carga_en && !m.salida_en && !cerrado && !suspendido && regs.length > 0 && (
+              <button type="button" className="text-xs underline" style={{ color: 'var(--primary)' }} onClick={() => setManualOpen(o => !o)}>
+                {manualOpen ? 'Ocultar captura manual' : 'Captura manual (tarima sin registro en M.A.D.Y.)'}
+              </button>
+            )}
+            {m.carga_en && !m.salida_en && !cerrado && !suspendido && (manualOpen || regs.length === 0) && (
               <div className="rounded-[0.625rem] border border-border p-3 space-y-2">
                 <div className="flex gap-2 items-end">
                   <div className="w-32 space-y-1">
@@ -446,7 +513,7 @@ export function ManifiestoPorTarima() {
                   <li key={t.id} className="rounded-[0.625rem] border border-border px-3 py-2 flex items-start justify-between gap-2 text-sm">
                     <div className="min-w-0">
                       <b>Tarima {t.numero}</b> · {t.clasificacion} · {t.lineas.reduce((a, l) => a + l.cajas, 0)} cajas
-                      <p className="text-xs text-muted-foreground truncate">{t.lineas.map(l => `#${l.codigo} ${l.presentacion} ×${l.cajas}`).join(' · ')}</p>
+                      <p className="text-xs text-muted-foreground truncate">{t.lineas.map(l => { const pr = productoresDe(t, l.codigo); return `#${l.codigo} ${l.presentacion} ×${l.cajas}${pr ? ` · Prod. ${pr}` : ''}` }).join(' · ')}</p>
                     </div>
                     {!m.salida_en && !cerrado && (
                       <button type="button" className="text-xs underline flex-shrink-0" onClick={async () => {
@@ -524,6 +591,12 @@ export function ManifiestoPorTarima() {
               <SeguimientoSello evidencias={det!.evidencias} puedeVerificar={puedeVerificar} unidadSugerida={m.caja_economico ?? ''}
                 onAgregar={async (ev) => accion('SELLO_EVIDENCIA', ev, 'Evidencia registrada; queda por verificar')}
                 onVerificar={async (id, resultado, nota) => accion('SELLO_VERIFICAR', { evidencia_id: id, resultado, nota }, resultado === 'VERIFICADA' ? 'Evidencia verificada' : 'Evidencia marcada como no correspondiente')} />
+            )}
+            {cerrado && (
+              <div className="rounded-[0.625rem] border border-border p-3 space-y-2">
+                <p className="text-xs">¿Este fue el último tráiler? Si ya no se esperan más, cierra el ciclo de tarimas: decide qué pasa con las que quedaron y la numeración vuelve a empezar.</p>
+                <Boton type="button" tamano="sm" variante="secundario" onClick={() => navigate('/inocuidad/tarimas')}>Ir a cerrar el ciclo</Boton>
+              </div>
             )}
             {m.estado === 'CERRADO' && m.sello_estado === 'PENDIENTE_CONSOLIDADO' && (
               <p className="text-xs" style={{ color: 'var(--agro-success-text)' }}>Sello por consolidado: evidencia final verificada (evento posterior; la salida original no cambia).</p>

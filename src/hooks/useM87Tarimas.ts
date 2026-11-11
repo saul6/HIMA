@@ -106,3 +106,27 @@ export function mensajeErrorM87(e: any): { tipo: 'warning' | 'error'; texto: str
   if (/fetch|network/i.test(msg)) return { tipo: 'error', texto: 'Sin conexión: no se guardó. Vuelve a intentar (no se duplicará).' }
   return { tipo: 'error', texto: msg || 'Error al guardar' }
 }
+
+/** Ingreso directo al conservador (fruta ya preenfriada). */
+export async function ingresarConservador(tarimas: string[], en?: string | null) {
+  const { data, error } = await rpc('m87_conservador', { p_tarimas: tarimas, p_accion: 'INGRESO', p_motivo: null, p_en: en ?? null })
+  if (error) throw error
+  return data as number
+}
+
+export interface M87Disposicion { tarima_id: string; accion: 'TRASPASAR' | 'DISPONER'; motivo?: string }
+export async function cerrarCiclo(p: { rancho: string; key: string; confirmoFin: boolean; disposiciones: M87Disposicion[]; justificacion?: string | null }) {
+  const { data, error } = await rpc('m87_cerrar_ciclo', {
+    p_rancho: p.rancho, p_key: p.key, p_confirmo_fin: p.confirmoFin, p_disposiciones: p.disposiciones, p_justificacion_saldos: p.justificacion ?? null,
+  })
+  if (error) throw error
+  return data as { ciclo_cerrado: number; traspasadas: number; saldo_sin_armar: number; repetida: boolean }
+}
+
+export interface M87CuadreFila { codigo: string; presentacion: string | null; clasificacion: string; recibidas: number; sin_armar: number
+  en_tarimas_no_cargadas: number; cargadas: number; dispuestas: number; prefrio_legado: number; retenidas: number }
+export async function cargarCuadre(rancho: string, desde: string, hasta: string): Promise<M87CuadreFila[]> {
+  const { data, error } = await rpc('m87_cuadre', { p_rancho: rancho, p_desde: desde, p_hasta: hasta })
+  if (error) throw error
+  return (data ?? []) as M87CuadreFila[]
+}
