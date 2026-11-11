@@ -208,6 +208,7 @@ export function mensajeErrorM82(e: any): { tipo: 'warning' | 'error'; texto: str
     ['M82_CAJAS_SIN_CONFIRMAR', 'warning', 'Confirma las cajas físicas de cada ítem'],
     ['M82_SIN_ITEMS', 'warning', 'Agrega al menos un ítem'],
     ['M82_ENTREGA_CERRADA', 'warning', 'La entrega ya tiene dictamen; solo se editan observaciones'],
+    ['M82_PAPELETA_ABIERTA', 'warning', 'La entrega tiene papeletas de no conforme sin dictamen; dictamínalas en Producto No Conforme'],
     ['M82_TRANSICION', 'warning', 'Ese cambio de estado no está permitido'],
     ['FIRMA_REQUERIDA', 'warning', 'Registra tu firma en tu perfil antes de capturar'],
   ]
