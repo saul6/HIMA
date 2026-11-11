@@ -24,7 +24,8 @@ function hora(iso: string | null, base: string | null) {
 
 const ESTADO_TXT: Record<string, string> = {
   BORRADOR: 'Borrador', LLEGADA_INSPECCIONADA: 'Llegada inspeccionada', EN_CARGA: 'En carga', CARGA_COMPLETA: 'Carga completa',
-  PENDIENTE_CONFORMIDADES: 'Pendiente de conformidades', CERRADO: 'Cerrado', SUSPENDIDO: 'Suspendido',
+  PENDIENTE_CONFORMIDADES: 'Pendiente de conformidades', CIERRE_LOCAL_SELLO_PENDIENTE: 'Cierre local · sello pendiente por consolidado',
+  CERRADO: 'Cerrado', SUSPENDIDO: 'Suspendido',
 }
 
 export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86Detalle; orgNombre: string; codigoClave: string }) {
@@ -44,8 +45,10 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
     { texto: 'Producto', ancho: 70 },
     { texto: 'Presentación', ancho: 170 },
     { texto: 'Cajas', ancho: 45, align: 'center' },
+    { texto: 'Cotejo de retención', ancho: 75, align: 'center' },
   ]
-  const filasTarimas: CeldaDato[][] = cargadas.flatMap(t => t.lineas.map(l => [t.numero, t.clasificacion, l.fruta ?? '', `${l.presentacion} (#${l.codigo})`, String(l.cajas)]))
+  const cotejo = (t: M86Detalle['tarimas'][number]) => t.papeleta_id ? `PRO-07 liberada${t.papeleta_codigo ? ` #${t.papeleta_codigo}` : ''}` : t.cotejo_retencion ? 'Manual' : ''
+  const filasTarimas: CeldaDato[][] = cargadas.flatMap(t => t.lineas.map(l => [t.numero, t.clasificacion, l.fruta ?? '', `${l.presentacion} (#${l.codigo})`, String(l.cajas), cotejo(t)]))
 
   const siNo = (v: boolean | null, conforme: boolean): [CeldaDato, CeldaDato] =>
     v === null ? ['', ''] : v ? [v === conforme ? X : XNeg, ''] : ['', v === conforme ? X : XNeg]
@@ -85,16 +88,16 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
         <Seccion titulo="TARIMAS CARGADAS">
           <TablaDatos columnas={colsTarimas} filas={filasTarimas} fuente={7.5} vacio="Sin tarimas cargadas" />
           <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 3 }}>
-            {cargadas.length} tarima(s) · {totalCajas} cajas. Nota: Especificar si el producto es Orgánico (ORG) o Convencional (CONV).
+            {cargadas.length} tarima(s) físicas · {filasTarimas.length} renglones · {totalCajas} cajas. Cotejo de retención: verificación manual en sitio (no es detección automática). Nota: Especificar si el producto es Orgánico (ORG) o Convencional (CONV).
           </Text>
         </Seccion>
 
         <View wrap={false} style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
           <View style={{ flex: 1 }}>
             <TablaDatos anchoTotal={175} encabezadoFijo={false} fuente={7.5}
-              columnas={[{ texto: `Temperatura de la fruta${primera ? ` (tarima ${primera.tarima_numero})` : ''}`, ancho: 110 }, { texto: u, ancho: 50, align: 'center' }]}
+              columnas={[{ texto: `Temperatura de la fruta${primera ? ` · primera tarima muestreada, n.º ${primera.tarima_numero}` : ' · sin muestreo'}`, ancho: 110 }, { texto: u, ancho: 50, align: 'center' }]}
               filas={[['Superior', primera ? fmtT(primera.superior) : ''], ['Medio', primera ? fmtT(primera.medio) : ''], ['Inferior', primera ? fmtT(primera.inferior) : '']]} />
-            {d.muestras.length > 1 && <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 2 }}>{d.muestras.length} tarimas medidas: ver anexo de lecturas.</Text>}
+            {d.muestras.length > 1 && <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 2 }}>Las demás lecturas ({d.muestras.length - 1}) corresponden al anexo de este manifiesto. No es un promedio.</Text>}
           </View>
           <View style={{ flex: 1 }}>
             <TablaDatos anchoTotal={175} encabezadoFijo={false} fuente={7.5}
@@ -131,8 +134,11 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
           <View style={{ flex: 1 }}>
             <TablaDatos anchoTotal={350} encabezadoFijo={false} fuente={7.5}
               columnas={[{ texto: 'Total producto', ancho: 70 }, { texto: 'Presentación', ancho: 190 }, { texto: 'Cajas', ancho: 50, align: 'center' }]}
-              filas={(totales.length ? totales : [null, null, null, null, null]).map((t, i) =>
-                [`${i + 1}${i >= 5 ? ' (cont.)' : ''}`, t ? `${t.presentacion} (#${t.codigo}) · ${t.clasificacion}` : '', t ? String(t.cajas) : ''])} />
+              filas={[
+                ...(totales.length ? totales : [null, null, null, null, null]).map((t, i): CeldaDato[] =>
+                  [`${i + 1}${i >= 5 ? ' (continuación)' : ''}`, t ? `${t.presentacion} (#${t.codigo}) · ${t.clasificacion}` : '', t ? String(t.cajas) : '']),
+                [{ texto: 'Total general', negrita: true }, { texto: `${totales.length} producto(s) · ${cargadas.length} tarima(s)`, negrita: true }, { texto: String(totalCajas), negrita: true }],
+              ]} />
           </View>
           <View style={{ flex: 1 }}>
             <FranjaDatos porRenglon={1} anchoTotal={350} margenInferior={0} campos={[{ etiqueta: 'Observaciones', valor: m.observaciones ?? ' ' }]} />
@@ -153,15 +159,35 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
             </View>
           ))}
         </View>
+        <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4 }}>
+          Los nombres son conformidades registradas en M.A.D.Y.; la firma manuscrita está en el papel{m.papel_resguardo ? ` (resguardo: ${m.papel_resguardo})` : ' (resguardo pendiente de registrar)'}.
+        </Text>
+
+        {m.sello_estado === 'PENDIENTE_CONSOLIDADO' && (
+          <View wrap={false} style={{ marginTop: 8 }}>
+            <Seccion titulo="SEGUIMIENTO DEL SELLO (EVIDENCIA POSTERIOR)">
+              {d.evidencias.length === 0
+                ? <Text style={{ fontSize: 7.5, color: PC.negativo }}>Sello pendiente por consolidado: evidencia final pendiente. El cierre documental no está completo.</Text>
+                : <TablaDatos fuente={7} encabezadoFijo={false}
+                    columnas={[{ texto: 'Recibida en M.A.D.Y.', ancho: 70, align: 'center' }, { texto: 'Fecha informada', ancho: 55, align: 'center' }, { texto: 'N° de sello', ancho: 55 },
+                      { texto: 'Unidad', ancho: 55 }, { texto: 'Informa', ancho: 90 }, { texto: 'Soporte', ancho: 150 }, { texto: 'Estado', ancho: 110 }]}
+                    filas={d.evidencias.map(e => [`${fechaPdf(fechaLocal(e.recibido_en))} ${horaLocal(e.recibido_en)}`, e.fecha_informada ? fechaPdf(e.fecha_informada) : '',
+                      e.sello_folio, e.unidad_referencia, e.informa, e.soporte,
+                      e.estado === 'VERIFICADA' ? `Verificada por ${e.verifico ?? ''}` : e.estado === 'RECHAZADA' ? { texto: `No corresponde: ${e.nota ?? ''}`, color: PC.negativo } : 'Por verificar'])} />}
+              <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 2 }}>Evento posterior y separado: no modifica los datos ni la fecha de salida de este manifiesto.</Text>
+            </Seccion>
+          </View>
+        )}
 
         {(d.muestras.length > 1 || retiradas.length > 0) && (
           <View break>
             {d.muestras.length > 1 && (
               <Seccion titulo="ANEXO · LECTURAS DE TEMPERATURA POR TARIMA">
                 <TablaDatos fuente={7.5}
-                  columnas={[{ texto: 'Tarima', ancho: 50, align: 'center' }, { texto: 'Hora', ancho: 50, align: 'center' },
-                    { texto: `Superior ${u}`, ancho: 60, align: 'center' }, { texto: `Medio ${u}`, ancho: 60, align: 'center' }, { texto: `Inferior ${u}`, ancho: 60, align: 'center' }]}
-                  filas={d.muestras.map(s => [s.tarima_numero, horaLocal(s.medida_en), fmtT(s.superior), fmtT(s.medio), fmtT(s.inferior)])} />
+                  columnas={[{ texto: 'Orden', ancho: 35, align: 'center' }, { texto: 'Tarima', ancho: 50, align: 'center' }, { texto: 'Hora', ancho: 50, align: 'center' },
+                    { texto: `Superior ${u}`, ancho: 60, align: 'center' }, { texto: `Medio ${u}`, ancho: 60, align: 'center' }, { texto: `Inferior ${u}`, ancho: 60, align: 'center' },
+                    { texto: 'Capturó', ancho: 120 }]}
+                  filas={d.muestras.map((s, i) => [`${i + 1}${i === 0 ? ' (recuadro)' : ''}`, s.tarima_numero, horaLocal(s.medida_en), fmtT(s.superior), fmtT(s.medio), fmtT(s.inferior), s.capturo ?? ''])} />
               </Seccion>
             )}
             {retiradas.length > 0 && (
