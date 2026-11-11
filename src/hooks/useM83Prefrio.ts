@@ -10,7 +10,9 @@ const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc
 
 export type Unidad = 'C' | 'F'
 
-export interface M83Config { camara_nombre: string; turbinas_conv: number[]; turbinas_org: number[] }
+export interface M83Config { camara_nombre: string; turbinas_conv: number[]; turbinas_org: number[]
+  /** null = regla del 40 %; 1 = solo la tarima tapón (la última que entra). */
+  muestra_tarimas: number | null; capacidad_turbina: number; aviso_turbina: number }
 
 export interface M83Disponible {
   linea_id: string
@@ -95,7 +97,7 @@ export function useM83Prefrio(fecha: string) {
   const [activos, setActivos] = useState<M83Grupo[]>([])
   const [porEntrar, setPorEntrar] = useState<M83Grupo[]>([])
   const [delDia, setDelDia] = useState<M83Grupo[]>([])
-  const [config, setConfig] = useState<M83Config>({ camara_nombre: 'Cámara de prefrío', turbinas_conv: [1, 2, 3], turbinas_org: [4] })
+  const [config, setConfig] = useState<M83Config>({ camara_nombre: 'Cámara de prefrío', turbinas_conv: [1, 2, 3], turbinas_org: [4], muestra_tarimas: null, capacidad_turbina: 12, aviso_turbina: 9 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -103,17 +105,18 @@ export function useM83Prefrio(fecha: string) {
     if (!orgId) return
     setLoading(true)
     try {
-      const [a, d, c, pe] = await Promise.all([
+      const [a, d, c, pe, pa] = await Promise.all([
         tbl('m83_grupos').select(SELECT_GRUPO).eq('org_id', orgId).eq('estado', 'EN_PRE_FRIO').order('entrada_en'),
         cargarGruposM83(orgId, fecha),
         tbl('m83_config').select('camara_nombre, turbinas_conv, turbinas_org').eq('org_id', orgId).maybeSingle(),
         tbl('m83_grupos').select(SELECT_GRUPO).eq('org_id', orgId).eq('estado', 'POR_ENTRAR').order('declarado_en'),
+        tbl('m83_parametros').select('muestra_tarimas, capacidad_turbina, aviso_turbina').eq('org_id', orgId).maybeSingle(),
       ])
       if (a.error) throw a.error
       setActivos((a.data ?? []).map(normalizar))
       setPorEntrar((pe.data ?? []).map(normalizar))
       setDelDia(d)
-      if (c.data) setConfig(c.data as M83Config)
+      setConfig(prev => ({ ...prev, ...(c.data ?? {}), ...(pa.data ?? {}) }))
       setError(null)
     } catch (e: any) {
       setError(e?.message ?? 'Error al cargar')

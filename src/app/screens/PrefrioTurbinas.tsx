@@ -89,7 +89,7 @@ export function PrefrioTurbinas() {
   }
 
   function abrirIniciar() {
-    setSel({}); setTSelIds([]); setTurbina(null); setTarimas(''); setModo('GUIADO'); setLect([]); setPromedio('')
+    setSel({}); setTSelIds([]); setTurbina(null); setTarimas(''); setHoraDecl(horaAhora()); setCambiarHoraDecl(false); setModo('GUIADO'); setLect([]); setPromedio('')
     const r = ranchos.length === 1 ? ranchos[0].id : ranchoId
     setRanchoId(r); cargarDisp(r)
     setSheet('declarar')
@@ -105,10 +105,18 @@ export function PrefrioTurbinas() {
     ? (tSel[0] ? { key: tSel[0].id, clasificacion: tSel[0].clasificacion, empresa: tSel[0].empresa, codigo: tSel[0].codigo } : null)
     : (ref ? { key: ref.linea_id, clasificacion: ref.clasificacion, empresa: ref.empresa, codigo: ref.codigo } : null)
   const compatibleT = (t: M83TarimaDisp) => !refX || fuente !== 'TARIMAS' || (t.empresa === refX.empresa && t.clasificacion === refX.clasificacion)
-  const etiquetaLect = (i: number) => fuente === 'TARIMAS' ? (tSel[i] ? `N.${tSel[i].numero}` : `T${i + 1}`) : `T${i + 1}`
+  const etiquetaLect = (i: number) => {
+    if (esTapon && i === 0) return fuente === 'TARIMAS' && tSel.length ? `Tapón N.${tSel[tSel.length - 1].numero}` : 'Tapón'
+    return fuente === 'TARIMAS' ? (tSel[i] ? `N.${tSel[i].numero}` : `T${i + 1}`) : `T${i + 1}`
+  }
   const turbinasValidas = refX ? (refX.clasificacion === 'ORG' ? config.turbinas_org : config.turbinas_conv) : []
   const nTarimas = fuente === 'TARIMAS' ? tSel.length : (/^\d+$/.test(tarimas) ? Number(tarimas) : 0)
-  const muestraMin = nTarimas > 0 ? Math.ceil(nTarimas * 0.4) : 0
+  const esTapon = config.muestra_tarimas === 1
+  const muestraMin = nTarimas > 0 ? (config.muestra_tarimas ? Math.min(config.muestra_tarimas, nTarimas) : Math.ceil(nTarimas * 0.4)) : 0
+  // ocupación por turbina: tarimas que siguen en prefrío o declaradas por entrar
+  const ocupacion = (t: number) => [...activos, ...porEntrar].filter(g => g.turbina === t).reduce((a, g) => a + g.quedan_tarimas, 0)
+  const nivel = (n: number): 'ok' | 'aviso' | 'lleno' => n >= config.capacidad_turbina ? 'lleno' : n >= config.aviso_turbina ? 'aviso' : 'ok'
+  const ESTILO_NIVEL = { ok: undefined, aviso: { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }, lleno: { backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' } } as const
   const totalCajas = elegidas.reduce((a, d) => a + (Number(sel[d.linea_id]) || 0), 0)
 
   // al elegir la primera fruta, turbina sugerida
@@ -138,7 +146,20 @@ export function PrefrioTurbinas() {
     })
   }
 
+  // Hora de entrada: la temperatura del tapón se mide ya dentro de prefrío, así que registrar = iniciar
+  const [horaDecl, setHoraDecl] = useState(horaAhora())
+  const [cambiarHoraDecl, setCambiarHoraDecl] = useState(false)
+  async function iniciarTrasDeclarar(id: string, t: number) {
+    try {
+      await iniciarGrupoM83(id, cambiarHoraDecl ? isoDesdeHoraLocal(hoyMX(), horaDecl) : null)
+      toast.success(`Prefrío iniciado en turbina ${t}`)
+    } catch (e) {
+      toast.warning(`Se guardó la entrada, pero no se pudo iniciar: ${mensajeErrorM83(e).texto}. Inícialo desde "Por entrar".`, { duration: 9000 })
+    }
+  }
+
   async function declarar() {
+    if (cambiarHoraDecl && !/^\d{2}:\d{2}$/.test(horaDecl)) { toast.error('Indica la hora de entrada'); return }
     if (!ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (fuente === 'TARIMAS') {
       if (tSel.length === 0) { toast.error('Elige las tarimas que entran'); return }
@@ -147,12 +168,12 @@ export function PrefrioTurbinas() {
       if (modo === 'COMPACTO' && !esNum(promedio)) { toast.error('Captura el promedio medido de la fruta'); return }
       setGuardando(true)
       try {
-        await declararTarimasM83({ rancho: ranchoId, turbina, tarimas: tSel.map(t => t.id), unidad,
+        const id = await declararTarimasM83({ rancho: ranchoId, turbina, tarimas: tSel.map(t => t.id), unidad,
           lecturas: modo === 'GUIADO' ? lect.flatMap((f, i) => f.map((v, j) => ({ tarima: etiquetaLect(i), posicion: POS[j], valor: num(v) }))) : null,
           temp: modo === 'COMPACTO' ? num(promedio) : null })
         guardar(K_UNIDAD, unidad)
         if (refX?.clasificacion === 'CONV') guardar(K_TURBINA, String(turbina))
-        toast.success(`Entrada declarada: ${tSel.length} tarima(s) en turbina ${turbina}. Inicia el prefrío cuando entren`)
+        await iniciarTrasDeclarar(id, turbina)
         setSheet(null); await refetch()
       } catch (e) { avisar(e) } finally { setGuardando(false) }
       return
@@ -167,20 +188,20 @@ export function PrefrioTurbinas() {
     if (modo === 'GUIADO' && !lecturasLlenas) { toast.error('Completa las lecturas superior, medio e inferior'); return }
     if (modo === 'COMPACTO' && !esNum(promedio)) { toast.error('Captura el promedio medido de la fruta'); return }
     const lecturas: Lectura[] | null = modo === 'GUIADO'
-      ? lect.flatMap((f, i) => f.map((v, j) => ({ tarima: `T${i + 1}`, posicion: POS[j], valor: num(v) })))
+      ? lect.flatMap((f, i) => f.map((v, j) => ({ tarima: etiquetaLect(i), posicion: POS[j], valor: num(v) })))
       : null
     setGuardando(true)
     try {
-      await declararEntradaM83({
+      const id = await declararEntradaM83({
         rancho: ranchoId, turbina, tarimas: nTarimas, unidad,
         origen: elegidas.map(d => ({ linea_id: d.linea_id, cajas: Number(sel[d.linea_id]) })),
         lecturas, temp: modo === 'COMPACTO' ? num(promedio) : null,
       })
       guardar(K_UNIDAD, unidad)
       if (ref.clasificacion === 'CONV') guardar(K_TURBINA, String(turbina))
-      toast.success(`Entrada declarada en turbina ${turbina}. Inicia el prefrío cuando entre`)
+      await iniciarTrasDeclarar(id, turbina)
       setSheet(null)
-      await refetch()
+      if (fecha !== hoyMX()) setFecha(hoyMX()); else await refetch()
     } catch (e) { avisar(e) } finally { setGuardando(false) }
   }
 
@@ -326,13 +347,14 @@ export function PrefrioTurbinas() {
               <Chip activo={filtroTurbina === null} onClick={() => setFiltroTurbina(null)}>Todas</Chip>
               {turbinas.map(t => (
                 <Chip key={t} activo={filtroTurbina === t} onClick={() => setFiltroTurbina(t)}>
-                  T{t}{config.turbinas_org.includes(t) ? ' ORG' : ''}
+                  T{t}{config.turbinas_org.includes(t) ? ' ORG' : ''}{' '}
+                  <span className="text-xs px-1.5 rounded-full" style={ESTILO_NIVEL[nivel(ocupacion(t))]}>{ocupacion(t)}/{config.capacidad_turbina}</span>
                 </Chip>
               ))}
             </div>
           </div>
           {loading ? <ListaSkeleton rows={2} /> : activosVista.length === 0 ? (
-            <EstadoVacio icono={Snowflake} titulo="Nada en prefrío" ayuda="Declara la entrada con el botón + y luego inicia el prefrío" />
+            <EstadoVacio icono={Snowflake} titulo="Nada en prefrío" ayuda="Registra la entrada con el botón +: el prefrío inicia al guardar" />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {activosVista.map(g => {
@@ -480,9 +502,22 @@ export function PrefrioTurbinas() {
               <TituloSeccion>2 · Turbina y tarimas</TituloSeccion>
               <div className="flex gap-2 flex-wrap">
                 {turbinas.map(t => (
-                  <Chip key={t} activo={turbina === t} disabled={!turbinasValidas.includes(t)} onClick={() => setTurbina(t)}>Turbina {t}</Chip>
+                  <Chip key={t} activo={turbina === t} disabled={!turbinasValidas.includes(t)} onClick={() => setTurbina(t)}>Turbina {t} · {ocupacion(t)}/{config.capacidad_turbina}</Chip>
                 ))}
               </div>
+              {turbina && nTarimas > 0 && (() => {
+                const despues = ocupacion(turbina) + nTarimas
+                const nv = nivel(despues)
+                if (nv === 'ok') return null
+                return (
+                  <div className="rounded-[0.625rem] p-2 text-xs flex items-start gap-2" style={ESTILO_NIVEL[nv]}>
+                    <TriangleAlert className="w-4 h-4 flex-shrink-0" />
+                    <span>{nv === 'lleno'
+                      ? `Turbina ${turbina} con ${despues} tarimas: ${despues > config.capacidad_turbina ? 'rebasa' : 'llega a'} su capacidad de ${config.capacidad_turbina}. Con más tarimas se puede ver afectado el tiempo de preenfriamiento.`
+                      : `Turbina ${turbina} con ${despues} de ${config.capacidad_turbina} tarimas: considera comenzar a colocar en otra turbina.`}</span>
+                  </div>
+                )
+              })()}
               <p className="text-xs text-muted-foreground">{refX.clasificacion === 'ORG' ? 'Orgánico: solo turbina ' + config.turbinas_org.join(', ') : 'Convencional: turbinas ' + config.turbinas_conv.join(', ')}</p>
               {fuente === 'CAJAS' && <div className="flex gap-3 items-end">
                 <div className="flex-1 space-y-1">
@@ -493,21 +528,21 @@ export function PrefrioTurbinas() {
             </section>
 
             <section className="space-y-2">
-              <TituloSeccion>3 · Temperatura de fruta (vástago)</TituloSeccion>
+              <TituloSeccion>{esTapon ? '3 · Temperatura del tapón (ya dentro de prefrío)' : '3 · Temperatura de fruta (vástago)'}</TituloSeccion>
               <div className="flex gap-2 flex-wrap">
-                <Chip activo={modo === 'GUIADO'} onClick={() => setModo('GUIADO')}>Lecturas por tarima</Chip>
+                <Chip activo={modo === 'GUIADO'} onClick={() => setModo('GUIADO')}>{esTapon ? 'Lecturas del tapón' : 'Lecturas por tarima'}</Chip>
                 <Chip activo={modo === 'COMPACTO'} onClick={() => setModo('COMPACTO')}>Promedio ya medido</Chip>
                 <span className="flex-1" />
                 <Chip activo={unidad === 'F'} onClick={() => setUnidad('F')}>°F</Chip>
                 <Chip activo={unidad === 'C'} onClick={() => setUnidad('C')}>°C</Chip>
               </div>
               {modo === 'GUIADO' ? (
-                nTarimas <= 0 ? <p className="text-xs text-muted-foreground">Indica las tarimas para calcular la muestra (40 %).</p> : (
+                nTarimas <= 0 ? <p className="text-xs text-muted-foreground">{esTapon ? 'Indica las tarimas que entran.' : 'Indica las tarimas para calcular la muestra (40 %).'}</p> : (
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Muestra mínima: <b>{muestraMin}</b> de {nTarimas} tarima(s), superior, medio e inferior.</p>
+                    <p className="text-xs text-muted-foreground">{esTapon ? <>Mide solo la última tarima que entró (tapón): superior, medio e inferior.</> : <>Muestra mínima: <b>{muestraMin}</b> de {nTarimas} tarima(s), superior, medio e inferior.</>}</p>
                     {lect.map((f, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="text-xs font-semibold w-10">{etiquetaLect(i)}</span>
+                        <span className="text-xs font-semibold min-w-10 whitespace-nowrap">{etiquetaLect(i)}</span>
                         {f.map((v, j) => (
                           <input key={j} inputMode="decimal" placeholder={POS_TXT[POS[j]]} aria-label={`Tarima ${i + 1} ${POS_TXT[POS[j]]}`} className={numCls}
                             value={v} onChange={e => { const val = e.target.value.replace(/[^0-9.,-]/g, ''); setLect(L => L.map((r, a) => a === i ? r.map((x, b) => b === j ? val : x) : r)) }} />
@@ -529,13 +564,21 @@ export function PrefrioTurbinas() {
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground font-semibold">Promedio medido de la fruta (°{unidad}) *</label>
                   <input inputMode="decimal" className={numCls} value={promedio} onChange={e => setPromedio(e.target.value.replace(/[^0-9.,-]/g, ''))} />
-                  <p className="text-xs text-muted-foreground">Usa este modo solo si el muestreo del 40 % quedó en la hoja de respaldo.</p>
+                  <p className="text-xs text-muted-foreground">{esTapon ? 'Usa este modo solo si las lecturas del tapón quedaron en la hoja de respaldo.' : 'Usa este modo solo si el muestreo del 40 % quedó en la hoja de respaldo.'}</p>
                 </div>
               )}
             </section>
           </>)}
 
-          <Boton type="button" onClick={declarar} cargando={guardando} className="w-full" disabled={!refX}>Guardar declaración</Boton>
+          {refX && (
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground font-semibold">Hora de entrada a prefrío</label>
+              {cambiarHoraDecl
+                ? <HoraInput24 value={horaDecl} onChange={setHoraDecl} ariaLabel="Hora de entrada" />
+                : <button type="button" className={`${fieldCls} text-left text-muted-foreground`} onClick={() => setCambiarHoraDecl(true)}>Ahora · cambiar</button>}
+            </div>
+          )}
+          <Boton type="button" onClick={declarar} cargando={guardando} className="w-full" disabled={!refX}>Guardar e iniciar prefrío</Boton>
         </div>
       </BottomSheet>
 

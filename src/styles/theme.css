@@ -49,6 +49,8 @@
   --agro-info-text: #173251;
   --agro-danger-fill: #FAECE7;
   --agro-danger-text: #C02A2A;
+  --agro-warning-fill: #FFF6DB;   /* advertencia (amarillo): aviso preventivo, no error */
+  --agro-warning-text: #7A5300;
   
   --chart-1: #173251;
   --chart-2: #2AAD95;
@@ -244,6 +246,8 @@
   --agro-info-text: #81BEE5;
   --agro-danger-fill: #2D1515;
   --agro-danger-text: #EC5F5F;
+  --agro-warning-fill: #2B2310;
+  --agro-warning-text: #F2C14E;
 
   /* Scrollbars nativas en modo oscuro — pista y pulgar en tonos navy/gris azulado de marca */
   --scrollbar-track: var(--muted);
@@ -305,6 +309,8 @@
   --color-agro-info-text: var(--agro-info-text);
   --color-agro-danger-fill: var(--agro-danger-fill);
   --color-agro-danger-text: var(--agro-danger-text);
+  --color-agro-warning-fill: var(--agro-warning-fill);
+  --color-agro-warning-text: var(--agro-warning-text);
   
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
