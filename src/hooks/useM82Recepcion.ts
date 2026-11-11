@@ -17,6 +17,7 @@ export interface M82Bloque {
   max_columnas: number
   max_renglones: number
   orden: number
+  fruta?: string | null
 }
 
 export interface M82Item {
