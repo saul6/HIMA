@@ -21,7 +21,9 @@ import {
   isoDesdeHoraLocal, horaLocal, duracionHHMM, fmtTemp,
   type M83Disponible, type M83Grupo, type Unidad, type Lectura, type M83TarimaDisp,
 } from '@/hooks/useM83Prefrio'
-import { generarPrefrioTurbinasPDF } from '@/lib/pdf/m83/generarPrefrioTurbinasPDF'
+import { generarPrefrioTurbinasPDF, generarPrefrioTurbinasConsolidadoPDF } from '@/lib/pdf/m83/generarPrefrioTurbinasPDF'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ConsolidadoRangoSheet } from '@/app/components/ConsolidadoRangoSheet'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 const numCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm text-right'
@@ -52,6 +54,7 @@ function Chip({ activo, onClick, children, disabled }: { activo: boolean; onClic
 
 export function PrefrioTurbinas() {
   const { profile, codigoClave } = useAuthContext()
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const orgId = profile?.org_id ?? null
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
@@ -303,6 +306,8 @@ export function PrefrioTurbinas() {
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
       <ModuloHeader tituloFallback="Entradas y Salidas de Prefrío por Turbina" subtitulo={`${codigoFmt} · ${config.camara_nombre}`} />
+
+      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
 
       <div className="p-4 space-y-4">
         {error && (
@@ -668,6 +673,10 @@ export function PrefrioTurbinas() {
           </div>
         )}
       </BottomSheet>
+
+      <ConsolidadoRangoSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}
+        ayuda="Un solo PDF con cada día de entrada a prefrío del periodo." vacio="No hubo prefrío en ese periodo"
+        onGenerar={(desde, hasta) => generarPrefrioTurbinasConsolidadoPDF(profile?.org_id ?? '', desde, hasta, codigoClave)} />
     </div>
   )
 }

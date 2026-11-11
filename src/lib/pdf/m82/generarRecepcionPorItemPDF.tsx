@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { RecepcionDiaPDF, type M82DatosPDF } from './RecepcionPorItemPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { mergePDFBlobs } from '@/lib/pdf/unirPdf'
 import { cargarEntregasM82, cargarHojasM82, type M82Bloque, type M82Item, type M82FirmaHoja } from '@/hooks/useM82Recepcion'
 import { formatFirmaFecha, type FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
@@ -22,8 +23,8 @@ function descargar(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-/** PDF del día: un solo archivo; solo entregas ACEPTADAS; un juego de hojas por empresa, cada una con sus tres firmas. */
-export async function generarRecepcionPorItemPDF(orgId: string, fecha: string, codigoClave: string): Promise<number> {
+/** PDF del día como Blob (null si no hay entregas aceptadas): un juego de hojas por empresa, cada una con sus tres firmas. */
+export async function blobRecepcionPorItem(orgId: string, fecha: string, codigoClave: string): Promise<Blob | null> {
   const [entregas, b, i, o] = await Promise.all([
     cargarEntregasM82(orgId, fecha),
     tbl('m82_bloques').select('*').eq('org_id', orgId).order('orden'),
@@ -31,7 +32,7 @@ export async function generarRecepcionPorItemPDF(orgId: string, fecha: string, c
     tbl('organizaciones').select('nombre').eq('id', orgId).single(),
   ])
   const aceptadas = entregas.filter((e) => e.estado === 'ACEPTADA')
-  if (aceptadas.length === 0) return 0
+  if (aceptadas.length === 0) return null
   const ids = Array.from(new Set(aceptadas.map((e) => e.creado_por).filter(Boolean))) as string[]
   const nombres: Record<string, string> = {}
   if (ids.length) {
@@ -53,7 +54,25 @@ export async function generarRecepcionPorItemPDF(orgId: string, fecha: string, c
       firmas: { realiza: aPdf(fs.find((f) => f.rol === 'REALIZA')), revisa: aPdf(fs.find((f) => f.rol === 'REVISA')), verifica: aPdf(fs.find((f) => f.rol === 'VERIFICA')) },
     }
   })
-  const blob = await pdf(<RecepcionDiaPDF hojas={hojas} codigoClave={codigoClave} />).toBlob()
+  return pdf(<RecepcionDiaPDF hojas={hojas} codigoClave={codigoClave} />).toBlob()
+}
+
+/** PDF del día (descarga). Devuelve 0 si no hay entregas aceptadas. */
+export async function generarRecepcionPorItemPDF(orgId: string, fecha: string, codigoClave: string): Promise<number> {
+  const blob = await blobRecepcionPorItem(orgId, fecha, codigoClave)
+  if (!blob) return 0
   descargar(blob, nombrePdf('Recepcion_Por_Item', fecha))
-  return empresas.length
+  return 1
+}
+
+/** Consolidado por rango: un solo PDF con cada día que tuvo entregas aceptadas. Devuelve los días incluidos. */
+export async function generarRecepcionPorItemConsolidadoPDF(orgId: string, desde: string, hasta: string, codigoClave: string): Promise<number> {
+  const { data, error } = await tbl('m82_entregas').select('fecha').eq('org_id', orgId).eq('estado', 'ACEPTADA').gte('fecha', desde).lte('fecha', hasta)
+  if (error) throw error
+  const fechas = Array.from(new Set((data ?? []).map((x: any) => x.fecha as string))).sort()
+  const blobs: Blob[] = []
+  for (const f of fechas) { const b = await blobRecepcionPorItem(orgId, f, codigoClave); if (b) blobs.push(b) }
+  if (blobs.length === 0) return 0
+  descargar(await mergePDFBlobs(blobs), `Recepcion_Por_Item-consolidado-${desde}-${hasta}.pdf`)
+  return blobs.length
 }

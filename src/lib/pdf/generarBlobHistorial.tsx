@@ -68,13 +68,20 @@ import { generarBlobInspeccionAlmacenEmpaqueGG } from './m75/generarInspeccionAl
 import { generarBlobInventarioBotiquinGG } from './m73/generarInventarioBotiquinGGPDF'
 import { generarBlobMantenimientoEquiposGG } from './m76/generarMantenimientoEquiposGGPDF'
 import { generarBlobEmpleadosGG } from './m77/generarEmpleadosGGPDF'
+import { blobRecepcionPorItem } from './m82/generarRecepcionPorItemPDF'
+import { blobPrefrioTurbinas } from './m83/generarPrefrioTurbinasPDF'
+import { blobPapeletaM84 } from './m84/generarProductoNoConformePDF'
+import { blobTemperaturaConservadorDia } from './m85/generarTemperaturaConservadorPDF'
+import { blobManifiestoPorTarima } from './m86/generarManifiestoPorTarimaPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62' | 'M63' | 'M64' | 'M65' | 'M69' | 'M70' | 'M71' | 'M72' | 'M73' | 'M74' | 'M75' | 'M76' | 'M77' | 'M78'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62' | 'M63' | 'M64' | 'M65' | 'M69' | 'M70' | 'M71' | 'M72' | 'M73' | 'M74' | 'M75' | 'M76' | 'M77' | 'M78' | 'M82' | 'M83' | 'M84' | 'M85' | 'M86'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
+  | { tipo: 'M82' | 'M83' | 'M85'; fecha: string }
+  | { tipo: 'M84' | 'M86'; id: string }
   | { tipo: 'M6'; id: string }
   | { tipo: 'M7' | 'M8' | 'M10' | 'M12'; ranchoId: string; fecha: string }
   | { tipo: 'M9' | 'M11' | 'M19'; id: string }
@@ -448,6 +455,11 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string, codigoClave
     case 'M76': return generarBlobMantenimientoEquiposGG(ref.id, orgId, codigoClave)
     case 'M77': return generarBlobEmpleadosGG(ref.id, orgId, codigoClave)
     case 'M78': return generarBlobNotaTrazabilidad(ref.id, orgId, codigoClave)
+    case 'M82': { const b = await blobRecepcionPorItem(orgId, ref.fecha, codigoClave); if (!b) throw new Error('Sin entregas aceptadas en esa fecha'); return b }
+    case 'M83': { const b = await blobPrefrioTurbinas(orgId, ref.fecha, codigoClave); if (!b) throw new Error('Sin prefrío en esa fecha'); return b }
+    case 'M84': return blobPapeletaM84(ref.id, orgId, codigoClave)
+    case 'M85': return blobTemperaturaConservadorDia(orgId, ref.fecha, codigoClave)
+    case 'M86': return (await blobManifiestoPorTarima(ref.id, orgId, codigoClave)).blob
   }
 }
 

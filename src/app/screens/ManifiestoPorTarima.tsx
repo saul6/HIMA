@@ -25,7 +25,9 @@ import {
   type M86Detalle, type M86Manifiesto, type EstadoManifiesto, type M86PapeletaRef, type M86TarimaReg,
 } from '@/hooks/useM86Manifiesto'
 import { horaLocal, fmtT } from '@/lib/pdf/m86/manifiestoLogica'
-import { generarManifiestoPorTarimaPDF } from '@/lib/pdf/m86/generarManifiestoPorTarimaPDF'
+import { generarManifiestoPorTarimaPDF, generarManifiestoPorTarimaConsolidadoPDF } from '@/lib/pdf/m86/generarManifiestoPorTarimaPDF'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ConsolidadoRangoSheet } from '@/app/components/ConsolidadoRangoSheet'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 const numCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm text-right'
@@ -155,6 +157,7 @@ function SeguimientoSello({ evidencias, puedeVerificar, unidadSugerida, onAgrega
 
 export function ManifiestoPorTarima() {
   const { profile, codigoClave } = useAuthContext()
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const orgId = profile?.org_id ?? null
   const puedeVerificar = ['admin_org', 'asesor_tecnico', 'super_admin'].includes(profile?.rol ?? '')
   const { terminosSitio } = useModulosContext()
@@ -312,6 +315,7 @@ export function ManifiestoPorTarima() {
     return (
       <div className="flex flex-col min-h-full bg-background pb-safe-nav">
         <ModuloHeader tituloFallback="Manifiesto de Embarque" subtitulo={`${codigoFmt} · Por embarque`} />
+        <div className="px-4 pt-3 max-w-3xl w-full mx-auto"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
         <div className="p-4 space-y-2 max-w-3xl w-full mx-auto">
           {error && <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar manifiestos.</p>}
           {loading ? <ListaSkeleton rows={3} /> : manifiestos.length === 0 ? (
@@ -328,6 +332,9 @@ export function ManifiestoPorTarima() {
             </button>
           ))}
         </div>
+        <ConsolidadoRangoSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}
+          ayuda="Todos los manifiestos del periodo en un solo PDF." vacio="No hay manifiestos en ese periodo"
+          onGenerar={(desde, hasta) => generarManifiestoPorTarimaConsolidadoPDF(orgId ?? '', desde, hasta, codigoClave)} />
         <Fab onClick={() => { setNuevo({ empresa: 'DRISCOLL' }); setNuevoOpen(true) }} aria-label="Nuevo manifiesto" />
         <BottomSheet open={nuevoOpen} onClose={() => { if (!guardando) setNuevoOpen(false) }} height="85%">
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
