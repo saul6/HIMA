@@ -204,7 +204,7 @@ export function ManifiestoPorTarima() {
     if (!ranchoId) { toast.error(`Selecciona ${terminosSitio.singular.toLowerCase()}`); return }
     if (!nuevo.empresa?.trim()) { toast.error('Indica la empresa'); return }
     setGuardando(true)
-    try { const id = await crearManifiestoM86(ranchoId, { ...nuevo, temp_unidad: 'C' }); setNuevoOpen(false); await refetch(); setSelId(id) }
+    try { const id = await crearManifiestoM86(ranchoId, { ...nuevo, empresa: nuevo.empresa.trim().replace(/\s+/g, ' ').toUpperCase(), temp_unidad: 'C' }); setNuevoOpen(false); await refetch(); setSelId(id) }
     catch (e) { avisar(e) } finally { setGuardando(false) }
   }
   const CAMPOS: [string, string][] = [['folio', 'N° de manifiesto (folio real)'], ['empresa', 'Empresa *'], ['transportista', 'Línea transportista'], ['chofer', 'Nombre del chofer'],
@@ -328,7 +328,7 @@ export function ManifiestoPorTarima() {
             </button>
           ))}
         </div>
-        <Fab onClick={() => { setNuevo({}); setNuevoOpen(true) }} aria-label="Nuevo manifiesto" />
+        <Fab onClick={() => { setNuevo({ empresa: 'DRISCOLL' }); setNuevoOpen(true) }} aria-label="Nuevo manifiesto" />
         <BottomSheet open={nuevoOpen} onClose={() => { if (!guardando) setNuevoOpen(false) }} height="85%">
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
             <h2 className="text-base text-foreground font-semibold">Nuevo manifiesto</h2>
