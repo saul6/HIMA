@@ -1,7 +1,7 @@
 // M82 · Recepción diaria de fruta por ítem. Captura de 5 datos (fecha, hora, productor, ítem, cajas);
 // el bloque de la hoja y ORG/CONV salen del catálogo. Precaptura → dictamen (Aceptar / Retener / Rechazar).
 import { useEffect, useMemo, useState } from 'react'
-import { X, Loader2, FileDown, PackageOpen, TriangleAlert, Trash2, Search } from 'lucide-react'
+import { X, Loader2, FileDown, PackageOpen, TriangleAlert, Trash2, Search, Boxes, PenLine, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -11,8 +11,6 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { FirmasRegistro } from '@/app/components/FirmasRegistro'
-import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -21,7 +19,8 @@ import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
 import {
   useM82Catalogo, useM82Entregas, crearEntregaM82, dictaminarEntregaM82, borrarEntregaM82, mensajeErrorM82,
-  type M82Entrega, type M82Estado, type M82Item,
+  cargarHojasM82, firmarHojaM82, autoArmarM82, cargarFirmantesM82, designarFirmanteM82,
+  type M82Entrega, type M82Estado, type M82Item, type M82Hoja, type M82RolHoja, type M82AutoGrupo, type M82Firmante,
 } from '@/hooks/useM82Recepcion'
 import { generarRecepcionPorItemPDF } from '@/lib/pdf/m82/generarRecepcionPorItemPDF'
 
@@ -37,6 +36,9 @@ function avisar(e: any) {
   const m = mensajeErrorM82(e)
   if (m.tipo === 'warning') toast.warning(m.texto, { duration: 7000 }); else toast.error(m.texto, { duration: 7000 })
 }
+
+const ROL_TXT: Record<M82RolHoja, string> = { REALIZA: 'Realiza', REVISA: 'Revisa (encargado de turno)', VERIFICA: 'Verifica (responsable de inocuidad)' }
+const ROLES: M82RolHoja[] = ['REALIZA', 'REVISA', 'VERIFICA']
 
 const ESTADO_UI: Record<M82Estado, { texto: string; fondo: string; color: string }> = {
   PRECAPTURA: { texto: 'Precaptura', fondo: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
@@ -72,8 +74,36 @@ export function RecepcionPorItem() {
   const { bloques, items, loading: loadingCat } = useM82Catalogo()
   const [fecha, setFecha] = useState(hoyMX())
   const { entregas, loading, error, refetch } = useM82Entregas(fecha)
-  const ids = useMemo(() => entregas.filter(e => e.estado === 'ACEPTADA').map(e => e.id), [entregas])
-  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M82', ids)
+  const esAdmin = profile?.rol === 'admin_org'
+  // ── Hojas del día (una por empresa) y sus firmas al final
+  const [hojas, setHojas] = useState<M82Hoja[]>([])
+  const ranchosDia = useMemo(() => Array.from(new Set(entregas.map(e => e.rancho_id))).sort().join(','), [entregas])
+  const firmasClave = useMemo(() => entregas.map(e => `${e.id}:${e.estado}`).join(','), [entregas])
+  async function refetchHojas() {
+    if (!ranchosDia) { setHojas([]); return }
+    try { setHojas(await cargarHojasM82(ranchosDia.split(','), fecha)) } catch { setHojas([]) }
+  }
+  useEffect(() => { refetchHojas() }, [ranchosDia, firmasClave, fecha]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [firmando, setFirmando] = useState<string | null>(null)
+  async function firmarHoja(h: M82Hoja, rol: M82RolHoja) {
+    setFirmando(`${h.empresa}|${rol}`)
+    try { await firmarHojaM82(h, fecha, rol); toast.success(`Hoja de ${h.empresa} firmada: ${ROL_TXT[rol]}`); await refetchHojas() }
+    catch (e) { avisar(e); await refetchHojas() } finally { setFirmando(null) }
+  }
+  // ── Armado automático (preguardado de consolidación)
+  const [armado, setArmado] = useState<{ productor: string; empresa: string; grupos: M82AutoGrupo[] } | null>(null)
+  // ── Firmantes designados (administrador)
+  const [firmantesOpen, setFirmantesOpen] = useState(false)
+  const [firmantes, setFirmantes] = useState<M82Firmante[]>([])
+  const ranchoFirmantes = ranchos[0]?.id ?? ''
+  async function abrirFirmantes() {
+    if (!orgId || !ranchoFirmantes) return
+    setFirmantesOpen(true)
+    try { setFirmantes(await cargarFirmantesM82(orgId, ranchoFirmantes)) } catch (e) { avisar(e) }
+  }
+  async function designar(f: M82Firmante, rol: 'REVISA' | 'VERIFICA', activo: boolean) {
+    try { await designarFirmanteM82(ranchoFirmantes, f.profile_id, rol, activo); if (orgId) setFirmantes(await cargarFirmantesM82(orgId, ranchoFirmantes)) } catch (e) { avisar(e) }
+  }
   const codigoFmt = codigoFormato('F-FRUS-PRO-02', codigoClave)
 
   const itemPorCodigo = useMemo(() => new Map(items.map(i => [i.codigo, i])), [items])
@@ -163,8 +193,11 @@ export function RecepcionPorItem() {
       await dictaminarEntregaM82(sel, { estado, cajas, limp_be: be, limp_l: lim, limp_lp: lp, pase_anden: pase, observaciones: obs })
       toast.success(estado === 'ACEPTADA' ? 'Entrega aceptada' : estado === 'RETENIDA' ? 'Entrega retenida' : 'Entrega rechazada')
       setSheet(null)
+      if (estado === 'ACEPTADA') {
+        try { const g = await autoArmarM82(sel.id); if (g.length) setArmado({ productor: sel.codigo_productor, empresa: sel.empresa, grupos: g }) }
+        catch (e) { const m = mensajeErrorM82(e); toast.warning(`La entrega quedó aceptada, pero no se armaron las tarimas: ${m.texto}. Ármalas en Tarimas y Consolidación.`, { duration: 9000 }) }
+      }
       await refetch()
-      await refetchFirmas()
     } catch (e) { avisar(e); await refetch() } finally { setGuardando(false) }
   }
 
@@ -242,6 +275,73 @@ export function RecepcionPorItem() {
           </div>
         )}
 
+        {armado && (
+          <div className="rounded-[0.625rem] border border-border bg-card p-3 space-y-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm font-semibold flex items-center gap-2"><Boxes className="w-4 h-4" /> Tarimas · Productor {armado.productor} · {armado.empresa}</p>
+              <button type="button" aria-label="Cerrar" onClick={() => setArmado(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+            </div>
+            {armado.grupos.map(g => (
+              <p key={g.codigo + g.clasificacion} className="text-xs">
+                <b>#{g.codigo}</b> {g.presentacion ?? ''} · {g.clasificacion === 'ORG' ? 'Org' : 'Conv'}:{' '}
+                {g.capacidad == null
+                  ? <span>capacidad pendiente de validar; {g.remanente} cajas quedan para tarima parcial autorizada</span>
+                  : <>
+                      {g.armadas.length > 0 ? <span style={{ color: 'var(--agro-success-text)' }}>{g.armadas.length} completa(s) de {g.capacidad} (N.{g.armadas.join(', N.')})</span> : <span>sin tarima completa aún</span>}
+                      {g.remanente > 0 ? <span> · {g.remanente} cajas en consolidación, faltan {g.falta} para completar</span> : <span> · sin remanente</span>}
+                    </>}
+              </p>
+            ))}
+            <p className="text-xs text-muted-foreground">El remanente se completa con las siguientes recepciones del mismo productor e ítem.</p>
+          </div>
+        )}
+
+        {hojas.length > 0 && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <TituloSeccion>Firmas del día (al cerrar la recepción)</TituloSeccion>
+              {esAdmin && <button type="button" className="text-xs underline" style={{ color: 'var(--primary)' }} onClick={abrirFirmantes}>Firmantes</button>}
+            </div>
+            {hojas.map(h => {
+              const deRol = (r: M82RolHoja) => h.firmas.find(f => f.rol === r)
+              return (
+                <div key={h.rancho_id + h.empresa} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold">{h.empresa}</p>
+                    <span className="text-xs text-muted-foreground">{h.aceptadas} aceptada(s){h.pendientes ? ` · ${h.pendientes} sin dictamen` : ''}</span>
+                  </div>
+                  {h.pendientes > 0 && <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Se firma cuando todas las entregas de {h.empresa} tengan dictamen.</p>}
+                  {h.aceptadas > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {ROLES.map((r, i) => {
+                        const f = deRol(r)
+                        const previa = i === 0 ? true : !!deRol(ROLES[i - 1])?.al_dia
+                        const puede = h.pendientes === 0 && previa && !(f && f.al_dia)
+                        return (
+                          <div key={r} className="rounded-[0.625rem] border border-border p-2 space-y-1">
+                            <p className="text-xs font-semibold">{ROL_TXT[r]}</p>
+                            {f ? (
+                              <p className="text-xs flex items-center gap-1" style={{ color: f.al_dia ? 'var(--agro-success-text)' : 'var(--agro-danger-text)' }}>
+                                {f.al_dia ? <Check className="w-3 h-3" /> : <TriangleAlert className="w-3 h-3" />}{f.nombre}{f.al_dia ? '' : ' · desactualizada (la hoja cambió)'}
+                              </p>
+                            ) : <p className="text-xs text-muted-foreground">Pendiente</p>}
+                            {puede && (
+                              <Boton type="button" tamano="sm" variante="secundario" className="w-full" cargando={firmando === `${h.empresa}|${r}`} onClick={() => firmarHoja(h, r)}>
+                                <PenLine className="w-3 h-3" /> {f ? 'Volver a firmar' : 'Firmar'}
+                              </Boton>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            <p className="text-xs text-muted-foreground">Tres personas distintas, en orden. Si después llega o se corrige una entrega de esa empresa, la hoja se vuelve a firmar.</p>
+          </section>
+        )}
+
         {loading ? <ListaSkeleton /> : entregas.length === 0 ? (
           <EstadoVacio icono={PackageOpen} titulo="Sin entregas en esta fecha" ayuda="Captura la primera con el botón +" />
         ) : entregas.map(e => {
@@ -281,15 +381,32 @@ export function RecepcionPorItem() {
                 </div>
               </div>
               {e.observaciones && <p className="text-xs text-muted-foreground">Obs.: {e.observaciones}</p>}
-              {e.estado === 'ACEPTADA' && (
-                <FirmasRegistro modulo="M82" registroId={e.id} fechaRegistro={e.fecha} firma={firmas[e.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
-              )}
             </div>
           )
         })}
       </div>
 
       <Fab onClick={abrirNueva} aria-label="Nueva entrega" disabled={items.length === 0} />
+
+      {/* ═══ Firmantes designados ═══ */}
+      <BottomSheet open={firmantesOpen} onClose={() => setFirmantesOpen(false)} height="85%">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
+          <h2 className="text-base text-foreground font-semibold">Firmantes de la recepción</h2>
+          <button aria-label="Cerrar" type="button" onClick={() => setFirmantesOpen(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+        </div>
+        <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-3" style={{ flex: 1 }}>
+          <p className="text-xs text-muted-foreground">Realiza: quien capturó o dictaminó entregas. Revisa (encargado de turno) y Verifica (responsable de inocuidad): administradores, asesores técnicos o los usuarios que marques aquí.</p>
+          {firmantes.map(f => (
+            <div key={f.profile_id} className="flex items-center gap-3 rounded-[0.625rem] border border-border p-2">
+              <span className="text-sm flex-1 min-w-0 truncate">{f.nombre}</span>
+              {f.rol_usuario === 'admin_org' || f.rol_usuario === 'asesor_tecnico' ? <span className="text-xs text-muted-foreground">Puede revisar y verificar</span> : (<>
+                <label className="text-xs flex items-center gap-1"><input type="checkbox" checked={f.revisa} onChange={e => designar(f, 'REVISA', e.target.checked)} />Revisa</label>
+                <label className="text-xs flex items-center gap-1"><input type="checkbox" checked={f.verifica} onChange={e => designar(f, 'VERIFICA', e.target.checked)} />Verifica</label>
+              </>)}
+            </div>
+          ))}
+        </div>
+      </BottomSheet>
 
       {/* ═══ Nueva entrega ═══ */}
       <BottomSheet open={sheet === 'nueva'} onClose={() => { if (!guardando) setSheet(null) }} height="85%">

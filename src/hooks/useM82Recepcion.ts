@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 
 const tbl = (name: string) => (supabase as any).from(name)
+const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc(fn, args)
 
 export type M82Estado = 'PRECAPTURA' | 'ACEPTADA' | 'RECHAZADA' | 'RETENIDA'
 
@@ -211,10 +212,58 @@ export function mensajeErrorM82(e: any): { tipo: 'warning' | 'error'; texto: str
     ['M82_ENTREGA_CERRADA', 'warning', 'La entrega ya tiene dictamen; solo se editan observaciones'],
     ['M82_PAPELETA_ABIERTA', 'warning', 'La entrega tiene papeletas de no conforme sin dictamen; dictamínalas en Producto No Conforme'],
     ['M82_TRANSICION', 'warning', 'Ese cambio de estado no está permitido'],
-    ['FIRMA_REQUERIDA', 'warning', 'Registra tu firma en tu perfil antes de capturar'],
+    ['FIRMA_REQUERIDA', 'warning', 'Registra tu firma en tu perfil primero'],
   ]
   for (const [clave, tipo, texto] of tabla) if (msg.includes(clave)) return { tipo, texto }
+  const m = /((?:M82|M87)_[A-Z_]+|FORBIDDEN|VALOR_INVALIDO):\s*(.*)$/s.exec(msg)
+  if (m) return { tipo: m[1] === 'FORBIDDEN' ? 'error' : 'warning', texto: m[2].trim() }
   if (msg.includes('TEXTO_MUY_LARGO')) return { tipo: 'warning', texto: msg.replace(/^.*TEXTO_MUY_LARGO:\s*/, '') }
   if (msg.includes('row-level security')) return { tipo: 'error', texto: 'No tienes permiso para esta instalación' }
   return { tipo: 'error', texto: msg || 'Error al guardar' }
+}
+
+// ── Hoja del día (instalación + fecha + empresa): firmas al final, en orden Realiza → Revisa → Verifica
+export type M82RolHoja = 'REALIZA' | 'REVISA' | 'VERIFICA'
+export interface M82FirmaHoja { rol: M82RolHoja; profile_id: string; nombre: string; firmado_en: string; sello: string; al_dia: boolean; firma_png: string }
+export interface M82Hoja { rancho_id: string; empresa: string; aceptadas: number; pendientes: number; contenido_sha256: string; firmas: M82FirmaHoja[] }
+
+export async function cargarHojasM82(ranchos: string[], fecha: string): Promise<M82Hoja[]> {
+  const out: M82Hoja[] = []
+  for (const r of ranchos) {
+    const { data, error } = await rpc('m82_hojas_dia', { p_rancho: r, p_fecha: fecha })
+    if (error) throw error
+    for (const h of data ?? []) out.push({ ...h, rancho_id: r, firmas: (h.firmas ?? []) as M82FirmaHoja[] })
+  }
+  return out
+}
+
+export async function firmarHojaM82(h: M82Hoja, fecha: string, rol: M82RolHoja) {
+  const { error } = await rpc('m82_hoja_firmar', { p_rancho: h.rancho_id, p_fecha: fecha, p_empresa: h.empresa, p_rol: rol, p_contenido_sha256: h.contenido_sha256 })
+  if (error) throw error
+}
+
+export interface M82AutoGrupo { codigo: string; presentacion: string | null; clasificacion: string; capacidad: number | null; armadas: number[]; remanente: number; falta: number | null }
+/** Al aceptar: arma las tarimas completas posibles (mismo productor, ítem, clasificación y empresa) y deja el remanente en consolidación. */
+export async function autoArmarM82(entregaId: string): Promise<M82AutoGrupo[]> {
+  const { data, error } = await rpc('m87_auto_armar', { p_entrega: entregaId })
+  if (error) throw error
+  return (data?.grupos ?? []) as M82AutoGrupo[]
+}
+
+export interface M82Firmante { profile_id: string; nombre: string; rol_usuario: string; revisa: boolean; verifica: boolean }
+export async function cargarFirmantesM82(orgId: string, rancho: string): Promise<M82Firmante[]> {
+  const [p, f] = await Promise.all([
+    tbl('profiles').select('id, nombre_completo, rol, activo').eq('org_id', orgId),
+    tbl('m82_firmantes').select('profile_id, rol').eq('rancho_id', rancho),
+  ])
+  if (p.error) throw p.error
+  const des = (f.data ?? []) as { profile_id: string; rol: string }[]
+  return ((p.data ?? []) as any[]).filter(x => x.activo !== false).map(x => ({
+    profile_id: x.id, nombre: x.nombre_completo ?? '', rol_usuario: x.rol,
+    revisa: des.some(d => d.profile_id === x.id && d.rol === 'REVISA'), verifica: des.some(d => d.profile_id === x.id && d.rol === 'VERIFICA'),
+  })).sort((a, b) => a.nombre.localeCompare(b.nombre))
+}
+export async function designarFirmanteM82(rancho: string, profile: string, rol: 'REVISA' | 'VERIFICA', activo: boolean) {
+  const { error } = await rpc('m82_firmante_designar', { p_rancho: rancho, p_profile: profile, p_rol: rol, p_activo: activo })
+  if (error) throw error
 }

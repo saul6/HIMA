@@ -10,6 +10,7 @@ import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import type { M82Bloque, M82Entrega, M82Item } from '@/hooks/useM82Recepcion'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M82DatosPDF {
   orgNombre: string
@@ -19,6 +20,8 @@ export interface M82DatosPDF {
   items: M82Item[]
   entregas: M82Entrega[]          // solo ACEPTADAS de esa empresa y fecha
   nombres: Record<string, string> // profile_id -> nombre de quien realizó
+  /** Firmas de la hoja (al final del día): Realiza, Revisa y Verifica, tres personas distintas. */
+  firmas?: { realiza: FirmaParaPdf | null; revisa: FirmaParaPdf | null; verifica: FirmaParaPdf | null }
 }
 
 interface Renglon {
@@ -144,7 +147,16 @@ function TablaBloque({ s }: { s: Segmento }) {
   )
 }
 
+/** Un PDF del día: todas las empresas, cada una con sus hojas y sus firmas. */
+export function RecepcionDiaPDF({ hojas, codigoClave }: { hojas: M82DatosPDF[]; codigoClave: string }) {
+  return <Document>{hojas.map((d) => <PaginasEmpresa key={d.empresa} d={d} codigoClave={codigoClave} />)}</Document>
+}
+
 export function RecepcionPorItemPDF({ d, codigoClave }: { d: M82DatosPDF; codigoClave: string }) {
+  return <Document><PaginasEmpresa d={d} codigoClave={codigoClave} /></Document>
+}
+
+function PaginasEmpresa({ d, codigoClave }: { d: M82DatosPDF; codigoClave: string }) {
   const codigoFmt = codigoFormato('F-FRUS-PRO-02', codigoClave)
   const segs = construirSegmentos(d)
   // Hojas: principales agrupadas por página del formato; cada continuación en su propia hoja.
@@ -162,7 +174,7 @@ export function RecepcionPorItemPDF({ d, codigoClave }: { d: M82DatosPDF; codigo
   const fecha = fechaPdf(d.fecha)
 
   return (
-    <Document>
+    <>
       {hojas.map((grupo, i) => {
         const ultima = i === hojas.length - 1
         return (
@@ -192,8 +204,9 @@ export function RecepcionPorItemPDF({ d, codigoClave }: { d: M82DatosPDF; codigo
                 </Text>
                 <PdfFirmas
                   signatures={[
-                    { label: '', nombre: '', caption: `Aprobó Responsable ${d.orgNombre}`, firma: null },
-                    { label: '', nombre: '', caption: 'Responsable Empresa', firma: null },
+                    { label: '', nombre: d.firmas?.realiza?.firmante ?? '', caption: 'Realiza', firma: d.firmas?.realiza ?? null },
+                    { label: '', nombre: d.firmas?.revisa?.firmante ?? '', caption: 'Revisa (encargado de turno)', firma: d.firmas?.revisa ?? null },
+                    { label: '', nombre: d.firmas?.verifica?.firmante ?? '', caption: 'Verifica (responsable de inocuidad)', firma: d.firmas?.verifica ?? null },
                   ]}
                 />
               </View>
@@ -201,6 +214,6 @@ export function RecepcionPorItemPDF({ d, codigoClave }: { d: M82DatosPDF; codigo
           </PaginaEstandar>
         )
       })}
-    </Document>
+    </>
   )
 }
