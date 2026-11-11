@@ -19,10 +19,9 @@ export interface M83DatosPDF {
 }
 
 const COLS: ColumnaDato[] = [
-  { texto: 'Cuarto de pre-frío', ancho: 70 },
   { texto: 'Orgánico / Convencional', ancho: 50, align: 'center' },
   { texto: 'Fruta', ancho: 52 },
-  { texto: 'Presentación', ancho: 110 },
+  { texto: 'Presentación', ancho: 150 },
   { texto: 'N° de tarimas', ancho: 38, align: 'center' },
   { texto: 'Total cajas', ancho: 38, align: 'center' },
   { texto: 'Entrada · Hora', ancho: 42, align: 'center' },
@@ -35,7 +34,8 @@ const COLS: ColumnaDato[] = [
 export function filasPrefrio(grupos: M83Grupo[]): CeldaDato[][] {
   const filas: CeldaDato[][] = []
   for (const g of grupos) {
-    const base = [g.camara, g.clasificacion, g.fruta ?? '', `${g.presentacion} (#${g.codigo})`]
+    if (!g.entrada_en) continue   // declarado, aún sin entrar a prefrío
+    const base = [g.clasificacion, g.fruta ?? '', g.combinada ? `Combinada: ${g.presentacion}` : `${g.presentacion} (#${g.codigo})`]
     const ent = [horaLocal(g.entrada_en), fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)]
     const diaEnt = fechaLocal(g.entrada_en)
     for (const s of g.salidas) {
