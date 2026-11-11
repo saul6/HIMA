@@ -25,10 +25,10 @@ import {
 import { generarRecepcionPorItemPDF } from '@/lib/pdf/m82/generarRecepcionPorItemPDF'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
-const CLAVE_EMPRESA = 'mady.m82.ultimaEmpresa'
 
-function leerEmpresa(): string { try { return localStorage.getItem(CLAVE_EMPRESA) ?? '' } catch { return '' } }
-function guardarEmpresa(v: string) { try { localStorage.setItem(CLAVE_EMPRESA, v) } catch { /* sin almacenamiento */ } }
+/** Empresa dueña de la fruta: por ahora siempre DRISCOLL (precargada; se puede cambiar si llega otra). */
+const EMPRESA_DEFECTO = 'DRISCOLL'
+const normEmpresa = (v: string) => v.trim().replace(/\s+/g, ' ').toUpperCase()
 function horaAhora(): string {
   return new Date().toLocaleTimeString('en-GB', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
 }
@@ -116,6 +116,7 @@ export function RecepcionPorItem() {
   const [ranchoId, setRanchoId] = useState('')
   const [hora, setHora] = useState(horaAhora())
   const [empresa, setEmpresa] = useState('')
+  const [cambiarEmpresa, setCambiarEmpresa] = useState(false)
   const [productor, setProductor] = useState('')
   const [lineas, setLineas] = useState<LineaForm[]>([])
   const [busqueda, setBusqueda] = useState('')
@@ -124,7 +125,7 @@ export function RecepcionPorItem() {
   useEffect(() => { if (ranchos.length === 1) setRanchoId(ranchos[0].id) }, [ranchos])
 
   function abrirNueva() {
-    setHora(horaAhora()); setEmpresa(leerEmpresa()); setProductor(''); setLineas([]); setBusqueda(''); setFiltroBloque('')
+    setHora(horaAhora()); setEmpresa(EMPRESA_DEFECTO); setCambiarEmpresa(false); setProductor(''); setLineas([]); setBusqueda(''); setFiltroBloque('')
     if (ranchos.length === 1) setRanchoId(ranchos[0].id)
     setSheet('nueva')
   }
@@ -153,10 +154,9 @@ export function RecepcionPorItem() {
     setGuardando(true)
     try {
       await crearEntregaM82({
-        orgId, rancho_id: ranchoId, fecha: hoyMX(), hora, empresa, codigo_productor: productor,
+        orgId, rancho_id: ranchoId, fecha: hoyMX(), hora, empresa: normEmpresa(empresa), codigo_productor: productor,
         lineas: lineas.map(l => ({ codigo: l.codigo, cajas: Number(l.cajas) })),
       })
-      guardarEmpresa(empresa.trim())
       toast.success('Precaptura guardada')
       setSheet(null)
       if (fecha !== hoyMX()) setFecha(hoyMX()); else await refetch()
@@ -440,10 +440,16 @@ export function RecepcionPorItem() {
               <label className="text-xs text-muted-foreground font-semibold">Código del productor *</label>
               <input className={fieldCls} maxLength={60} value={productor} onChange={e => setProductor(e.target.value)} placeholder="Como viene en la papeleta o etiqueta" />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-semibold">Empresa dueña de la fruta *</label>
-              <input className={fieldCls} maxLength={150} value={empresa} onChange={e => setEmpresa(e.target.value)} />
-            </div>
+            {cambiarEmpresa ? (
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Empresa dueña de la fruta *</label>
+                <input className={fieldCls} maxLength={150} value={empresa} onChange={e => setEmpresa(e.target.value.toUpperCase())} />
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Empresa: <b className="text-foreground">{empresa}</b> · <button type="button" className="underline" onClick={() => setCambiarEmpresa(true)}>cambiar</button>
+              </p>
+            )}
           </section>
 
           <section className="space-y-3">
