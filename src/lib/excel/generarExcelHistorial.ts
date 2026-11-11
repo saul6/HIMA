@@ -202,7 +202,7 @@ function writeAplicacionBlock(ws: ExcelJS.Worksheet, startRow: number, app: Apli
   r = infoRow2(ws, r, 'Equipo', v(ap.equipo), 'Condición meteorológica', v(ap.condicion_meteorologica))
   r = infoRow2(ws, r,
     'Cloración',
-    ap.cloracion ? `Sí — ${v(ap.cloro_cantidad_l)} L · pH ${v(ap.cloro_ph)}` : 'No',
+    ap.cloracion ? `Sí — ${v(ap.cloro_cantidad_l)} ml · pH ${v(ap.cloro_ph)}` : 'No',
     '', ''
   )
 
