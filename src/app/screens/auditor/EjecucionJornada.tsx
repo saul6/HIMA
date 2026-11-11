@@ -583,7 +583,7 @@ export function EjecucionJornada() {
                     <MoreVertical aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
                   </Boton>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
                   <DropdownMenuLabel className="text-caption uppercase tracking-wide text-muted-foreground">Jornada</DropdownMenuLabel>
                   <DropdownMenuItem onSelect={() => navigate('/auditor/jornada/nueva')}>
                     <Plus aria-hidden="true" />
