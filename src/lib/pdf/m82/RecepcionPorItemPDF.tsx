@@ -84,6 +84,8 @@ export function construirSegmentos(d: M82DatosPDF): Segmento[] {
         })
       }
     }
+    // Solo bloques con fruta recibida: un producto sin entradas aceptadas no aparece en el PDF.
+    if (renglones.length === 0) continue
     const codigos = Array.from(new Set(renglones.flatMap((r) => Array.from(r.cajas.keys()))))
       .sort((x, y) => (ordenItem.get(x) ?? 0) - (ordenItem.get(y) ?? 0))
     let n = 0
@@ -102,7 +104,8 @@ const siX = (v: boolean | null): CeldaDato =>
   v === true ? 'Si' : v === false ? { texto: 'X', color: PC.negativo, negrita: true } : ''
 
 function TablaBloque({ s }: { s: Segmento }) {
-  const cols = Array.from({ length: s.bloque.max_columnas }, (_, i) => s.codigos[i] ?? null)
+  // Solo las columnas de ítems recibidos (sin columnas "#" vacías).
+  const cols: (string | null)[] = s.codigos
   const anchoItem = s.bloque.max_columnas > 3 ? 34 : 54
   const columnas: ColumnaDato[] = [
     { texto: 'Hora', ancho: 38, align: 'center' },
@@ -132,9 +135,9 @@ function TablaBloque({ s }: { s: Segmento }) {
   return (
     <Seccion titulo={titulo}>
       <TablaDatos columnas={columnas} filas={filas} fuente={7.5} vacio="Sin entradas aceptadas en este bloque" />
-      <View style={{ marginTop: 6, width: 150 + anchoItem * s.bloque.max_columnas }}>
+      <View style={{ marginTop: 6, width: 150 + anchoItem * Math.max(cols.length, 1) }}>
         <TablaDatos columnas={colsTot} filas={filasTot} fuente={7.5} encabezadoFijo={false}
-          anchoTotal={150 + anchoItem * s.bloque.max_columnas} />
+          anchoTotal={150 + anchoItem * Math.max(cols.length, 1)} />
       </View>
     </Seccion>
   )
