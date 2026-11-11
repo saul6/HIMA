@@ -171,7 +171,7 @@ export function DetalleAplicacion() {
                 <DataRow label="Cloración" value={a.cloracion ? "Sí" : "No"} />
                 {a.cloracion && (
                   <>
-                    <DataRow label="Cantidad cloro" value={a.cloro_cantidad_l ? `${a.cloro_cantidad_l} L` : "—"} />
+                    <DataRow label="Cantidad cloro" value={a.cloro_cantidad_l ? `${a.cloro_cantidad_l} ml` : "—"} />
                     <DataRow label="pH" value={a.cloro_ph ? `${a.cloro_ph}` : "—"} />
                   </>
                 )}
