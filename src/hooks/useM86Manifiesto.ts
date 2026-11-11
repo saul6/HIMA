@@ -6,7 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 const tbl = (name: string) => (supabase as any).from(name)
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc(fn, args)
 
-export type EstadoManifiesto = 'BORRADOR' | 'LLEGADA_INSPECCIONADA' | 'EN_CARGA' | 'CARGA_COMPLETA' | 'PENDIENTE_CONFORMIDADES' | 'CERRADO' | 'SUSPENDIDO'
+export type EstadoManifiesto = 'BORRADOR' | 'LLEGADA_INSPECCIONADA' | 'EN_CARGA' | 'CARGA_COMPLETA' | 'PENDIENTE_CONFORMIDADES' | 'CIERRE_LOCAL_SELLO_PENDIENTE' | 'CERRADO' | 'SUSPENDIDO'
 
 export interface M86Manifiesto {
   id: string
@@ -35,15 +35,23 @@ export interface M86Manifiesto {
   conf_cliente_nombre: string | null; conf_cliente_en: string | null
   conf_chofer_nombre: string | null; conf_chofer_en: string | null
   suspendido_motivo: string | null
+  papel_resguardo: string | null
+  papel_registrado_en: string | null
 }
 
 export interface M86Linea { id: string; codigo: string; fruta: string | null; presentacion: string; clasificacion: string; cajas: number; orden: number }
 export interface M86Tarima {
   id: string; numero: string; clasificacion: 'ORG' | 'CONV'; estado: 'CARGADA' | 'RETIRADA'
   confirmada_en: string; retirada_en: string | null; retiro_motivo: string | null; lineas: M86Linea[]
+  cotejo_retencion: boolean; papeleta_id: string | null; papeleta_codigo?: string | null
 }
-export interface M86Muestra { id: string; tarima_numero: string; superior: number; medio: number; inferior: number; unidad: 'C' | 'F'; medida_en: string }
-export interface M86Detalle { m: M86Manifiesto; tarimas: M86Tarima[]; muestras: M86Muestra[] }
+export interface M86Muestra { id: string; tarima_numero: string; superior: number; medio: number; inferior: number; unidad: 'C' | 'F'; medida_en: string; capturo?: string }
+export interface M86SelloEvidencia {
+  id: string; sello_folio: string; unidad_referencia: string; informa: string; soporte: string; fecha_informada: string | null
+  recibido_en: string; estado: 'POR_VERIFICAR' | 'VERIFICADA' | 'RECHAZADA'; verificado_en: string | null; nota: string | null; verifico?: string
+}
+export interface M86Detalle { m: M86Manifiesto; tarimas: M86Tarima[]; muestras: M86Muestra[]; evidencias: M86SelloEvidencia[] }
+export interface M86PapeletaRef { id: string; codigo: string; embalaje: string; cajas: number; estado: string; fecha: string; empresa: string }
 
 const numOrNull = (v: any) => (v === null || v === undefined ? null : Number(v))
 const normM = (m: any): M86Manifiesto => ({
@@ -51,19 +59,25 @@ const normM = (m: any): M86Manifiesto => ({
 })
 
 export async function cargarDetalleM86(id: string): Promise<M86Detalle> {
-  const [m, t, mu] = await Promise.all([
+  const [m, t, mu, ev] = await Promise.all([
     tbl('m86_manifiestos').select('*').eq('id', id).single(),
-    tbl('m86_tarimas').select('*, m86_tarima_lineas(*)').eq('manifiesto_id', id).order('confirmada_en'),
+    tbl('m86_tarimas').select('*, m86_tarima_lineas(*), m84_papeletas(codigo)').eq('manifiesto_id', id).order('confirmada_en'),
     tbl('m86_muestras').select('*').eq('manifiesto_id', id).order('medida_en'),
+    tbl('m86_sello_evidencias').select('*').eq('manifiesto_id', id).order('recibido_en'),
   ])
   if (m.error) throw m.error
   if (t.error) throw t.error
+  const ids = Array.from(new Set([...(mu.data ?? []).map((x: any) => x.creado_por), ...(ev.data ?? []).map((x: any) => x.verificado_por)].filter(Boolean)))
+  const nombres: Record<string, string> = {}
+  if (ids.length) { const { data } = await tbl('profiles').select('id, nombre_completo').in('id', ids); for (const p of data ?? []) nombres[p.id] = p.nombre_completo ?? '' }
   return {
     m: normM(m.data),
     tarimas: (t.data ?? []).map((x: any) => ({
-      ...x, lineas: ((x.m86_tarima_lineas ?? []) as M86Linea[]).slice().sort((a, b) => a.orden - b.orden),
+      ...x, papeleta_codigo: x.m84_papeletas?.codigo ?? null,
+      lineas: ((x.m86_tarima_lineas ?? []) as M86Linea[]).slice().sort((a, b) => a.orden - b.orden),
     })),
-    muestras: (mu.data ?? []).map((x: any) => ({ ...x, superior: Number(x.superior), medio: Number(x.medio), inferior: Number(x.inferior) })),
+    muestras: (mu.data ?? []).map((x: any) => ({ ...x, superior: Number(x.superior), medio: Number(x.medio), inferior: Number(x.inferior), capturo: nombres[x.creado_por] ?? '' })),
+    evidencias: (ev.data ?? []).map((x: any) => ({ ...x, verifico: nombres[x.verificado_por] ?? '' })),
   }
 }
 
@@ -100,6 +114,13 @@ export function useM86Lista() {
 
   useEffect(() => { refetch() }, [refetch])
   return { manifiestos, historial, loading, error, refetch }
+}
+
+/** Papeletas PRO-07 recientes de la organización, para referenciar el cotejo de retención de una tarima. */
+export async function cargarPapeletasM86(orgId: string): Promise<M86PapeletaRef[]> {
+  const desde = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const { data } = await tbl('m84_papeletas').select('id, codigo, embalaje, cajas, estado, fecha, empresa').eq('org_id', orgId).gte('fecha', desde).order('fecha', { ascending: false })
+  return data ?? []
 }
 
 export async function crearManifiestoM86(rancho: string, datos: Record<string, string>): Promise<string> {

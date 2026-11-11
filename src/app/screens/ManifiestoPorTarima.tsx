@@ -20,8 +20,8 @@ import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
 import { useM82Catalogo } from '@/hooks/useM82Recepcion'
 import {
-  useM86Lista, cargarDetalleM86, crearManifiestoM86, accionM86, mensajeErrorM86, totalesPorPresentacion,
-  type M86Detalle, type M86Manifiesto, type EstadoManifiesto,
+  useM86Lista, cargarDetalleM86, crearManifiestoM86, accionM86, mensajeErrorM86, totalesPorPresentacion, cargarPapeletasM86,
+  type M86Detalle, type M86Manifiesto, type EstadoManifiesto, type M86PapeletaRef,
 } from '@/hooks/useM86Manifiesto'
 import { horaLocal, fmtT } from '@/lib/pdf/m86/manifiestoLogica'
 import { generarManifiestoPorTarimaPDF } from '@/lib/pdf/m86/generarManifiestoPorTarimaPDF'
@@ -44,6 +44,7 @@ const ESTADO: Record<EstadoManifiesto, { t: string; f: string; c: string }> = {
   EN_CARGA: { t: 'En carga', f: 'var(--agro-info-fill)', c: 'var(--agro-info-text)' },
   CARGA_COMPLETA: { t: 'Carga completa', f: 'var(--agro-info-fill)', c: 'var(--agro-info-text)' },
   PENDIENTE_CONFORMIDADES: { t: 'Faltan conformidades', f: 'var(--agro-info-fill)', c: 'var(--agro-info-text)' },
+  CIERRE_LOCAL_SELLO_PENDIENTE: { t: 'Cierre local · sello pendiente', f: 'var(--muted)', c: 'var(--agro-danger-text)' },
   CERRADO: { t: 'Cerrado', f: 'var(--agro-success-fill)', c: 'var(--agro-success-text)' },
   SUSPENDIDO: { t: 'Suspendido', f: 'var(--agro-danger-fill)', c: 'var(--agro-danger-text)' },
 }
@@ -99,9 +100,62 @@ function EventoCamion({ etiqueta, en, t, unidad, deshabilitado, onGuardar }: {
 
 interface LineaForm { codigo: string; cajas: string }
 
+function ResguardoPapel({ actual, onGuardar }: { actual: string | null; onGuardar: (r: string) => Promise<void> }) {
+  const [v, setV] = useState(actual ?? '')
+  return (
+    <div className="space-y-1">
+      <label className="text-xs text-muted-foreground font-semibold">Resguardo del papel firmado (dónde está el original o su copia)</label>
+      <div className="flex gap-2">
+        <input className={fieldCls} maxLength={300} value={v} onChange={e => setV(e.target.value)} placeholder="Ej. carpeta de embarques de noviembre, copia escaneada en…" />
+        <Boton type="button" tamano="sm" variante="secundario" onClick={() => onGuardar(v)}>Guardar</Boton>
+      </div>
+    </div>
+  )
+}
+
+function SeguimientoSello({ evidencias, puedeVerificar, unidadSugerida, onAgregar, onVerificar }: {
+  evidencias: M86Detalle['evidencias']; puedeVerificar: boolean; unidadSugerida: string
+  onAgregar: (ev: Record<string, string>) => Promise<boolean>; onVerificar: (id: string, r: 'VERIFICADA' | 'RECHAZADA', nota: string) => Promise<boolean>
+}) {
+  const [ev, setEv] = useState<Record<string, string>>({ unidad: unidadSugerida })
+  return (
+    <div className="space-y-2 rounded-[0.625rem] border p-3" style={{ borderColor: 'var(--agro-red)' }}>
+      <TituloSeccion>Seguimiento del sello (evidencia posterior)</TituloSeccion>
+      <p className="text-xs text-muted-foreground">El camión salió con el sello pendiente por consolidado. Registra aquí la evidencia del sello final cuando llegue: es un evento separado, con su fecha de recepción, y no cambia la salida.</p>
+      {evidencias.map(e => (
+        <div key={e.id} className="text-xs rounded border border-border p-2 space-y-1">
+          <p><b>Sello {e.sello_folio}</b> · unidad {e.unidad_referencia} · informa {e.informa} · recibida {fechaCorta(e.recibido_en)} {horaLocal(e.recibido_en)}{e.fecha_informada ? ` · fecha informada ${fechaCorta(e.fecha_informada)}` : ''}</p>
+          <p className="text-muted-foreground">Soporte: {e.soporte}</p>
+          <p>{e.estado === 'POR_VERIFICAR' ? 'Por verificar' : e.estado === 'VERIFICADA' ? `Verificada por ${e.verifico ?? ''}` : `No corresponde: ${e.nota ?? ''}`}</p>
+          {e.estado === 'POR_VERIFICAR' && puedeVerificar && (
+            <div className="flex gap-2">
+              <Boton type="button" tamano="sm" onClick={() => onVerificar(e.id, 'VERIFICADA', '')}>Corresponde a esta unidad</Boton>
+              <Boton type="button" tamano="sm" variante="secundario" onClick={() => { const n = window.prompt('¿Por qué no corresponde?'); if (n !== null) onVerificar(e.id, 'RECHAZADA', n) }}>No corresponde</Boton>
+            </div>
+          )}
+        </div>
+      ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {([['sello_folio', 'N° de sello final *'], ['unidad', 'Unidad (N° econ. de la caja) *'], ['informa', 'Quién informa *'], ['soporte', 'Soporte (foto, documento, mensaje) *']] as const).map(([k, l]) => (
+          <div key={k} className="space-y-1">
+            <label className="text-xs text-muted-foreground font-semibold">{l}</label>
+            <input className={fieldCls} maxLength={k === 'soporte' ? 500 : 150} value={ev[k] ?? ''} onChange={x => setEv(s => ({ ...s, [k]: x.target.value }))} />
+          </div>
+        ))}
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground font-semibold">Fecha que informa el tercero (si la da)</label>
+          <input type="date" className={fieldCls} value={ev.fecha_informada ?? ''} onChange={x => setEv(s => ({ ...s, fecha_informada: x.target.value }))} />
+        </div>
+      </div>
+      <Boton type="button" tamano="sm" onClick={async () => { if (await onAgregar(ev)) setEv({ unidad: unidadSugerida }) }}>Registrar evidencia</Boton>
+    </div>
+  )
+}
+
 export function ManifiestoPorTarima() {
   const { profile, codigoClave } = useAuthContext()
   const orgId = profile?.org_id ?? null
+  const puedeVerificar = ['admin_org', 'asesor_tecnico', 'super_admin'].includes(profile?.rol ?? '')
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { items, bloques } = useM82Catalogo()
@@ -163,6 +217,10 @@ export function ManifiestoPorTarima() {
   const [numero, setNumero] = useState('')
   const [lineas, setLineas] = useState<LineaForm[]>([{ codigo: '', cajas: '' }])
   const [sugeridas, setSugeridas] = useState<LineaForm[]>([])
+  const [cotejo, setCotejo] = useState(false)
+  const [papeletaId, setPapeletaId] = useState('')
+  const [papeletas, setPapeletas] = useState<M86PapeletaRef[]>([])
+  useEffect(() => { if (orgId && selId) cargarPapeletasM86(orgId).then(setPapeletas).catch(() => setPapeletas([])) }, [orgId, selId])
   const [busq, setBusq] = useState<{ idx: number; q: string } | null>(null)
   const clasifTarima = (() => { const cs = Array.from(new Set(lineas.map(l => itemPorCodigo.get(l.codigo)?.clasificacion).filter(Boolean))); return cs.length === 1 ? cs[0] : cs.length > 1 ? 'MEZCLA' : null })()
   const sugerencias = useMemo(() => {
@@ -191,12 +249,13 @@ export function ManifiestoPorTarima() {
       if (!/^\d+$/.test(l.cajas) || Number(l.cajas) <= 0) { toast.error(`Cajas inválidas en ${l.codigo}`); return }
     }
     if (clasifTarima === 'MEZCLA') { toast.error('Una tarima no mezcla orgánico y convencional'); return }
+    if (!cotejo) { toast.error('Marca el cotejo físico de la tarima (identificación, papeleta y disponibilidad)'); return }
     setConfirmando(true)
-    const ok = await accion('CONFIRMAR_TARIMA', { key: claveRef.current, numero: n, lineas: ls.map(l => ({ codigo: l.codigo, cajas: Number(l.cajas) })) }, `Tarima ${n} cargada`)
+    const ok = await accion('CONFIRMAR_TARIMA', { key: claveRef.current, numero: n, cotejo: true, papeleta_id: papeletaId || null, lineas: ls.map(l => ({ codigo: l.codigo, cajas: Number(l.cajas) })) }, `Tarima ${n} cargada`)
     setConfirmando(false)
     if (ok) {
       claveRef.current = nuevaClave()
-      setSugeridas(ls); setNumero(''); setLineas([{ codigo: '', cajas: '' }]); numRef.current?.focus()
+      setSugeridas(ls); setNumero(''); setLineas([{ codigo: '', cajas: '' }]); setCotejo(false); setPapeletaId(''); numRef.current?.focus()
     }
   }
 
@@ -276,7 +335,8 @@ export function ManifiestoPorTarima() {
   const totales = det ? totalesPorPresentacion(det.tarimas) : []
   const transporteOk = m ? m.it_buen_estado === true && m.it_limpio === true && m.it_plagas === false : false
   const tarimasOk = m ? [m.itar_remontado, m.itar_flejado, m.itar_limpieza, m.itar_condicion, m.itar_distribucion].every(v => v === true) : false
-  const cerrado = m?.estado === 'CERRADO'
+  const cierreLocal = m?.estado === 'CIERRE_LOCAL_SELLO_PENDIENTE'
+  const cerrado = m?.estado === 'CERRADO' || cierreLocal
   const suspendido = m?.estado === 'SUSPENDIDO'
 
   return (
@@ -365,6 +425,17 @@ export function ManifiestoPorTarima() {
                 <div className="flex gap-2">
                   <button type="button" className="text-xs flex items-center gap-1" style={{ color: 'var(--primary)' }} onClick={() => setLineas(ls => [...ls, { codigo: '', cajas: '' }])}><Plus className="w-3 h-3" /> Presentación</button>
                 </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground font-semibold">Papeleta PRO-07 relacionada (solo si la conoces)</label>
+                  <select className={fieldCls} value={papeletaId} onChange={e => setPapeletaId(e.target.value)}>
+                    <option value="">Ninguna identificada</option>
+                    {papeletas.map(p => <option key={p.id} value={p.id}>#{p.codigo} · {p.embalaje} · {p.cajas} cajas · {p.estado === 'LIBERADA' ? 'liberada' : p.estado === 'RETENIDA' ? 'RETENIDA' : 'RECHAZADA'} · {fechaCorta(p.fecha)}</option>)}
+                  </select>
+                </div>
+                <label className="flex items-start gap-2 text-xs">
+                  <input type="checkbox" className="mt-0.5" checked={cotejo} onChange={e => setCotejo(e.target.checked)} />
+                  <span>Cotejé físicamente la tarima: identificación, papeleta y disponibilidad. No tiene retención vigente que yo conozca. <span className="text-muted-foreground">(Verificación manual: M.A.D.Y. no detecta retenciones de forma automática.)</span></span>
+                </label>
                 <Boton type="button" className="w-full" cargando={confirmando} onClick={confirmarTarima}>Confirmar tarima cargada</Boton>
                 <p className="text-xs text-muted-foreground">Confirma solo cuando la tarima ya está físicamente arriba del tráiler y contada. Las sugerencias no cuentan hasta confirmarlas.</p>
               </div>
@@ -433,18 +504,29 @@ export function ManifiestoPorTarima() {
             </div>
             {m.salida_en && (
               <div className="space-y-2">
-                <TituloSeccion>Conformidades (firman de conformidad)</TituloSeccion>
+                <TituloSeccion>Conformidades (firma manuscrita en papel)</TituloSeccion>
                 {([['EMERGENT', 'Responsable de la instalación', m.conf_emergent_en, m.conf_emergent_nombre], ['CLIENTE', 'Responsable empresa', m.conf_cliente_en, m.conf_cliente_nombre], ['CHOFER', 'Chofer', m.conf_chofer_en, m.conf_chofer_nombre]] as const).map(([tipo, etq, en, nom]) => (
                   <div key={tipo} className="flex gap-2 items-center">
                     <span className="text-xs w-40 flex-shrink-0">{etq}</span>
-                    {en ? <span className="text-sm">{nom} · {horaLocal(en)}</span> : (<>
+                    {en ? <span className="text-sm">Conformidad registrada: {nom} · {horaLocal(en)}</span> : (<>
                       <input className={fieldCls} maxLength={150} placeholder="Nombre de quien firma" value={confNombre[tipo] ?? ''} onChange={e => setConfNombre(c => ({ ...c, [tipo]: e.target.value }))} />
                       <Boton type="button" tamano="sm" onClick={() => accion('CONFORMIDAD', { tipo, nombre: confNombre[tipo] ?? '' }, 'Conformidad registrada')}>Registrar</Boton>
                     </>)}
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground">Registra cada conformidad solo cuando esa persona firmó el manifiesto. Al tener las tres, el manifiesto se cierra.</p>
+                <p className="text-xs text-muted-foreground">Registra cada conformidad solo cuando esa persona firmó el papel. El nombre no es una firma digital. Con las tres se cierra la operación local{m.sello_estado === 'PENDIENTE_CONSOLIDADO' ? '; el cierre documental queda pendiente de la evidencia del sello' : ''}.</p>
+                {m.conf_emergent_en && m.conf_cliente_en && m.conf_chofer_en && (
+                  <ResguardoPapel actual={m.papel_resguardo} onGuardar={async (r) => { await accion('PAPEL', { resguardo: r }, 'Resguardo del papel registrado') }} />
+                )}
               </div>
+            )}
+            {cierreLocal && (
+              <SeguimientoSello evidencias={det!.evidencias} puedeVerificar={puedeVerificar} unidadSugerida={m.caja_economico ?? ''}
+                onAgregar={async (ev) => accion('SELLO_EVIDENCIA', ev, 'Evidencia registrada; queda por verificar')}
+                onVerificar={async (id, resultado, nota) => accion('SELLO_VERIFICAR', { evidencia_id: id, resultado, nota }, resultado === 'VERIFICADA' ? 'Evidencia verificada' : 'Evidencia marcada como no correspondiente')} />
+            )}
+            {m.estado === 'CERRADO' && m.sello_estado === 'PENDIENTE_CONSOLIDADO' && (
+              <p className="text-xs" style={{ color: 'var(--agro-success-text)' }}>Sello por consolidado: evidencia final verificada (evento posterior; la salida original no cambia).</p>
             )}
             {!cerrado && !suspendido && (
               <button type="button" className="text-xs underline" style={{ color: 'var(--agro-danger-text)' }} onClick={async () => {
