@@ -18,7 +18,7 @@ import { codigoFormato } from '@/lib/codigoFormato'
 import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
 import {
-  useM82Catalogo, useM82Entregas, crearEntregaM82, dictaminarEntregaM82, borrarEntregaM82, mensajeErrorM82,
+  useM82Catalogo, useM82Entregas, crearEntregaM82, dictaminarEntregaM82, aceptarConRechazosM82, borrarEntregaM82, mensajeErrorM82,
   cargarHojasM82, firmarHojaM82, autoArmarM82, cargarFirmantesM82, designarFirmanteM82,
   type M82Entrega, type M82Estado, type M82Item, type M82Hoja, type M82RolHoja, type M82AutoGrupo, type M82Firmante,
 } from '@/hooks/useM82Recepcion'
@@ -171,11 +171,12 @@ export function RecepcionPorItem() {
   const [lp, setLp] = useState<boolean | null>(null)
   const [pase, setPase] = useState(false)
   const [obs, setObs] = useState('')
+  const [rech, setRech] = useState<Record<string, { motivo: string; disposicion: string }>>({})  // linea_id → rechazo
 
   function abrirDictamen(e: M82Entrega) {
     setSel(e)
     setCajasConf(Object.fromEntries(e.lineas.map(l => [l.id, String(l.cajas_confirmadas ?? l.cajas_declaradas)])))
-    setBe(e.limp_be); setLim(e.limp_l); setLp(e.limp_lp); setPase(e.pase_anden); setObs(e.observaciones ?? '')
+    setBe(e.limp_be); setLim(e.limp_l); setLp(e.limp_lp); setPase(e.pase_anden); setObs(e.observaciones ?? ''); setRech({})
     setSheet('dictamen')
   }
 
@@ -188,8 +189,26 @@ export function RecepcionPorItem() {
       if (!/^\d+$/.test(v)) { toast.error(`Indica las cajas físicas del ítem ${l.codigo}`); return }
       cajas[l.id] = Number(v)
     }
+    const rechIds = Object.keys(rech)
+    if (estado === 'ACEPTADA' && rechIds.length > 0) {
+      for (const id of rechIds) {
+        const l = sel.lineas.find(x => x.id === id)
+        if (rech[id].motivo.trim().length < 3) { toast.error(`Escribe el motivo del rechazo de ${l?.codigo ?? 'el ítem'}`); return }
+        if (rech[id].disposicion.trim().length < 3) { toast.error(`Indica la disposición de ${l?.codigo ?? 'el ítem'}`); return }
+      }
+      if (rechIds.length >= sel.lineas.length) { toast.warning('Si se rechazan todos los ítems, usa «Rechazar» para toda la entrega'); return }
+    }
     setGuardando(true)
     try {
+      if (estado === 'ACEPTADA' && rechIds.length > 0) {
+        await aceptarConRechazosM82(sel, { estado, cajas, limp_be: be, limp_l: lim, limp_lp: lp, pase_anden: pase, observaciones: obs },
+          rechIds.map(id => ({ linea_id: id, motivo: rech[id].motivo.trim(), disposicion: rech[id].disposicion.trim() })))
+        toast.success(`Entrega aceptada; ${rechIds.length} ítem(s) rechazado(s) con su papeleta de no conforme`)
+        setSheet(null)
+        try { const g = await autoArmarM82(sel.id); if (g.length) setArmado({ productor: sel.codigo_productor, empresa: sel.empresa, grupos: g }) } catch { /* el armado se puede hacer después */ }
+        await refetch()
+        return
+      }
       await dictaminarEntregaM82(sel, { estado, cajas, limp_be: be, limp_l: lim, limp_lp: lp, pase_anden: pase, observaciones: obs })
       toast.success(estado === 'ACEPTADA' ? 'Entrega aceptada' : estado === 'RETENIDA' ? 'Entrega retenida' : 'Entrega rechazada')
       setSheet(null)
@@ -518,15 +537,34 @@ export function RecepcionPorItem() {
               <TituloSeccion>Cajas físicas por ítem</TituloSeccion>
               {sel.lineas.map(l => {
                 const it = itemPorCodigo.get(l.codigo)
+                const r = rech[l.id]
                 return (
-                  <div key={l.id} className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{l.codigo} · {it?.presentacion}</p>
-                      <p className="text-xs text-muted-foreground">Declaradas: {l.cajas_declaradas}</p>
+                  <div key={l.id} className={`space-y-2 ${r ? 'rounded-[0.625rem] p-2' : ''}`} style={r ? { backgroundColor: 'var(--agro-danger-fill)' } : undefined}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate">{l.codigo} · {it?.presentacion}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Declaradas: {l.cajas_declaradas}
+                          {sel.estado === 'PRECAPTURA' && (
+                            <> · <button type="button" className="underline" style={r ? undefined : { color: 'var(--agro-danger-text)' }}
+                              onClick={() => setRech(x => { const n = { ...x }; if (n[l.id]) delete n[l.id]; else n[l.id] = { motivo: '', disposicion: 'Devolución al productor' }; return n })}>
+                              {r ? 'No rechazar' : 'Rechazar este ítem'}</button></>
+                          )}
+                        </p>
+                      </div>
+                      <input inputMode="numeric" pattern="[0-9]*" aria-label={`Cajas físicas ${l.codigo}`}
+                        className="w-20 h-10 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm text-right"
+                        value={cajasConf[l.id] ?? ''} onChange={e => setCajasConf(c => ({ ...c, [l.id]: e.target.value.replace(/\D/g, '') }))} />
                     </div>
-                    <input inputMode="numeric" pattern="[0-9]*" aria-label={`Cajas físicas ${l.codigo}`}
-                      className="w-20 h-10 rounded-[0.625rem] border border-border-control bg-input-background px-2 text-sm text-right"
-                      value={cajasConf[l.id] ?? ''} onChange={e => setCajasConf(c => ({ ...c, [l.id]: e.target.value.replace(/\D/g, '') }))} />
+                    {r && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>Se rechaza: {cajasConf[l.id] || l.cajas_declaradas} cajas</p>
+                        <input className={fieldCls} maxLength={1000} placeholder="Motivo del rechazo *" value={r.motivo}
+                          onChange={e => setRech(x => ({ ...x, [l.id]: { ...x[l.id], motivo: e.target.value } }))} />
+                        <input className={fieldCls} maxLength={500} placeholder="Disposición (devolución u otra) *" value={r.disposicion}
+                          onChange={e => setRech(x => ({ ...x, [l.id]: { ...x[l.id], disposicion: e.target.value } }))} />
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -551,10 +589,13 @@ export function RecepcionPorItem() {
                 value={obs} onChange={e => setObs(e.target.value)} placeholder="Motivo de retención o rechazo, fruta de campo o preenfriada..." />
             </section>
             <div className="space-y-2">
-              <Boton type="button" onClick={() => dictaminar('ACEPTADA')} cargando={guardando} className="w-full" disabled={lp === false}>Aceptar entrega</Boton>
+              <Boton type="button" onClick={() => dictaminar('ACEPTADA')} cargando={guardando} className="w-full" disabled={lp === false}>
+                {Object.keys(rech).length ? `Aceptar entrega y rechazar ${Object.keys(rech).length} ítem(s)` : 'Aceptar entrega'}
+              </Boton>
+              {Object.keys(rech).length > 0 && <p className="text-xs text-muted-foreground">Cada ítem rechazado queda con 0 cajas y con su papeleta en Producto No Conforme.</p>}
               <div className="flex gap-2">
                 {sel.estado === 'PRECAPTURA' && (
-                  <Boton type="button" variante="secundario" onClick={() => dictaminar('RETENIDA')} disabled={guardando} className="flex-1">Retener</Boton>
+                  <Boton type="button" variante="secundario" onClick={() => dictaminar('RETENIDA')} disabled={guardando || Object.keys(rech).length > 0} className="flex-1">Retener</Boton>
                 )}
                 <Boton type="button" variante="secundario" onClick={() => dictaminar('RECHAZADA')} disabled={guardando} className="flex-1">Rechazar</Boton>
               </div>

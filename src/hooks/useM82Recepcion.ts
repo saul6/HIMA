@@ -175,7 +175,7 @@ export interface DictamenM82 {
 }
 
 /** Guarda cajas físicas y verificación del vehículo; al final cambia el estado (la BD valida la transición). */
-export async function dictaminarEntregaM82(entrega: M82Entrega, d: DictamenM82): Promise<void> {
+export async function dictaminarEntregaM82(entrega: M82Entrega, d: DictamenM82, soloDatos = false): Promise<void> {
   for (const l of entrega.lineas) {
     const c = d.cajas[l.id]
     if (c == null || c === l.cajas_confirmadas) continue
@@ -190,8 +190,16 @@ export async function dictaminarEntregaM82(entrega: M82Entrega, d: DictamenM82):
     observaciones: d.observaciones.trim() || null,
   }).eq('id', entrega.id)
   if (e1) throw e1
+  if (soloDatos) return
   const { error: e2 } = await tbl('m82_entregas').update({ estado: d.estado }).eq('id', entrega.id)
   if (e2) throw e2
+}
+
+/** Acepta la entrega rechazando solo algunos ítems (papeleta PRO-07 por ítem, en una sola operación). */
+export async function aceptarConRechazosM82(entrega: M82Entrega, d: DictamenM82, rechazos: { linea_id: string; motivo: string; disposicion: string }[]): Promise<void> {
+  await dictaminarEntregaM82(entrega, d, true)  // guarda cajas físicas, limpieza y observaciones; el estado lo pone la RPC
+  const { error } = await rpc('m82_aceptar_con_rechazos', { p_entrega: entrega.id, p_rechazos: rechazos })
+  if (error) throw error
 }
 
 export async function borrarEntregaM82(id: string): Promise<void> {
