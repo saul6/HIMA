@@ -70,6 +70,7 @@ export function construirSegmentos(d: M82DatosPDF): Segmento[] {
       const porClasif = new Map<string, Map<string, number>>()
       for (const l of e.lineas) {
         if (l.bloque_clave !== b.clave) continue
+        if ((l.cajas_confirmadas ?? 0) <= 0) continue   // ítem rechazado en papeleta de no conforme
         const cl = l.clasificacion ?? ''
         if (!porClasif.has(cl)) porClasif.set(cl, new Map())
         const m = porClasif.get(cl)!
