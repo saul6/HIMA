@@ -50,13 +50,14 @@ export interface M83Grupo {
   turbina: number
   tarimas: number
   cajas: number
-  entrada_en: string
-  fecha: string
+  entrada_en: string | null
+  fecha: string | null
+  combinada: boolean
   modo_temp: 'GUIADO' | 'COMPACTO'
   temp_entrada_valor: number
   temp_entrada_unidad: Unidad
   muestra_minima: number
-  estado: 'EN_PRE_FRIO' | 'FINALIZADO' | 'CANCELADO'
+  estado: 'POR_ENTRAR' | 'EN_PRE_FRIO' | 'FINALIZADO' | 'CANCELADO'
   creado_por: string | null
   salidas: M83Salida[]
   quedan_tarimas: number
@@ -90,6 +91,7 @@ export function useM83Prefrio(fecha: string) {
   const { profile } = useAuthContext()
   const orgId = profile?.org_id ?? null
   const [activos, setActivos] = useState<M83Grupo[]>([])
+  const [porEntrar, setPorEntrar] = useState<M83Grupo[]>([])
   const [delDia, setDelDia] = useState<M83Grupo[]>([])
   const [config, setConfig] = useState<M83Config>({ camara_nombre: 'Cámara de prefrío', turbinas_conv: [1, 2, 3], turbinas_org: [4] })
   const [loading, setLoading] = useState(true)
@@ -99,13 +101,15 @@ export function useM83Prefrio(fecha: string) {
     if (!orgId) return
     setLoading(true)
     try {
-      const [a, d, c] = await Promise.all([
+      const [a, d, c, pe] = await Promise.all([
         tbl('m83_grupos').select(SELECT_GRUPO).eq('org_id', orgId).eq('estado', 'EN_PRE_FRIO').order('entrada_en'),
         cargarGruposM83(orgId, fecha),
         tbl('m83_config').select('camara_nombre, turbinas_conv, turbinas_org').eq('org_id', orgId).maybeSingle(),
+        tbl('m83_grupos').select(SELECT_GRUPO).eq('org_id', orgId).eq('estado', 'POR_ENTRAR').order('declarado_en'),
       ])
       if (a.error) throw a.error
       setActivos((a.data ?? []).map(normalizar))
+      setPorEntrar((pe.data ?? []).map(normalizar))
       setDelDia(d)
       if (c.data) setConfig(c.data as M83Config)
       setError(null)
@@ -118,7 +122,7 @@ export function useM83Prefrio(fecha: string) {
 
   useEffect(() => { refetch() }, [refetch])
 
-  return { activos, delDia, config, loading, error, refetch }
+  return { activos, porEntrar, delDia, config, loading, error, refetch }
 }
 
 export async function cargarDisponiblesM83(ranchoId: string): Promise<M83Disponible[]> {
@@ -139,6 +143,27 @@ export async function iniciarPrefrioM83(p: {
     p_temp: p.lecturas && p.lecturas.length ? null : p.temp ?? null,
     p_entrada_en: p.entradaEn ?? null,
   })
+  if (error) throw error
+  return data as string
+}
+
+/** Captura intermedia a la entrada: tarimas, cajas, turbina y temperatura de entrada. Queda POR_ENTRAR. */
+export async function declararEntradaM83(p: {
+  rancho: string; turbina: number; tarimas: number; origen: { linea_id: string; cajas: number }[]
+  unidad: Unidad; lecturas?: Lectura[] | null; temp?: number | null
+}): Promise<string> {
+  const { data, error } = await rpc('m83_declarar', {
+    p_rancho: p.rancho, p_turbina: p.turbina, p_tarimas: p.tarimas, p_origen: p.origen, p_unidad: p.unidad,
+    p_lecturas: p.lecturas && p.lecturas.length ? p.lecturas : null,
+    p_temp: p.lecturas && p.lecturas.length ? null : p.temp ?? null,
+  })
+  if (error) throw error
+  return data as string
+}
+
+/** Iniciar prefrío: solo la hora de entrada. */
+export async function iniciarGrupoM83(grupo: string, entradaEn?: string | null): Promise<string> {
+  const { data, error } = await rpc('m83_iniciar_grupo', { p_grupo: grupo, p_entrada_en: entradaEn ?? null })
   if (error) throw error
   return data as string
 }

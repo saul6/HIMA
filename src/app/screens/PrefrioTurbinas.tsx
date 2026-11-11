@@ -16,7 +16,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { hoyMX } from '@/lib/fecha'
 import {
-  useM83Prefrio, cargarDisponiblesM83, iniciarPrefrioM83, finalizarPrefrioM83, cancelarPrefrioM83, mensajeErrorM83,
+  useM83Prefrio, cargarDisponiblesM83, declararEntradaM83, iniciarGrupoM83, finalizarPrefrioM83, cancelarPrefrioM83, mensajeErrorM83,
   isoDesdeHoraLocal, horaLocal, duracionHHMM, fmtTemp,
   type M83Disponible, type M83Grupo, type Unidad, type Lectura,
 } from '@/hooks/useM83Prefrio'
@@ -55,7 +55,7 @@ export function PrefrioTurbinas() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const [fecha, setFecha] = useState(hoyMX())
-  const { activos, delDia, config, loading, error, refetch } = useM83Prefrio(fecha)
+  const { activos, porEntrar, delDia, config, loading, error, refetch } = useM83Prefrio(fecha)
   const [filtroTurbina, setFiltroTurbina] = useState<number | null>(null)
   const [, setTick] = useState(0)
   useEffect(() => { const t = setInterval(() => setTick(x => x + 1), 60000); return () => clearInterval(t) }, [])
@@ -63,7 +63,7 @@ export function PrefrioTurbinas() {
   const turbinas = useMemo(() => Array.from(new Set([...config.turbinas_conv, ...config.turbinas_org])).sort((a, b) => a - b), [config])
 
   // ── Iniciar
-  const [sheet, setSheet] = useState<null | 'iniciar' | 'finalizar'>(null)
+  const [sheet, setSheet] = useState<null | 'declarar' | 'iniciar' | 'finalizar'>(null)
   const [guardando, setGuardando] = useState(false)
   const [ranchoId, setRanchoId] = useState('')
   const [disp, setDisp] = useState<M83Disponible[]>([])
@@ -75,8 +75,6 @@ export function PrefrioTurbinas() {
   const [modo, setModo] = useState<'GUIADO' | 'COMPACTO'>('GUIADO')
   const [lect, setLect] = useState<string[][]>([])           // [tarima][pos]
   const [promedio, setPromedio] = useState('')
-  const [horaEnt, setHoraEnt] = useState(horaAhora())
-  const [cambiarHora, setCambiarHora] = useState(false)
 
   useEffect(() => { if (ranchos.length === 1) setRanchoId(ranchos[0].id) }, [ranchos])
 
@@ -88,15 +86,16 @@ export function PrefrioTurbinas() {
 
   function abrirIniciar() {
     setSel({}); setTurbina(null); setTarimas(''); setModo('GUIADO'); setLect([]); setPromedio('')
-    setHoraEnt(horaAhora()); setCambiarHora(false)
     const r = ranchos.length === 1 ? ranchos[0].id : ranchoId
     setRanchoId(r); cargarDisp(r)
-    setSheet('iniciar')
+    setSheet('declarar')
   }
 
   const elegidas = disp.filter(d => sel[d.linea_id] !== undefined)
   const ref = elegidas[0]
-  const compatible = (d: M83Disponible) => !ref || (d.codigo === ref.codigo && d.empresa === ref.empresa && d.clasificacion === ref.clasificacion)
+  // Un grupo puede combinar presentaciones (ítems) de la misma empresa y la misma clasificación ORG/CONV
+  const compatible = (d: M83Disponible) => !ref || (d.empresa === ref.empresa && d.clasificacion === ref.clasificacion)
+  const codigosElegidos = Array.from(new Set(elegidas.map(d => d.codigo)))
   const turbinasValidas = ref ? (ref.clasificacion === 'ORG' ? config.turbinas_org : config.turbinas_conv) : []
   const nTarimas = /^\d+$/.test(tarimas) ? Number(tarimas) : 0
   const muestraMin = nTarimas > 0 ? Math.ceil(nTarimas * 0.4) : 0
@@ -129,7 +128,7 @@ export function PrefrioTurbinas() {
     })
   }
 
-  async function iniciar() {
+  async function declarar() {
     if (!ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!ref) { toast.error('Selecciona la fruta que entra a prefrío'); return }
     for (const d of elegidas) {
@@ -140,21 +139,36 @@ export function PrefrioTurbinas() {
     if (nTarimas <= 0) { toast.error('Indica el número de tarimas que entran'); return }
     if (modo === 'GUIADO' && !lecturasLlenas) { toast.error('Completa las lecturas superior, medio e inferior'); return }
     if (modo === 'COMPACTO' && !esNum(promedio)) { toast.error('Captura el promedio medido de la fruta'); return }
-    if (cambiarHora && !/^\d{2}:\d{2}$/.test(horaEnt)) { toast.error('Indica la hora de entrada'); return }
     const lecturas: Lectura[] | null = modo === 'GUIADO'
       ? lect.flatMap((f, i) => f.map((v, j) => ({ tarima: `T${i + 1}`, posicion: POS[j], valor: num(v) })))
       : null
     setGuardando(true)
     try {
-      await iniciarPrefrioM83({
+      await declararEntradaM83({
         rancho: ranchoId, turbina, tarimas: nTarimas, unidad,
         origen: elegidas.map(d => ({ linea_id: d.linea_id, cajas: Number(sel[d.linea_id]) })),
         lecturas, temp: modo === 'COMPACTO' ? num(promedio) : null,
-        entradaEn: cambiarHora ? isoDesdeHoraLocal(hoyMX(), horaEnt) : null,
       })
       guardar(K_UNIDAD, unidad)
       if (ref.clasificacion === 'CONV') guardar(K_TURBINA, String(turbina))
-      toast.success(`Prefrío iniciado en turbina ${turbina}`)
+      toast.success(`Entrada declarada en turbina ${turbina}. Inicia el prefrío cuando entre`)
+      setSheet(null)
+      await refetch()
+    } catch (e) { avisar(e) } finally { setGuardando(false) }
+  }
+
+  // ── Iniciar prefrío (solo hora de entrada)
+  const [porIniciar, setPorIniciar] = useState<M83Grupo | null>(null)
+  const [horaEnt, setHoraEnt] = useState(horaAhora())
+  const [cambiarHora, setCambiarHora] = useState(false)
+  function abrirIniciar2(g: M83Grupo) { setPorIniciar(g); setHoraEnt(horaAhora()); setCambiarHora(false); setSheet('iniciar') }
+  async function iniciar() {
+    if (!porIniciar) return
+    if (cambiarHora && !/^\d{2}:\d{2}$/.test(horaEnt)) { toast.error('Indica la hora de entrada'); return }
+    setGuardando(true)
+    try {
+      await iniciarGrupoM83(porIniciar.id, cambiarHora ? isoDesdeHoraLocal(hoyMX(), horaEnt) : null)
+      toast.success(`Prefrío iniciado en turbina ${porIniciar.turbina}`)
       setSheet(null)
       if (fecha !== hoyMX()) setFecha(hoyMX()); else await refetch()
     } catch (e) { avisar(e) } finally { setGuardando(false) }
@@ -194,7 +208,7 @@ export function PrefrioTurbinas() {
   }
 
   async function cancelar(g: M83Grupo) {
-    const motivo = window.prompt(`Cancelar el grupo #${g.codigo} de turbina ${g.turbina}. Motivo:`)
+    const motivo = window.prompt(`Cancelar el grupo ${g.combinada ? 'combinado' : '#' + g.codigo} de turbina ${g.turbina}. Motivo:`)
     if (motivo === null) return
     try { await cancelarPrefrioM83(g.id, motivo); toast.success('Grupo cancelado; sus cajas vuelven a estar disponibles'); await refetch() } catch (e) { avisar(e) }
   }
@@ -233,6 +247,33 @@ export function PrefrioTurbinas() {
           </div>
         )}
 
+        {/* Por entrar (declarados) */}
+        {porEntrar.length > 0 && (
+          <section className="space-y-2">
+            <TituloSeccion>Por entrar a prefrío</TituloSeccion>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {porEntrar.map(g => (
+                <div key={g.id} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{g.combinada ? 'Combinada' : `#${g.codigo}`} · {g.fruta ?? ''} {g.presentacion}</p>
+                      <p className="text-xs text-muted-foreground truncate">{g.empresa} · {g.clasificacion} · {g.tarimas} tar. · {g.cajas} cajas · {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)}</p>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}>Turbina {g.turbina}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Boton type="button" tamano="sm" className="flex-1" onClick={() => abrirIniciar2(g)}>Iniciar prefrío</Boton>
+                    <button type="button" aria-label="Cancelar declaración" onClick={() => cancelar(g)} className="p-2 rounded-lg border border-border">
+                      <Ban className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* En prefrío ahora */}
         <section className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -247,16 +288,16 @@ export function PrefrioTurbinas() {
             </div>
           </div>
           {loading ? <ListaSkeleton rows={2} /> : activosVista.length === 0 ? (
-            <EstadoVacio icono={Snowflake} titulo="Nada en prefrío" ayuda="Inicia un grupo con el botón +" />
+            <EstadoVacio icono={Snowflake} titulo="Nada en prefrío" ayuda="Declara la entrada con el botón + y luego inicia el prefrío" />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {activosVista.map(g => {
-                const min = minutosDesde(g.entrada_en)
+                const min = minutosDesde(g.entrada_en ?? '')
                 return (
                   <div key={g.id} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate">#{g.codigo} · {g.fruta ?? ''} {g.presentacion}</p>
+                        <p className="text-sm font-semibold truncate">{g.combinada ? 'Combinada' : `#${g.codigo}`} · {g.fruta ?? ''} {g.presentacion}</p>
                         <p className="text-xs text-muted-foreground truncate">{g.empresa}</p>
                       </div>
                       <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
@@ -265,7 +306,7 @@ export function PrefrioTurbinas() {
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
                       <span><b>{g.clasificacion}</b></span>
                       <span>{g.quedan_tarimas} tar. · {g.quedan_cajas} cajas{g.quedan_cajas !== g.cajas ? ` (de ${g.cajas})` : ''}</span>
-                      <span>Entrada {horaLocal(g.entrada_en)} · {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)}</span>
+                      <span>Entrada {horaLocal(g.entrada_en ?? '')} · {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)}</span>
                       <span className="text-muted-foreground">{duracionHHMM(min)} h en prefrío</span>
                     </div>
                     <div className="flex gap-2">
@@ -299,9 +340,9 @@ export function PrefrioTurbinas() {
             <ul className="space-y-1">
               {salidasDia.map(({ g, s }) => (
                 <li key={s.id} className="text-xs rounded-[0.625rem] border border-border bg-card px-3 py-2 flex flex-wrap gap-x-3">
-                  <b>#{g.codigo}</b><span>{g.clasificacion}</span><span>T{g.turbina}</span>
+                  <b>{g.combinada ? g.presentacion : `#${g.codigo}`}</b><span>{g.clasificacion}</span><span>T{g.turbina}</span>
                   <span>{s.tarimas} tar. · {s.cajas} cajas</span>
-                  <span>{horaLocal(g.entrada_en)} {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)} → {horaLocal(s.salida_en)} {fmtTemp(s.temp_salida_valor, s.temp_salida_unidad)}</span>
+                  <span>{horaLocal(g.entrada_en ?? '')} {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)} → {horaLocal(s.salida_en)} {fmtTemp(s.temp_salida_valor, s.temp_salida_unidad)}</span>
                   <span className="text-muted-foreground">{duracionHHMM(s.duracion_min)} h</span>
                 </li>
               ))}
@@ -310,12 +351,12 @@ export function PrefrioTurbinas() {
         </section>
       </div>
 
-      <Fab onClick={abrirIniciar} aria-label="Iniciar prefrío" />
+      <Fab onClick={abrirIniciar} aria-label="Declarar entrada a prefrío" />
 
-      {/* ═══ Iniciar prefrío ═══ */}
-      <BottomSheet open={sheet === 'iniciar'} onClose={() => { if (!guardando) setSheet(null) }} height="85%">
+      {/* ═══ Declarar entrada (captura intermedia) ═══ */}
+      <BottomSheet open={sheet === 'declarar'} onClose={() => { if (!guardando) setSheet(null) }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground font-semibold">Iniciar prefrío</h2>
+          <h2 className="text-base text-foreground font-semibold">Declarar entrada a prefrío</h2>
           <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) setSheet(null) }}><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
         <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-5" style={{ flex: 1 }}>
@@ -356,7 +397,7 @@ export function PrefrioTurbinas() {
                 })}
               </ul>
             )}
-            {ref && <p className="text-xs">Grupo: <b>{totalCajas}</b> cajas de #{ref.codigo} ({ref.clasificacion})</p>}
+            {ref && <p className="text-xs">Grupo: <b>{totalCajas}</b> cajas · {codigosElegidos.length > 1 ? `Combinada (${codigosElegidos.map(c => '#' + c).join(', ')})` : `#${ref.codigo}`} · {ref.clasificacion}</p>}
           </section>
 
           {ref && (<>
@@ -372,12 +413,6 @@ export function PrefrioTurbinas() {
                 <div className="flex-1 space-y-1">
                   <label className="text-xs text-muted-foreground font-semibold">N° de tarimas que entran *</label>
                   <input inputMode="numeric" className={numCls} value={tarimas} onChange={e => setTarimas(e.target.value.replace(/\D/g, ''))} />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground font-semibold">Hora de entrada</label>
-                  {cambiarHora
-                    ? <input type="time" className={fieldCls} value={horaEnt} onChange={e => setHoraEnt(e.target.value)} />
-                    : <button type="button" className={`${fieldCls} text-left text-muted-foreground`} onClick={() => setCambiarHora(true)}>Ahora · cambiar</button>}
                 </div>
               </div>
             </section>
@@ -425,8 +460,32 @@ export function PrefrioTurbinas() {
             </section>
           </>)}
 
-          <Boton type="button" onClick={iniciar} cargando={guardando} className="w-full" disabled={!ref}>Iniciar prefrío</Boton>
+          <Boton type="button" onClick={declarar} cargando={guardando} className="w-full" disabled={!ref}>Guardar declaración</Boton>
         </div>
+      </BottomSheet>
+
+      {/* ═══ Iniciar prefrío (solo hora) ═══ */}
+      <BottomSheet open={sheet === 'iniciar'} onClose={() => { if (!guardando) setSheet(null) }} height="85%">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
+          <h2 className="text-base text-foreground font-semibold">Iniciar prefrío</h2>
+          <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) setSheet(null) }}><X className="w-5 h-5 text-muted-foreground" /></button>
+        </div>
+        {porIniciar && (
+          <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-5" style={{ flex: 1 }}>
+            <div className="text-sm space-y-0.5">
+              <p className="font-semibold">{porIniciar.combinada ? 'Combinada' : `#${porIniciar.codigo}`} · {porIniciar.fruta ?? ''} {porIniciar.presentacion}</p>
+              <p className="text-xs text-muted-foreground">Turbina {porIniciar.turbina} · {porIniciar.tarimas} tar. · {porIniciar.cajas} cajas · entrada {fmtTemp(porIniciar.temp_entrada_valor, porIniciar.temp_entrada_unidad)}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground font-semibold">Hora de entrada</label>
+              {cambiarHora
+                ? <input type="time" className={fieldCls} value={horaEnt} onChange={e => setHoraEnt(e.target.value)} />
+                : <button type="button" className={`${fieldCls} text-left text-muted-foreground`} onClick={() => setCambiarHora(true)}>Ahora · cambiar</button>}
+            </div>
+            <p className="text-xs text-muted-foreground">La salida queda pendiente hasta que la registres en la tarjeta del grupo.</p>
+            <Boton type="button" onClick={iniciar} cargando={guardando} className="w-full">Iniciar prefrío</Boton>
+          </div>
+        )}
       </BottomSheet>
 
       {/* ═══ Finalizar prefrío ═══ */}
@@ -439,7 +498,7 @@ export function PrefrioTurbinas() {
           <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-5" style={{ flex: 1 }}>
             <div className="text-sm space-y-0.5">
               <p className="font-semibold">#{grupo.codigo} · {grupo.fruta ?? ''} {grupo.presentacion} · {grupo.clasificacion}</p>
-              <p className="text-xs text-muted-foreground">Turbina {grupo.turbina} · entrada {horaLocal(grupo.entrada_en)} · {fmtTemp(grupo.temp_entrada_valor, grupo.temp_entrada_unidad)} · en prefrío {grupo.quedan_tarimas} tar. / {grupo.quedan_cajas} cajas</p>
+              <p className="text-xs text-muted-foreground">Turbina {grupo.turbina} · entrada {horaLocal(grupo.entrada_en ?? '')} · {fmtTemp(grupo.temp_entrada_valor, grupo.temp_entrada_unidad)} · en prefrío {grupo.quedan_tarimas} tar. / {grupo.quedan_cajas} cajas</p>
             </div>
             <section className="space-y-2">
               <TituloSeccion>Lo que sale</TituloSeccion>
