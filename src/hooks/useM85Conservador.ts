@@ -7,10 +7,10 @@ import type { LecturaBase } from '@/lib/pdf/m85/conservadorLogica'
 const tbl = (name: string) => (supabase as any).from(name)
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase as any).rpc(fn, args)
 
-export interface M85Config { conservador_nombre: string; limite_min_f: number; limite_max_f: number; turno_inicio: string | null }
+export interface M85Config { conservador_nombre: string; limite_min: number; limite_max: number; turno_inicio: string | null; unidad: 'C' | 'F' }
 export interface M85Lectura extends LecturaBase { guardada_en: string; usuario_id: string; conservador: string }
 
-const norm = (l: any): M85Lectura => ({ ...l, temperatura_f: Number(l.temperatura_f) })
+const norm = (l: any): M85Lectura => ({ ...l, temperatura: Number(l.temperatura) })
 
 export async function cargarLecturasM85(orgId: string, desde: string, hasta: string): Promise<M85Lectura[]> {
   const { data, error } = await tbl('m85_lecturas').select('*').eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta).order('medida_en')
@@ -21,7 +21,7 @@ export async function cargarLecturasM85(orgId: string, desde: string, hasta: str
 export function useM85Conservador(fecha: string) {
   const { profile } = useAuthContext()
   const orgId = profile?.org_id ?? null
-  const [config, setConfig] = useState<M85Config>({ conservador_nombre: 'Conservador', limite_min_f: 29, limite_max_f: 35, turno_inicio: null })
+  const [config, setConfig] = useState<M85Config>({ conservador_nombre: 'Conservador', limite_min: -1.7, limite_max: 1.7, turno_inicio: null, unidad: 'C' })
   const [delDia, setDelDia] = useState<M85Lectura[]>([])
   const [pendientes, setPendientes] = useState<M85Lectura[]>([])
   const [verificacion, setVerificacion] = useState<{ nombre: string; verificado_en: string; lecturas: number } | null>(null)
@@ -33,12 +33,12 @@ export function useM85Conservador(fecha: string) {
     setLoading(true)
     try {
       const [c, d, p, v] = await Promise.all([
-        tbl('m85_config').select('conservador_nombre, limite_min_f, limite_max_f, turno_inicio').eq('org_id', orgId).maybeSingle(),
+        tbl('m85_config').select('conservador_nombre, limite_min, limite_max, turno_inicio, unidad').eq('org_id', orgId).maybeSingle(),
         cargarLecturasM85(orgId, fecha, fecha),
         tbl('m85_lecturas').select('*').eq('org_id', orgId).eq('estado', 'INCIDENCIA_PENDIENTE').order('medida_en', { ascending: false }),
         tbl('m85_verificaciones').select('nombre, verificado_en, lecturas').eq('org_id', orgId).eq('fecha', fecha).maybeSingle(),
       ])
-      if (c.data) setConfig({ ...c.data, limite_min_f: Number(c.data.limite_min_f), limite_max_f: Number(c.data.limite_max_f) })
+      if (c.data) setConfig({ ...c.data, limite_min: Number(c.data.limite_min), limite_max: Number(c.data.limite_max) })
       setDelDia(d)
       setPendientes((p.data ?? []).map(norm))
       setVerificacion(v.data ?? null)
@@ -56,7 +56,7 @@ export function useM85Conservador(fecha: string) {
 
 export async function registrarLecturaM85(p: {
   rancho: string; temperatura: number; key: string; medidaEn?: string | null; observacion?: string | null
-}): Promise<{ id: string; medida_en: string; estado: string; temperatura_f: number; repetida: boolean }> {
+}): Promise<{ id: string; medida_en: string; estado: string; temperatura: number; unidad: string; repetida: boolean }> {
   const { data, error } = await rpc('m85_registrar', {
     p_rancho: p.rancho, p_temperatura: p.temperatura, p_key: p.key, p_medida_en: p.medidaEn ?? null, p_observacion: p.observacion ?? null,
   })

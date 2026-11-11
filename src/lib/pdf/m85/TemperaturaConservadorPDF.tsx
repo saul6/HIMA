@@ -13,6 +13,7 @@ export interface M85DatosPDF {
   desde: string
   hasta: string
   limites: { min: number; max: number }
+  unidad: 'C' | 'F'
   lecturas: LecturaBase[]
   verificaciones: Verificacion[]
 }
@@ -30,7 +31,7 @@ function Celda({ txt, ancho, negrita, color, fondo }: { txt: string; ancho: numb
   )
 }
 
-function BloqueFecha({ b, limites, verif }: { b: Bloque; limites: { min: number; max: number }; verif?: Verificacion | null }) {
+function BloqueFecha({ b, limites, verif, unidad }: { b: Bloque; limites: { min: number; max: number }; verif?: Verificacion | null; unidad: 'C' | 'F' }) {
   const cols = Array.from({ length: 24 }, (_, i) => i + 1)
   const obs = observacionesBloque(b, limites, verif)
   return (
@@ -43,11 +44,11 @@ function BloqueFecha({ b, limites, verif }: { b: Bloque; limites: { min: number;
         {cols.map(c => <Celda key={c} txt={`${String(c).padStart(2, '0')}:00`} ancho={COL} negrita fondo="#F2F4F7" />)}
       </View>
       <View style={{ flexDirection: 'row' }}>
-        <Celda txt="Temperatura" ancho={ETQ} negrita />
+        <Celda txt={`Temperatura °${unidad}`} ancho={ETQ} negrita />
         {cols.map(c => {
           const l = b.celdas.get(c)
-          const fuera = l ? l.temperatura_f < limites.min || l.temperatura_f > limites.max : false
-          return <Celda key={c} txt={l ? fmtF(l.temperatura_f) : ''} ancho={COL} color={fuera ? PC.negativo : undefined} />
+          const fuera = l ? l.temperatura < limites.min || l.temperatura > limites.max : false
+          return <Celda key={c} txt={l ? fmtF(l.temperatura) : ''} ancho={COL} color={fuera ? PC.negativo : undefined} />
         })}
       </View>
       <View style={{ flexDirection: 'row' }}>
@@ -89,14 +90,14 @@ export function TemperaturaConservadorPDF({ d, codigoClave }: { d: M85DatosPDF; 
         >
           {grupo.length === 0
             ? <Text style={{ fontSize: 8, color: PC.textSub }}>Sin lecturas en el periodo.</Text>
-            : grupo.map((b, j) => <BloqueFecha key={j} b={b} limites={d.limites} verif={d.verificaciones.find(v => v.fecha === b.fecha) ?? null} />)}
+            : grupo.map((b, j) => <BloqueFecha key={j} b={b} limites={d.limites} verif={d.verificaciones.find(v => v.fecha === b.fecha) ?? null} unidad={d.unidad} />)}
           {i === hojas.length - 1 && (
             <View wrap={false}>
               <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4 }}>
                 Instrucciones: Al iniciar el turno revisar la temperatura del conservador y registrarla en la hora correspondiente, posteriormente hacerlo
                 cada dos horas durante la duración de la jornada laboral. Se debe especificar con las iniciales de la persona que realiza la actividad;
-                en observaciones deben estar las iniciales con el nombre completo de quién realizó dicha actividad. Temperatura ambiente del conservador en °F;
-                intervalo operativo {d.limites.min}–{d.limites.max} °F.
+                en observaciones deben estar las iniciales con el nombre completo de quién realizó dicha actividad. Temperatura ambiente del conservador en °{d.unidad};
+                intervalo operativo {d.limites.min}–{d.limites.max} °{d.unidad}. Horas en formato de 24 h.
               </Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 22 }}>
                 {[

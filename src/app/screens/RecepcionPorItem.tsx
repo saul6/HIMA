@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { X, Loader2, FileDown, PackageOpen, TriangleAlert, Trash2, Search } from 'lucide-react'
 import { toast } from 'sonner'
+import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
@@ -315,7 +316,7 @@ export function RecepcionPorItem() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground font-semibold">Hora *</label>
-                <input type="time" className={fieldCls} value={hora} onChange={e => setHora(e.target.value)} />
+                <HoraInput24 value={hora} onChange={setHora} ariaLabel="Hora de la entrega" />
               </div>
             </div>
             <div className="space-y-1">
