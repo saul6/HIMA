@@ -16,7 +16,9 @@ import {
   useM84Papeletas, cargarOrigenesM84, retenerIngresoM84, retenerPosteriorM84, dictaminarM84, mensajeErrorM84,
   type M84Papeleta, type M84EntregaRetenida, type M84LineaAceptada,
 } from '@/hooks/useM84NoConforme'
-import { generarProductoNoConformePDF } from '@/lib/pdf/m84/generarProductoNoConformePDF'
+import { generarProductoNoConformePDF, generarProductoNoConformeConsolidadoPDF } from '@/lib/pdf/m84/generarProductoNoConformePDF'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ConsolidadoRangoSheet } from '@/app/components/ConsolidadoRangoSheet'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 const areaCls = 'w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm'
@@ -43,6 +45,7 @@ function Chip({ activo, onClick, children }: { activo: boolean; onClick: () => v
 
 export function ProductoNoConforme() {
   const { profile, codigoClave } = useAuthContext()
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const orgId = profile?.org_id ?? null
   const { papeletas, loading, error, refetch } = useM84Papeletas()
   const codigoFmt = codigoFormato('F-FRUS-PRO-07', codigoClave)
@@ -153,6 +156,8 @@ export function ProductoNoConforme() {
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
       <ModuloHeader tituloFallback="Producto No Conforme" subtitulo={`${codigoFmt} · Por evento`} />
+
+      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
       <div className="p-4 space-y-4">
         {error && (
           <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
@@ -284,6 +289,10 @@ export function ProductoNoConforme() {
           </div>
         )}
       </BottomSheet>
+
+      <ConsolidadoRangoSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}
+        ayuda="Todas las papeletas del periodo (retenidas, liberadas y rechazadas), una hoja por papeleta." vacio="No hay papeletas en ese periodo"
+        onGenerar={(desde, hasta) => generarProductoNoConformeConsolidadoPDF(profile?.org_id ?? '', desde, hasta, codigoClave)} />
     </div>
   )
 }

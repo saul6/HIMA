@@ -22,7 +22,9 @@ import {
   cargarHojasM82, firmarHojaM82, autoArmarM82, cargarFirmantesM82, designarFirmanteM82,
   type M82Entrega, type M82Estado, type M82Item, type M82Hoja, type M82RolHoja, type M82AutoGrupo, type M82Firmante,
 } from '@/hooks/useM82Recepcion'
-import { generarRecepcionPorItemPDF } from '@/lib/pdf/m82/generarRecepcionPorItemPDF'
+import { generarRecepcionPorItemPDF, generarRecepcionPorItemConsolidadoPDF } from '@/lib/pdf/m82/generarRecepcionPorItemPDF'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ConsolidadoRangoSheet } from '@/app/components/ConsolidadoRangoSheet'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 
@@ -67,6 +69,7 @@ function ToggleSiX({ etiqueta, valor, onChange }: { etiqueta: string; valor: boo
 
 export function RecepcionPorItem() {
   const { profile, codigoClave } = useAuthContext()
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const orgId = profile?.org_id ?? null
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
@@ -259,6 +262,8 @@ export function RecepcionPorItem() {
           </button>
         }
       />
+
+      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
 
       <div className="p-4 space-y-3">
         <div className="flex gap-2 items-end">
@@ -603,6 +608,10 @@ export function RecepcionPorItem() {
           </div>
         )}
       </BottomSheet>
+
+      <ConsolidadoRangoSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}
+        ayuda="Un solo PDF con cada día que tuvo entregas aceptadas; cada día con sus hojas por empresa y sus firmas." vacio="No hay entregas aceptadas en ese periodo"
+        onGenerar={(desde, hasta) => generarRecepcionPorItemConsolidadoPDF(profile?.org_id ?? '', desde, hasta, codigoClave)} />
     </div>
   )
 }

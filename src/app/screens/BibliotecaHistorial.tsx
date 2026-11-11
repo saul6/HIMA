@@ -65,6 +65,11 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M43: { label: 'Insp. Almacén Empaque',     color: '#1B5E20' },
   M44: { label: 'Orden de Mantenimiento',    color: '#37474F' },
   M45: { label: 'Mtto. Preventivo',          color: '#455A64' },
+  M82: { label: 'Recepción por Ítem',        color: '#006064' },
+  M83: { label: 'Prefrío por Turbina',       color: '#004D61' },
+  M84: { label: 'Producto No Conforme',      color: '#7B1B1B' },
+  M85: { label: 'Temperatura Conservador',   color: '#00695C' },
+  M86: { label: 'Manifiesto de Embarque',    color: '#1565C0' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -877,6 +882,45 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       resumen: 'Inspección de almacén de material de empaque mensual',
       pdfRef: { tipo: 'M43', id: r.id },
     })
+  }
+
+  // M82–M86 (formatos por ítem, prefrío por turbina, no conforme, conservador y manifiesto por tarima)
+  const [e82, g83, p84, l85, m86] = await Promise.all([
+    tbl('m82_entregas').select('rancho_id, fecha, empresa, ranchos(nombre)')
+      .eq('org_id', orgId).eq('estado', 'ACEPTADA').gte('fecha', desde).lte('fecha', hasta).limit(2000),
+    tbl('m83_grupos').select('rancho_id, fecha, ranchos(nombre)')
+      .eq('org_id', orgId).neq('estado', 'CANCELADO').gte('fecha', desde).lte('fecha', hasta).limit(2000),
+    tbl('m84_papeletas').select('id, rancho_id, fecha, codigo, embalaje, cajas, estado, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta).order('fecha', { ascending: false }).limit(500),
+    tbl('m85_lecturas').select('rancho_id, fecha, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta).limit(5000),
+    tbl('m86_manifiestos').select('id, rancho_id, fecha, folio, empresa, estado, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta).order('fecha', { ascending: false }).limit(500),
+  ])
+  // Un PDF por día (todas las empresas del día en un solo archivo)
+  const porDia = (filas: any[], modulo: 'M82' | 'M83' | 'M85', resumen: (n: number, empresas: string[]) => string) => {
+    const m = new Map<string, { rancho_id: string; nombre: string; fecha: string; n: number; empresas: Set<string> }>()
+    for (const r of filas) {
+      if (!r.fecha) continue
+      const v = m.get(r.fecha) ?? { rancho_id: r.rancho_id, nombre: (r.ranchos as any)?.nombre ?? '—', fecha: r.fecha, n: 0, empresas: new Set<string>() }
+      v.n++; if (r.empresa) v.empresas.add(r.empresa)
+      m.set(r.fecha, v)
+    }
+    for (const v of m.values()) {
+      todos.push({ key: `${modulo}-${v.fecha}`, modulo, rancho_id: v.rancho_id, rancho_nombre: v.nombre, fecha: v.fecha,
+        resumen: resumen(v.n, Array.from(v.empresas)), pdfRef: { tipo: modulo, fecha: v.fecha } })
+    }
+  }
+  porDia((e82 as any)?.data ?? [], 'M82', (n, emp) => `Recepción diaria por ítem · ${n} entrega(s)${emp.length ? ' · ' + emp.join(', ') : ''}`)
+  porDia((g83 as any)?.data ?? [], 'M83', (n) => `Prefrío por turbina · ${n} grupo(s)`)
+  porDia((l85 as any)?.data ?? [], 'M85', (n) => `Temperatura del conservador · ${n} lectura(s)`)
+  for (const r of (p84 as any)?.data ?? []) {
+    todos.push({ key: `M84-${r.id}`, modulo: 'M84', rancho_id: r.rancho_id, rancho_nombre: (r.ranchos as any)?.nombre ?? '—', fecha: r.fecha,
+      resumen: `Producto no conforme · #${r.codigo} ${r.embalaje} · ${r.cajas} cajas · ${String(r.estado).toLowerCase()}`, pdfRef: { tipo: 'M84', id: r.id } })
+  }
+  for (const r of (m86 as any)?.data ?? []) {
+    todos.push({ key: `M86-${r.id}`, modulo: 'M86', rancho_id: r.rancho_id, rancho_nombre: (r.ranchos as any)?.nombre ?? '—', fecha: r.fecha,
+      resumen: `Manifiesto de embarque${r.folio ? ' #' + r.folio : ''}${r.empresa ? ' · ' + r.empresa : ''}`, pdfRef: { tipo: 'M86', id: r.id } })
   }
 
   todos.sort((a, b) => b.fecha.localeCompare(a.fecha))

@@ -20,6 +20,7 @@ import {
 } from '@/hooks/useM85Conservador'
 import { calcularRevision, parsearTemperatura, horaLocal, instanteLocal, fmtF } from '@/lib/pdf/m85/conservadorLogica'
 import { generarTemperaturaConservadorPDF } from '@/lib/pdf/m85/generarTemperaturaConservadorPDF'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 
 const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 const areaCls = 'w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm'
@@ -132,7 +133,7 @@ export function TemperaturaConservador() {
   const [pdfOpen, setPdfOpen] = useState(false)
   const [pdfDesde, setPdfDesde] = useState(hoyMX())
   const [pdfHasta, setPdfHasta] = useState(hoyMX())
-  const [pdfEmpresa, setPdfEmpresa] = useState(leer(K_EMPRESA))
+  const [pdfEmpresa, setPdfEmpresa] = useState(leer(K_EMPRESA) || 'DRISCOLL')
   const [pdfCargando, setPdfCargando] = useState(false)
   async function pdf() {
     if (!orgId) return
@@ -154,6 +155,8 @@ export function TemperaturaConservador() {
       <ModuloHeader tituloFallback="Temperatura del Conservador" subtitulo={`${codigoFmt} · ${config.conservador_nombre}`}
         acciones={<button onClick={() => setPdfOpen(true)} className="hidden min-[1224px]:flex items-center gap-2 h-9 px-3 rounded-[0.625rem] border border-border text-sm">
           <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} /> PDF</button>} />
+
+      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setPdfOpen(true)} /></div>
 
       <div className="p-4 space-y-4 max-w-xl w-full mx-auto">
         {error && (
