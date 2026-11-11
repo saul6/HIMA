@@ -56,10 +56,17 @@ export function calcularRevision(lecturasHoy: LecturaBase[], turnoInicio: string
     : { tipo: 'pendiente', desde: horaLocal(new Date(vence).toISOString()) }
 }
 
+/** Día de la bitácora: 01:00–23:59 van a su fecha; 00:00–00:59 van a la columna 24:00 del día anterior (formato 24 h). */
+export function fechaBitacora(l: { medida_en: string }): string {
+  return fechaLocal(new Date(new Date(l.medida_en).getTime() - 3600 * 1000))
+}
+
+export interface Verificacion { fecha: string; nombre: string; verificado_en: string }
+
 export interface Bloque {
   fecha: string
   celdas: Map<number, LecturaBase>  // columna 1..24
-  sinColumna: LecturaBase[]          // 00:00–00:59: criterio de medianoche pendiente
+  sinColumna: LecturaBase[]          // (sin uso: 00:00–00:59 van a la columna 24:00 del día anterior)
 }
 
 /** Cada lectura en la columna de su hora; si la columna ya está ocupada ese día, va a otro bloque de la misma fecha. */
@@ -67,11 +74,11 @@ export function proyectarBloques(lecturas: LecturaBase[]): Bloque[] {
   const porFecha = new Map<string, Bloque[]>()
   const fechas: string[] = []
   for (const l of [...lecturas].sort((a, b) => a.medida_en.localeCompare(b.medida_en))) {
-    const f = l.fecha
+    const f = fechaBitacora(l)
     if (!porFecha.has(f)) { porFecha.set(f, [{ fecha: f, celdas: new Map(), sinColumna: [] }]); fechas.push(f) }
     const bloques = porFecha.get(f)!
-    const h = horaNum(l.medida_en)
-    if (h === 0) { bloques[0].sinColumna.push(l); continue }
+    const h0 = horaNum(l.medida_en)
+    const h = h0 === 0 ? 24 : h0
     let b = bloques.find(x => !x.celdas.has(h))
     if (!b) { b = { fecha: f, celdas: new Map(), sinColumna: [] }; bloques.push(b) }
     b.celdas.set(h, l)
@@ -80,21 +87,22 @@ export function proyectarBloques(lecturas: LecturaBase[]): Bloque[] {
 }
 
 /** Observaciones del bloque: iniciales = nombre, horas reales distintas a la columna, incidencias y lecturas sin columna. */
-export function observacionesBloque(b: Bloque, limites: { min: number; max: number }): string[] {
+export function observacionesBloque(b: Bloque, limites: { min: number; max: number }, verif?: Verificacion | null): string[] {
   const todas = [...b.celdas.values(), ...b.sinColumna]
   const nombres = new Map<string, string>()
   for (const l of todas) nombres.set(l.iniciales, l.nombre_usuario)
   const obs: string[] = []
   if (nombres.size) obs.push(Array.from(nombres.entries()).map(([i, n]) => `${i} = ${n}`).join('; '))
   const horas = [...b.celdas.entries()].sort((a, c) => a[0] - c[0])
-  const desfasadas = horas.filter(([, l]) => horaLocal(l.medida_en).slice(3) !== '00').map(([c, l]) => `${String(c).padStart(2, '0')}:00 (medida ${horaLocal(l.medida_en)})`)
+  const desfasadas = horas.filter(([c, l]) => c === 24 || horaLocal(l.medida_en).slice(3) !== '00')
+    .map(([c, l]) => c === 24 ? `24:00 (medida ${horaLocal(l.medida_en)} del ${fechaLocal(l.medida_en).split('-').reverse().join('/')})` : `${String(c).padStart(2, '0')}:00 (medida ${horaLocal(l.medida_en)})`)
   if (desfasadas.length) obs.push(`Hora real de medición: ${desfasadas.join(', ')}`)
-  for (const l of b.sinColumna) obs.push(`${horaLocal(l.medida_en)} · ${fmtF(l.temperatura_f)} °F · ${l.iniciales} (lectura entre 00:00 y 00:59; columna pendiente de criterio)`)
   for (const [, l] of horas) {
     if (l.estado === 'REGISTRADA') continue
     const base = `${horaLocal(l.medida_en)} · ${fmtF(l.temperatura_f)} °F fuera de ${limites.min}–${limites.max} °F`
     obs.push(l.estado === 'INCIDENCIA_PENDIENTE' ? `${base}: incidencia pendiente de documentar`
       : `${base}: ${l.observacion ?? ''}${l.accion ? ` · Acción: ${l.accion}` : ''}`)
   }
+  if (verif) obs.push(`Verificó (encargado de turno): ${verif.nombre}, ${fechaLocal(verif.verificado_en).split('-').reverse().join('/')} ${horaLocal(verif.verificado_en)}`)
   return obs
 }

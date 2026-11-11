@@ -5,7 +5,7 @@ import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
-import { proyectarBloques, observacionesBloque, fmtF, type Bloque, type LecturaBase } from './conservadorLogica'
+import { proyectarBloques, observacionesBloque, fmtF, type Bloque, type LecturaBase, type Verificacion } from './conservadorLogica'
 
 export interface M85DatosPDF {
   orgNombre: string
@@ -14,6 +14,7 @@ export interface M85DatosPDF {
   hasta: string
   limites: { min: number; max: number }
   lecturas: LecturaBase[]
+  verificaciones: Verificacion[]
 }
 
 const ANCHO = 841.89 - 80
@@ -29,9 +30,9 @@ function Celda({ txt, ancho, negrita, color, fondo }: { txt: string; ancho: numb
   )
 }
 
-function BloqueFecha({ b, limites }: { b: Bloque; limites: { min: number; max: number } }) {
+function BloqueFecha({ b, limites, verif }: { b: Bloque; limites: { min: number; max: number }; verif?: Verificacion | null }) {
   const cols = Array.from({ length: 24 }, (_, i) => i + 1)
-  const obs = observacionesBloque(b, limites)
+  const obs = observacionesBloque(b, limites, verif)
   return (
     <View wrap={false} style={{ marginBottom: 7 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 2 }}>
@@ -88,7 +89,7 @@ export function TemperaturaConservadorPDF({ d, codigoClave }: { d: M85DatosPDF; 
         >
           {grupo.length === 0
             ? <Text style={{ fontSize: 8, color: PC.textSub }}>Sin lecturas en el periodo.</Text>
-            : grupo.map((b, j) => <BloqueFecha key={j} b={b} limites={d.limites} />)}
+            : grupo.map((b, j) => <BloqueFecha key={j} b={b} limites={d.limites} verif={d.verificaciones.find(v => v.fecha === b.fecha) ?? null} />)}
           {i === hojas.length - 1 && (
             <View wrap={false}>
               <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4 }}>
@@ -97,9 +98,13 @@ export function TemperaturaConservadorPDF({ d, codigoClave }: { d: M85DatosPDF; 
                 en observaciones deben estar las iniciales con el nombre completo de quién realizó dicha actividad. Temperatura ambiente del conservador en °F;
                 intervalo operativo {d.limites.min}–{d.limites.max} °F.
               </Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 26 }}>
-                {[`Responsable ${d.orgNombre}`, 'Responsable de la empresa'].map(t => (
-                  <View key={t} style={{ width: 300 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 22 }}>
+                {[
+                  { t: 'Realizó', n: Array.from(new Set(d.lecturas.map(l => l.nombre_usuario))).join(', ') },
+                  { t: 'Verificó (encargado de turno)', n: Array.from(new Set(d.verificaciones.map(v => v.nombre))).join(', ') },
+                ].map(({ t, n }) => (
+                  <View key={t} style={{ width: 330 }}>
+                    <Text style={{ fontSize: 8, color: PC.fieldValue, marginBottom: 2, minHeight: 10 }}>{n}</Text>
                     <View style={{ borderBottomWidth: 0.8, borderBottomColor: PC.fieldValue }} />
                     <Text style={{ fontSize: 7.5, color: PC.textSub, marginTop: 3 }}>{t}</Text>
                   </View>

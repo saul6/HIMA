@@ -24,6 +24,7 @@ export function useM85Conservador(fecha: string) {
   const [config, setConfig] = useState<M85Config>({ conservador_nombre: 'Conservador', limite_min_f: 29, limite_max_f: 35, turno_inicio: null })
   const [delDia, setDelDia] = useState<M85Lectura[]>([])
   const [pendientes, setPendientes] = useState<M85Lectura[]>([])
+  const [verificacion, setVerificacion] = useState<{ nombre: string; verificado_en: string; lecturas: number } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,14 +32,16 @@ export function useM85Conservador(fecha: string) {
     if (!orgId) return
     setLoading(true)
     try {
-      const [c, d, p] = await Promise.all([
+      const [c, d, p, v] = await Promise.all([
         tbl('m85_config').select('conservador_nombre, limite_min_f, limite_max_f, turno_inicio').eq('org_id', orgId).maybeSingle(),
         cargarLecturasM85(orgId, fecha, fecha),
         tbl('m85_lecturas').select('*').eq('org_id', orgId).eq('estado', 'INCIDENCIA_PENDIENTE').order('medida_en', { ascending: false }),
+        tbl('m85_verificaciones').select('nombre, verificado_en, lecturas').eq('org_id', orgId).eq('fecha', fecha).maybeSingle(),
       ])
       if (c.data) setConfig({ ...c.data, limite_min_f: Number(c.data.limite_min_f), limite_max_f: Number(c.data.limite_max_f) })
       setDelDia(d)
       setPendientes((p.data ?? []).map(norm))
+      setVerificacion(v.data ?? null)
       setError(null)
     } catch (e: any) {
       setError(e?.message ?? 'Error al cargar')
@@ -48,7 +51,7 @@ export function useM85Conservador(fecha: string) {
   }, [orgId, fecha])
 
   useEffect(() => { refetch() }, [refetch])
-  return { config, delDia, pendientes, loading, error, refetch }
+  return { config, delDia, pendientes, verificacion, loading, error, refetch }
 }
 
 export async function registrarLecturaM85(p: {
@@ -71,6 +74,13 @@ export async function corregirM85(p: { lectura: string; motivo: string; temperat
     p_lectura: p.lectura, p_motivo: p.motivo, p_temperatura: p.temperatura ?? null, p_medida_en: p.medidaEn ?? null,
   })
   if (error) throw error
+}
+
+/** El encargado de turno verifica la bitácora de una fecha (00:00–00:59 del día siguiente cuentan en la columna 24:00). */
+export async function verificarDiaM85(rancho: string, fecha: string): Promise<{ lecturas: number }> {
+  const { data, error } = await rpc('m85_verificar_dia', { p_rancho: rancho, p_fecha: fecha })
+  if (error) throw error
+  return data
 }
 
 export function mensajeErrorM85(e: any): { tipo: 'warning' | 'error'; texto: string } {
