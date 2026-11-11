@@ -18,7 +18,7 @@ function descargar(blob: Blob, filename: string) {
 
 /** PDF del periodo. La empresa del encabezado la indica el usuario: la lectura es física y no pertenece a una empresa. */
 export async function generarTemperaturaConservadorPDF(p: {
-  orgId: string; desde: string; hasta: string; empresa: string; codigoClave: string; limites: { min: number; max: number }
+  orgId: string; desde: string; hasta: string; empresa: string; codigoClave: string; limites: { min: number; max: number }; unidad: 'C' | 'F'
 }): Promise<number> {
   // 00:00–00:59 del día siguiente van a la columna 24:00 del último día: se carga un día más y se filtra por día de bitácora
   const sig = new Date(new Date(`${p.hasta}T12:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10)
@@ -31,7 +31,7 @@ export async function generarTemperaturaConservadorPDF(p: {
   if (lecturas.length === 0) return 0
   const blob = await pdf(
     <TemperaturaConservadorPDF codigoClave={p.codigoClave}
-      d={{ orgNombre: o.data?.nombre ?? '', empresa: p.empresa, desde: p.desde, hasta: p.hasta, limites: p.limites, lecturas, verificaciones: v.data ?? [] }} />,
+      d={{ orgNombre: o.data?.nombre ?? '', empresa: p.empresa, desde: p.desde, hasta: p.hasta, limites: p.limites, unidad: p.unidad, lecturas, verificaciones: v.data ?? [] }} />,
   ).toBlob()
   descargar(blob, p.desde === p.hasta ? nombrePdf('Temperatura_Conservador', p.desde) : `Temperatura_Conservador-consolidado-${p.desde}-${p.hasta}.pdf`)
   return lecturas.length

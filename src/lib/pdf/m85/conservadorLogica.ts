@@ -3,7 +3,8 @@ export const TZ = 'America/Mexico_City'
 
 export interface LecturaBase {
   id: string
-  temperatura_f: number
+  temperatura: number
+  unidad?: 'C' | 'F'
   medida_en: string
   fecha: string
   iniciales: string
@@ -21,7 +22,7 @@ const horaNum = (iso: string) => Number(horaLocal(iso).slice(0, 2))
 export const instanteLocal = (fechaISO: string, hhmm: string) => new Date(`${fechaISO}T${hhmm}:00-06:00`)
 export const fmtF = (v: number) => Number(v).toFixed(1)
 
-/** Valida lo que escribe el operador: entero o decimal (punto o coma), hasta 2 decimales, sin unidades ni exponentes. */
+/** Valida lo que escribe el operador: entero o decimal (punto o coma), hasta 2 decimales, sin unidades ni exponentes; admite negativos (°C bajo cero). */
 export function parsearTemperatura(txt: string): number | null {
   const t = txt.trim()
   if (!/^-?\d{1,3}([.,]\d{1,2})?$/.test(t)) return null
@@ -99,7 +100,7 @@ export function observacionesBloque(b: Bloque, limites: { min: number; max: numb
   if (desfasadas.length) obs.push(`Hora real de medición: ${desfasadas.join(', ')}`)
   for (const [, l] of horas) {
     if (l.estado === 'REGISTRADA') continue
-    const base = `${horaLocal(l.medida_en)} · ${fmtF(l.temperatura_f)} °F fuera de ${limites.min}–${limites.max} °F`
+    const base = `${horaLocal(l.medida_en)} · ${fmtF(l.temperatura)} °${l.unidad ?? 'C'} fuera de ${limites.min}–${limites.max} °${l.unidad ?? 'C'}`
     obs.push(l.estado === 'INCIDENCIA_PENDIENTE' ? `${base}: incidencia pendiente de documentar`
       : `${base}: ${l.observacion ?? ''}${l.accion ? ` · Acción: ${l.accion}` : ''}`)
   }

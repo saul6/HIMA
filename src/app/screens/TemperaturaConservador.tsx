@@ -1,8 +1,9 @@
-// M85 · Temperatura del conservador. Una lectura ordinaria = escribir la temperatura en °F + Registrar (o Enter).
+// M85 · Temperatura del conservador. Una lectura ordinaria = escribir la temperatura en °C o °F según configuración + Registrar (o Enter).
 // Fecha, hora, conservador y usuario los pone el servidor. Fuera de rango: se registra igual y queda incidencia.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X, Loader2, FileDown, TriangleAlert, Thermometer, CheckCircle2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
+import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
@@ -59,7 +60,7 @@ export function TemperaturaConservador() {
   useEffect(() => { inputRef.current?.focus() }, [])
 
   const temp = parsearTemperatura(valor)
-  const fuera = temp !== null && (temp < config.limite_min_f || temp > config.limite_max_f)
+  const fuera = temp !== null && (temp < config.limite_min || temp > config.limite_max)
   const esHoy = fecha === hoyMX()
   const ultimaLectura = esHoy && delDia.length ? delDia[delDia.length - 1] : null
   const revision = esHoy ? calcularRevision(delDia, config.turno_inicio) : null
@@ -67,7 +68,7 @@ export function TemperaturaConservador() {
   async function registrar() {
     if (guardando) return
     if (!ranchoId) { toast.error(`No hay ${terminosSitio.singular.toLowerCase()} asignada`); return }
-    if (temp === null) { toast.error('Escribe la temperatura en °F: número con punto o coma, hasta dos decimales'); return }
+    if (temp === null) { toast.error('Escribe la temperatura: número con punto o coma, hasta dos decimales'); return }
     if (cambiarHora && !/^\d{2}:\d{2}$/.test(horaMed)) { toast.error('Indica la hora de medición'); return }
     setGuardando(true)
     try {
@@ -77,10 +78,10 @@ export function TemperaturaConservador() {
         observacion: fuera && obs.trim() ? obs.trim() : null,
       })
       claveRef.current = nuevaClave()
-      setUltimo({ hora: horaLocal(r.medida_en), temp: Number(r.temperatura_f), fuera: r.estado !== 'REGISTRADA' })
+      setUltimo({ hora: horaLocal(r.medida_en), temp: Number(r.temperatura), fuera: r.estado !== 'REGISTRADA' })
       setValor(''); setObs(''); setCambiarHora(false)
-      if (r.estado === 'INCIDENCIA_PENDIENTE') toast.warning(`Registrado ${horaLocal(r.medida_en)} · ${fmtF(r.temperatura_f)} °F fuera de intervalo: documenta la incidencia`, { duration: 8000 })
-      else toast.success(`Registrado ${horaLocal(r.medida_en)} · ${fmtF(r.temperatura_f)} °F`)
+      if (r.estado === 'INCIDENCIA_PENDIENTE') toast.warning(`Registrado ${horaLocal(r.medida_en)} · ${fmtF(r.temperatura)} °${config.unidad} fuera de intervalo: documenta la incidencia`, { duration: 8000 })
+      else toast.success(`Registrado ${horaLocal(r.medida_en)} · ${fmtF(r.temperatura)} °${config.unidad}`)
       if (!esHoy) setFecha(hoyMX()); else await refetch()
       inputRef.current?.focus()
     } catch (e) {
@@ -112,7 +113,7 @@ export function TemperaturaConservador() {
     if (t === null && !medidaEn) { toast.error('No hay cambios'); return }
     setGuardando(true)
     try {
-      await corregirM85({ lectura: cor.id, motivo: corMotivo, temperatura: t !== null && t !== cor.temperatura_f ? t : null, medidaEn })
+      await corregirM85({ lectura: cor.id, motivo: corMotivo, temperatura: t !== null && t !== cor.temperatura ? t : null, medidaEn })
       toast.success('Lectura corregida; el valor anterior queda en el historial'); setCor(null); await refetch()
     } catch (e) { avisar(e) } finally { setGuardando(false) }
   }
@@ -141,7 +142,7 @@ export function TemperaturaConservador() {
     try {
       guardar(K_EMPRESA, pdfEmpresa.trim())
       const n = await generarTemperaturaConservadorPDF({ orgId, desde: pdfDesde, hasta: pdfHasta, empresa: pdfEmpresa.trim(), codigoClave,
-        limites: { min: config.limite_min_f, max: config.limite_max_f } })
+        limites: { min: config.limite_min, max: config.limite_max }, unidad: config.unidad })
       if (n === 0) toast.info('No hay lecturas en ese periodo'); else setPdfOpen(false)
     } catch (e: any) { toast.error(e?.message ?? 'Error al generar PDF') } finally { setPdfCargando(false) }
   }
@@ -179,19 +180,19 @@ export function TemperaturaConservador() {
           )}
           <form onSubmit={e => { e.preventDefault(); registrar() }} className="space-y-3">
             <label className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-              <Thermometer className="w-3.5 h-3.5" /> Temperatura ambiental (°F)
+              <Thermometer className="w-3.5 h-3.5" /> Temperatura ambiental (°{config.unidad})
             </label>
             <div className="flex items-center gap-2">
-              <input ref={inputRef} inputMode="decimal" autoComplete="off" aria-label="Temperatura en grados Fahrenheit"
+              <input ref={inputRef} inputMode="decimal" autoComplete="off" aria-label={`Temperatura en °${config.unidad}`}
                 className="flex-1 h-14 rounded-[0.625rem] border border-border-control bg-input-background px-4 text-2xl font-semibold"
-                value={valor} onChange={e => setValor(e.target.value.replace(/[^0-9.,-]/g, ''))} placeholder="32.0" />
-              <span className="text-lg font-semibold text-muted-foreground">°F</span>
+                value={valor} onChange={e => setValor(e.target.value.replace(/[^0-9.,-]/g, ''))} placeholder={config.unidad === 'C' ? '0.0' : '32.0'} />
+              <span className="text-lg font-semibold text-muted-foreground">°{config.unidad}</span>
             </div>
             {valor && temp === null && <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Número con punto o coma y hasta dos decimales.</p>}
             {fuera && (
               <div className="space-y-2 rounded-[0.625rem] p-3" style={{ backgroundColor: 'var(--agro-danger-fill)' }}>
                 <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
-                  Fuera del intervalo {config.limite_min_f}–{config.limite_max_f} °F. Se registrará el valor real y quedará una incidencia.
+                  Fuera del intervalo {config.limite_min}–{config.limite_max} °{config.unidad}. Se registrará el valor real y quedará una incidencia.
                 </p>
                 <textarea className={areaCls} rows={2} maxLength={1000} value={obs} onChange={e => setObs(e.target.value)}
                   placeholder="Observación y acción (opcional ahora; puedes documentarla después)" />
@@ -200,7 +201,7 @@ export function TemperaturaConservador() {
             {cambiarHora ? (
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground font-semibold">Hora real de la medición (captura tardía)</label>
-                <input type="time" className={fieldCls} value={horaMed} onChange={e => setHoraMed(e.target.value)} />
+                <HoraInput24 value={horaMed} onChange={setHoraMed} ariaLabel="Hora de medición" />
               </div>
             ) : (
               <button type="button" className="text-xs text-muted-foreground underline" onClick={() => { setHoraMed(horaAhora()); setCambiarHora(true) }}>
@@ -211,11 +212,11 @@ export function TemperaturaConservador() {
           </form>
           {ultimo && (
             <p className="text-sm flex items-center gap-1" style={{ color: ultimo.fuera ? 'var(--agro-danger-text)' : 'var(--agro-success-text)' }}>
-              <CheckCircle2 className="w-4 h-4" /> Registrado {ultimo.hora} · {fmtF(ultimo.temp)} °F
+              <CheckCircle2 className="w-4 h-4" /> Registrado {ultimo.hora} · {fmtF(ultimo.temp)} °{config.unidad}
             </p>
           )}
           {ultimaLectura && (
-            <p className="text-xs text-muted-foreground">Última: {horaLocal(ultimaLectura.medida_en)} · {fmtF(ultimaLectura.temperatura_f)} °F · {ultimaLectura.iniciales}</p>
+            <p className="text-xs text-muted-foreground">Última: {horaLocal(ultimaLectura.medida_en)} · {fmtF(ultimaLectura.temperatura)} °{config.unidad} · {ultimaLectura.iniciales}</p>
           )}
         </section>
 
@@ -225,7 +226,7 @@ export function TemperaturaConservador() {
             <TituloSeccion>Incidencias por documentar</TituloSeccion>
             {pendientes.map(l => (
               <div key={l.id} className="rounded-[0.625rem] border p-3 flex items-center justify-between gap-2" style={{ borderColor: 'var(--agro-red)' }}>
-                <span className="text-sm">{fechaCorta(l.fecha)} {horaLocal(l.medida_en)} · <b>{fmtF(l.temperatura_f)} °F</b> · {l.iniciales}</span>
+                <span className="text-sm">{fechaCorta(l.fecha)} {horaLocal(l.medida_en)} · <b>{fmtF(l.temperatura)} °{config.unidad}</b> · {l.iniciales}</span>
                 <Boton type="button" tamano="sm" onClick={() => { setDoc(l); setDocObs(l.observacion ?? ''); setDocAccion('') }}>Documentar</Boton>
               </div>
             ))}
@@ -268,7 +269,7 @@ export function TemperaturaConservador() {
                 return (
                   <li key={l.id} className="rounded-[0.625rem] border border-border bg-card px-3 py-2 flex items-center gap-3 text-sm">
                     <span className="w-12 font-semibold">{horaLocal(l.medida_en)}</span>
-                    <span className="w-20 font-semibold" style={f ? { color: 'var(--agro-danger-text)' } : undefined}>{fmtF(l.temperatura_f)} °F</span>
+                    <span className="w-20 font-semibold" style={f ? { color: 'var(--agro-danger-text)' } : undefined}>{fmtF(l.temperatura)} °{config.unidad}</span>
                     <span className="flex-1 text-xs text-muted-foreground truncate">
                       {l.iniciales}{tardia ? ` · guardada ${horaLocal(l.guardada_en)}` : ''}
                       {l.estado === 'INCIDENCIA_PENDIENTE' ? ' · incidencia pendiente' : l.estado === 'INCIDENCIA_DOCUMENTADA' ? ' · incidencia documentada' : ''}
@@ -295,7 +296,7 @@ export function TemperaturaConservador() {
         </div>
         {doc && (
           <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-4" style={{ flex: 1 }}>
-            <p className="text-sm">{fechaCorta(doc.fecha)} {horaLocal(doc.medida_en)} · <b>{fmtF(doc.temperatura_f)} °F</b> · {doc.nombre_usuario}</p>
+            <p className="text-sm">{fechaCorta(doc.fecha)} {horaLocal(doc.medida_en)} · <b>{fmtF(doc.temperatura)} °{config.unidad}</b> · {doc.nombre_usuario}</p>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground font-semibold">Observación (qué pasó) *</label>
               <textarea className={areaCls} rows={3} maxLength={1000} value={docObs} onChange={e => setDocObs(e.target.value)} />
@@ -318,15 +319,15 @@ export function TemperaturaConservador() {
         </div>
         {cor && (
           <div className="overflow-y-auto px-4 pb-6 pt-3 space-y-4" style={{ flex: 1 }}>
-            <p className="text-sm">Registrada: {fechaCorta(cor.fecha)} {horaLocal(cor.medida_en)} · {fmtF(cor.temperatura_f)} °F · {cor.iniciales}</p>
+            <p className="text-sm">Registrada: {fechaCorta(cor.fecha)} {horaLocal(cor.medida_en)} · {fmtF(cor.temperatura)} °{config.unidad} · {cor.iniciales}</p>
             <div className="flex gap-3">
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground font-semibold">Temperatura correcta (°F)</label>
-                <input inputMode="decimal" className={fieldCls} value={corTemp} placeholder={fmtF(cor.temperatura_f)} onChange={e => setCorTemp(e.target.value.replace(/[^0-9.,-]/g, ''))} />
+                <label className="text-xs text-muted-foreground font-semibold">Temperatura correcta (°{config.unidad})</label>
+                <input inputMode="decimal" className={fieldCls} value={corTemp} placeholder={fmtF(cor.temperatura)} onChange={e => setCorTemp(e.target.value.replace(/[^0-9.,-]/g, ''))} />
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground font-semibold">Hora real de medición</label>
-                <input type="time" className={fieldCls} value={corHora} onChange={e => setCorHora(e.target.value)} />
+                <HoraInput24 value={corHora} onChange={setCorHora} ariaLabel="Hora real de medición" />
               </div>
             </div>
             <div className="space-y-1">

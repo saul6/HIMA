@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { X, Loader2, FileDown, Snowflake, TriangleAlert, Plus, Ban } from 'lucide-react'
 import { toast } from 'sonner'
+import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
@@ -71,7 +72,7 @@ export function PrefrioTurbinas() {
   const [sel, setSel] = useState<Record<string, string>>({})  // linea_id -> cajas
   const [turbina, setTurbina] = useState<number | null>(null)
   const [tarimas, setTarimas] = useState('')
-  const [unidad, setUnidad] = useState<Unidad>((leer(K_UNIDAD) as Unidad) || 'F')
+  const [unidad, setUnidad] = useState<Unidad>((leer(K_UNIDAD) as Unidad) || 'C')
   const [modo, setModo] = useState<'GUIADO' | 'COMPACTO'>('GUIADO')
   const [lect, setLect] = useState<string[][]>([])           // [tarima][pos]
   const [promedio, setPromedio] = useState('')
@@ -179,7 +180,7 @@ export function PrefrioTurbinas() {
   const [sTar, setSTar] = useState('')
   const [sCaj, setSCaj] = useState('')
   const [sTemp, setSTemp] = useState('')
-  const [sUnidad, setSUnidad] = useState<Unidad>('F')
+  const [sUnidad, setSUnidad] = useState<Unidad>('C')
   const [horaSal, setHoraSal] = useState(horaAhora())
   const [cambiarHoraSal, setCambiarHoraSal] = useState(false)
 
@@ -479,7 +480,7 @@ export function PrefrioTurbinas() {
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground font-semibold">Hora de entrada</label>
               {cambiarHora
-                ? <input type="time" className={fieldCls} value={horaEnt} onChange={e => setHoraEnt(e.target.value)} />
+                ? <HoraInput24 value={horaEnt} onChange={setHoraEnt} ariaLabel="Hora de entrada" />
                 : <button type="button" className={`${fieldCls} text-left text-muted-foreground`} onClick={() => setCambiarHora(true)}>Ahora · cambiar</button>}
             </div>
             <p className="text-xs text-muted-foreground">La salida queda pendiente hasta que la registres en la tarjeta del grupo.</p>
@@ -524,7 +525,7 @@ export function PrefrioTurbinas() {
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground font-semibold">Hora de salida</label>
                 {cambiarHoraSal
-                  ? <input type="time" className={fieldCls} value={horaSal} onChange={e => setHoraSal(e.target.value)} />
+                  ? <HoraInput24 value={horaSal} onChange={setHoraSal} ariaLabel="Hora de salida" />
                   : <button type="button" className={`${fieldCls} text-left text-muted-foreground`} onClick={() => setCambiarHoraSal(true)}>Ahora · cambiar</button>}
               </div>
             </section>
