@@ -98,9 +98,11 @@ export function diasDelRango(inicio: string, fin: string): string[] {
 
 /** "12 nov – 14 nov" (o "12 nov" si inicio y fin son el mismo día). Recibe 'YYYY-MM-DD'. */
 export function formatRango(inicio: string, fin: string): string {
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
-  const i = new Date(inicio + 'T12:00:00').toLocaleDateString('es-MX', opts)
+  const corta = (s: string) => {
+    const p = partes(s)
+    return p ? `${p.dia} ${MESES_CORTOS[p.mes - 1]}` : '—'
+  }
+  const i = corta(inicio)
   if (inicio === fin) return i
-  const f = new Date(fin + 'T12:00:00').toLocaleDateString('es-MX', opts)
-  return `${i} – ${f}`
+  return `${i} – ${corta(fin)}`
 }
