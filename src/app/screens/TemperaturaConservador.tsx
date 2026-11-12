@@ -7,6 +7,7 @@ import { HoraInput24 } from '@/app/components/HoraInput24'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useAuthContext } from '@/context/AuthContext'
@@ -153,21 +154,26 @@ export function TemperaturaConservador() {
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
       <ModuloHeader tituloFallback="Temperatura del Conservador" subtitulo={`${codigoFmt} · ${config.conservador_nombre}`}
-        acciones={<button onClick={() => setPdfOpen(true)} className="hidden min-[1224px]:flex items-center gap-2 h-9 px-3 rounded-[0.625rem] border border-border text-sm">
-          <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} /> PDF</button>} />
+        acciones={<>
+          <BotonExportarConsolidado variante="encabezado" onClick={() => setPdfOpen(true)} />
+          <button onClick={() => setPdfOpen(true)} className="hidden min-[1224px]:flex items-center gap-2 h-11 px-4 rounded-xl border border-border text-sm font-semibold">
+            <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} /> PDF</button>
+        </>} />
 
-      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setPdfOpen(true)} /></div>
+      <div className="px-4 pt-3 min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setPdfOpen(true)} /></div>
 
-      <div className="p-4 space-y-4 max-w-xl w-full mx-auto">
+      <div className="p-4 space-y-4 max-w-xl w-full mx-auto min-[1224px]:grid min-[1224px]:max-w-none min-[1224px]:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] min-[1224px]:items-start min-[1224px]:gap-4 min-[1224px]:space-y-0">
         {error && (
-          <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+          <div className="flex items-start gap-2 rounded-xl p-3 min-[1224px]:col-span-full" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
             <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
             <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar las lecturas.</p>
           </div>
         )}
 
+        <div className="space-y-4">
         {/* Captura */}
         <section className="rounded-[0.625rem] border border-border bg-card p-4 space-y-3">
+          <h2 className="hidden text-sm font-semibold min-[1224px]:block">Registrar lectura</h2>
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{config.conservador_nombre} · {profile?.nombre_completo ?? ''}</span>
             {revision && (revision.tipo === 'pendiente'
@@ -176,6 +182,7 @@ export function TemperaturaConservador() {
                 ? <span className="text-muted-foreground">Próxima revisión: <b>{revision.hora}</b></span>
                 : <span className="text-muted-foreground">Registra la lectura de inicio de turno</span>)}
           </div>
+          {ranchos.length > 1 && <label className="hidden text-xs font-semibold text-muted-foreground min-[1224px]:block">{terminosSitio.singular}</label>}
           {ranchos.length > 1 && (
             <select className={fieldCls} value={ranchoId} onChange={e => setRanchoId(e.target.value)} aria-label={terminosSitio.singular}>
               {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -226,7 +233,10 @@ export function TemperaturaConservador() {
         {/* Incidencias pendientes */}
         {pendientes.length > 0 && (
           <section className="space-y-2">
-            <TituloSeccion>Incidencias por documentar</TituloSeccion>
+            <div className="flex items-center justify-between gap-2 -mb-2">
+              <TituloSeccion>Incidencias por documentar</TituloSeccion>
+              <span className="mb-2.5 hidden min-[1224px]:inline"><Etiqueta tono="error">{pendientes.length}</Etiqueta></span>
+            </div>
             {pendientes.map(l => (
               <div key={l.id} className="rounded-[0.625rem] border p-3 flex items-center justify-between gap-2" style={{ borderColor: 'var(--agro-red)' }}>
                 <span className="text-sm">{fechaCorta(l.fecha)} {horaLocal(l.medida_en)} · <b>{fmtF(l.temperatura)} °{config.unidad}</b> · {l.iniciales}</span>
@@ -236,8 +246,11 @@ export function TemperaturaConservador() {
           </section>
         )}
 
+        </div>
+
+        <div>
         {/* Lecturas del día */}
-        <section className="space-y-2">
+        <section className="space-y-2 min-[1224px]:rounded-xl min-[1224px]:border min-[1224px]:border-border min-[1224px]:bg-card min-[1224px]:p-4">
           <div className="flex items-end gap-2">
             <div className="flex-1 space-y-1">
               <TituloSeccion>Lecturas</TituloSeccion>
@@ -265,7 +278,47 @@ export function TemperaturaConservador() {
           {loading ? <ListaSkeleton rows={3} /> : listaDia.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin lecturas en esta fecha.</p>
           ) : (
-            <ul className="space-y-1">
+            <>
+            <div className="hidden overflow-hidden min-[1224px]:block">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs text-muted-foreground">
+                    <th className="px-3 py-2.5 font-medium">Hora</th>
+                    <th className="px-3 py-2.5 font-medium">Temperatura</th>
+                    <th className="px-3 py-2.5 font-medium">Registró</th>
+                    <th className="px-3 py-2.5 font-medium">Estado</th>
+                    <th className="px-3 py-2.5" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {listaDia.map(l => {
+                    const f = l.estado !== 'REGISTRADA'
+                    const tardia = Math.abs(new Date(l.guardada_en).getTime() - new Date(l.medida_en).getTime()) > 10 * 60000
+                    return (
+                      <tr key={l.id} className="border-b border-border last:border-b-0">
+                        <td className="px-3 py-2.5 font-semibold">{horaLocal(l.medida_en)}</td>
+                        <td className="px-3 py-2.5 font-semibold" style={f ? { color: 'var(--agro-danger-text)' } : undefined}>{fmtF(l.temperatura)} °{config.unidad}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{l.iniciales}{tardia ? ` · guardada ${horaLocal(l.guardada_en)}` : ''}</td>
+                        <td className="px-3 py-2.5">
+                          {l.estado === 'INCIDENCIA_PENDIENTE' ? <Etiqueta tono="error">Incidencia pendiente</Etiqueta>
+                            : l.estado === 'INCIDENCIA_DOCUMENTADA' ? <Etiqueta tono="neutral">Incidencia documentada</Etiqueta>
+                            : null}
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          {(esAdmin || l.usuario_id === profile?.id) && (
+                            <button type="button" aria-label="Corregir lectura" className="rounded-lg border border-border p-1.5"
+                              onClick={() => { setCor(l); setCorTemp(''); setCorHora(horaLocal(l.medida_en)); setCorMotivo('') }}>
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <ul className="space-y-1 min-[1224px]:hidden">
               {listaDia.map(l => {
                 const f = l.estado !== 'REGISTRADA'
                 const tardia = Math.abs(new Date(l.guardada_en).getTime() - new Date(l.medida_en).getTime()) > 10 * 60000
@@ -287,8 +340,10 @@ export function TemperaturaConservador() {
                 )
               })}
             </ul>
+            </>
           )}
         </section>
+        </div>
       </div>
 
       {/* ═══ Documentar ═══ */}
