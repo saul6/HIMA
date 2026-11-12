@@ -9,6 +9,7 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Panel } from '@/app/components/ui-mady/Panel'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -279,110 +280,48 @@ export function RecepcionPorItem() {
 
       <div className="px-4 pt-3 min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
 
-      <div className="p-4 space-y-3">
-        <div className="flex gap-2 items-end">
-          <div className="flex-1 space-y-1">
+      <div className="p-4 flex flex-col gap-3 min-[1224px]:grid min-[1224px]:grid-cols-[minmax(0,1fr)_26rem] min-[1224px]:items-start min-[1224px]:gap-x-4">
+        <div className="contents min-[1224px]:flex min-[1224px]:min-w-0 min-[1224px]:flex-col min-[1224px]:gap-3">
+        <div className="order-1 flex gap-2 items-end">
+          <div className="flex-1 space-y-1 min-[1224px]:flex-none min-[1224px]:w-56">
             <label className="text-xs text-muted-foreground font-semibold">Fecha</label>
             <input type="date" className={fieldCls} value={fecha} max={hoyMX()} onChange={e => e.target.value && setFecha(e.target.value)} />
           </div>
           <button onClick={pdfDia} disabled={pdfCargando}
-            className="h-10 px-3 rounded-[0.625rem] border border-border flex items-center gap-2 text-sm disabled:opacity-50">
+            className="h-10 px-3 rounded-[0.625rem] border border-border flex items-center gap-2 text-sm disabled:opacity-50 min-[1224px]:hidden">
             {pdfCargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />}
             PDF del día
           </button>
         </div>
 
         {totales.length > 0 && (
-          <div className="rounded-[0.625rem] border border-border bg-card p-3 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="order-1 rounded-[0.625rem] border border-border bg-card p-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="hidden text-xs text-muted-foreground min-[1224px]:inline">Recibido hoy</span>
             {totales.map(t => (
               <span key={t.titulo} className="text-xs"><span className="text-muted-foreground">{t.titulo}:</span> <b>{t.total}</b> cajas</span>
             ))}
+            <span className="hidden text-xs text-muted-foreground min-[1224px]:inline">{entregas.length} entrega{entregas.length !== 1 ? 's' : ''}</span>
           </div>
         )}
 
         {error && (
-          <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+          <div className="order-1 flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
             <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
             <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar las entregas.</p>
           </div>
         )}
 
         {!loadingCat && items.length === 0 && (
-          <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+          <div className="order-1 rounded-xl p-3 text-xs" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
             Tu organización aún no tiene catálogo de ítems. Pide a M.A.D.Y. que lo cargue.
           </div>
         )}
 
-        {armado && (
-          <div className="rounded-[0.625rem] border border-border bg-card p-3 space-y-1">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-semibold flex items-center gap-2"><Boxes className="w-4 h-4" /> Tarimas · Productor {armado.productor} · {armado.empresa}</p>
-              <button type="button" aria-label="Cerrar" onClick={() => setArmado(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
-            </div>
-            {armado.grupos.map(g => (
-              <p key={g.codigo + g.clasificacion} className="text-xs">
-                <b>#{g.codigo}</b> {g.presentacion ?? ''} · {g.clasificacion === 'ORG' ? 'Org' : 'Conv'}:{' '}
-                {g.capacidad == null
-                  ? <span>capacidad pendiente de validar; {g.remanente} cajas quedan para tarima parcial autorizada</span>
-                  : <>
-                      {g.armadas.length > 0 ? <span style={{ color: 'var(--agro-success-text)' }}>{g.armadas.length} completa(s) de {g.capacidad} (N.{g.armadas.join(', N.')})</span> : <span>sin tarima completa aún</span>}
-                      {g.remanente > 0 ? <span> · {g.remanente} cajas en consolidación, faltan {g.falta} para completar</span> : <span> · sin remanente</span>}
-                    </>}
-              </p>
-            ))}
-            <p className="text-xs text-muted-foreground">El remanente se completa con las siguientes recepciones del mismo productor e ítem.</p>
-          </div>
-        )}
-
-        {hojas.length > 0 && (
-          <section className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <TituloSeccion>Firmas del día (al cerrar la recepción)</TituloSeccion>
-              {esAdmin && <button type="button" className="text-xs underline" style={{ color: 'var(--primary)' }} onClick={abrirFirmantes}>Firmantes</button>}
-            </div>
-            {hojas.map(h => {
-              const deRol = (r: M82RolHoja) => h.firmas.find(f => f.rol === r)
-              return (
-                <div key={h.rancho_id + h.empresa} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold">{h.empresa}</p>
-                    <span className="text-xs text-muted-foreground">{h.aceptadas} aceptada(s){h.pendientes ? ` · ${h.pendientes} sin dictamen` : ''}</span>
-                  </div>
-                  {h.pendientes > 0 && <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Se firma cuando todas las entregas de {h.empresa} tengan dictamen.</p>}
-                  {h.aceptadas > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {ROLES.map((r, i) => {
-                        const f = deRol(r)
-                        const previa = i === 0 ? true : !!deRol(ROLES[i - 1])?.al_dia
-                        const puede = h.pendientes === 0 && previa && !(f && f.al_dia)
-                        return (
-                          <div key={r} className="rounded-[0.625rem] border border-border p-2 space-y-1">
-                            <p className="text-xs font-semibold">{ROL_TXT[r]}</p>
-                            {f ? (
-                              <p className="text-xs flex items-center gap-1" style={{ color: f.al_dia ? 'var(--agro-success-text)' : 'var(--agro-danger-text)' }}>
-                                {f.al_dia ? <Check className="w-3 h-3" /> : <TriangleAlert className="w-3 h-3" />}{f.nombre}{f.al_dia ? '' : ' · desactualizada (la hoja cambió)'}
-                              </p>
-                            ) : <p className="text-xs text-muted-foreground">Pendiente</p>}
-                            {puede && (
-                              <Boton type="button" tamano="sm" variante="secundario" className="w-full" cargando={firmando === `${h.empresa}|${r}`} onClick={() => firmarHoja(h, r)}>
-                                <PenLine className="w-3 h-3" /> {f ? 'Volver a firmar' : 'Firmar'}
-                              </Boton>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-            <p className="text-xs text-muted-foreground">Tres personas distintas, en orden. Si después llega o se corrige una entrega de esa empresa, la hoja se vuelve a firmar.</p>
-          </section>
-        )}
-
-        {loading ? <ListaSkeleton rejilla /> : entregas.length === 0 ? (
-          <EstadoVacio icono={PackageOpen} titulo="Sin entregas en esta fecha" ayuda="Captura la primera con el botón +" />
+        {loading ? <div className="order-3"><ListaSkeleton rejilla /></div> : entregas.length === 0 ? (
+          <div className="order-3"><EstadoVacio icono={PackageOpen} titulo="Sin entregas en esta fecha" ayuda="Captura la primera con el botón +" /></div>
         ) : (
+          <div className="order-3">
+            <TituloSeccion className="hidden min-[1224px]:block">Entregas del día</TituloSeccion>
           <ListaTarjetas>
             {entregas.map(e => {
               const ui = ESTADO_UI[e.estado]
@@ -442,7 +381,91 @@ export function RecepcionPorItem() {
               )
             })}
           </ListaTarjetas>
+          </div>
         )}
+        </div>
+        <div className="contents min-[1224px]:flex min-[1224px]:min-w-0 min-[1224px]:flex-col min-[1224px]:gap-3">
+        {armado && (
+          <Panel
+            className="order-2"
+            titulo="Tarimas en consolidación"
+            acciones={<button type="button" aria-label="Cerrar" onClick={() => setArmado(null)}><X className="w-4 h-4 text-muted-foreground" /></button>}
+          >
+            <p className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground"><Boxes className="w-3.5 h-3.5" /> Productor {armado.productor} · {armado.empresa}</p>
+            <div className="space-y-3">
+              {armado.grupos.map(g => (
+                <div key={g.codigo + g.clasificacion}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="min-w-0 text-xs"><b>#{g.codigo}</b> {g.presentacion ?? ''} · <Etiqueta tono="neutral" className="font-normal">{g.clasificacion === 'ORG' ? 'Org' : 'Conv'}</Etiqueta></p>
+                    {g.capacidad != null && <span className="flex-shrink-0 text-xs text-muted-foreground">{g.remanente} / {g.capacidad}</span>}
+                  </div>
+                  {g.capacidad != null && (
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (g.remanente / g.capacidad) * 100)}%` }} />
+                    </div>
+                  )}
+                  <p className="mt-1 text-xs">
+                    {g.capacidad == null
+                      ? <span>capacidad pendiente de validar; {g.remanente} cajas quedan para tarima parcial autorizada</span>
+                      : <>
+                          {g.armadas.length > 0 ? <span style={{ color: 'var(--agro-success-text)' }}>{g.armadas.length} completa(s) de {g.capacidad} (N.{g.armadas.join(', N.')})</span> : <span>sin tarima completa aún</span>}
+                          {g.remanente > 0 ? <span> · {g.remanente} cajas en consolidación, faltan {g.falta} para completar</span> : <span> · sin remanente</span>}
+                        </>}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">El remanente se completa con las siguientes recepciones del mismo productor e ítem.</p>
+          </Panel>
+        )}
+
+        {hojas.length > 0 && (
+          <Panel
+            className="order-2 space-y-3"
+            titulo="Firmas del día (al cerrar la recepción)"
+            acciones={esAdmin ? <button type="button" className="text-xs underline" style={{ color: 'var(--primary)' }} onClick={abrirFirmantes}>Firmantes</button> : undefined}
+          >
+            {hojas.map(h => {
+              const deRol = (r: M82RolHoja) => h.firmas.find(f => f.rol === r)
+              return (
+                <div key={h.rancho_id + h.empresa} className="space-y-2 border-t border-border pt-3 first:border-t-0 first:pt-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold">{h.empresa}</p>
+                    <span className="text-xs text-muted-foreground">{h.aceptadas} aceptada(s){h.pendientes ? ` · ${h.pendientes} sin dictamen` : ''}</span>
+                  </div>
+                  {h.pendientes > 0 && <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Se firma cuando todas las entregas de {h.empresa} tengan dictamen.</p>}
+                  {h.aceptadas > 0 && (
+                    <div className="grid grid-cols-1 sm:max-[1223px]:grid-cols-3 gap-2">
+                      {ROLES.map((r, i) => {
+                        const f = deRol(r)
+                        const previa = i === 0 ? true : !!deRol(ROLES[i - 1])?.al_dia
+                        const puede = h.pendientes === 0 && previa && !(f && f.al_dia)
+                        return (
+                          <div key={r} className={`rounded-[0.625rem] border p-2 space-y-1 ${puede ? 'border-primary' : 'border-border'}`}>
+                            <p className="text-xs font-semibold"><span className="hidden min-[1224px]:inline">{i + 1} · </span>{ROL_TXT[r]}</p>
+                            {f ? (
+                              <p className="text-xs flex items-center gap-1" style={{ color: f.al_dia ? 'var(--agro-success-text)' : 'var(--agro-danger-text)' }}>
+                                {f.al_dia ? <Check className="w-3 h-3" /> : <TriangleAlert className="w-3 h-3" />}{f.nombre}{f.al_dia ? '' : ' · desactualizada (la hoja cambió)'}
+                              </p>
+                            ) : <p className="text-xs text-muted-foreground">Pendiente</p>}
+                            {puede && (
+                              <Boton type="button" tamano="sm" variante="secundario" className="w-full" cargando={firmando === `${h.empresa}|${r}`} onClick={() => firmarHoja(h, r)}>
+                                <PenLine className="w-3 h-3" /> {f ? 'Volver a firmar' : 'Firmar'}
+                              </Boton>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            <p className="text-xs text-muted-foreground">Tres personas distintas, en orden. Si después llega o se corrige una entrega de esa empresa, la hoja se vuelve a firmar.</p>
+          </Panel>
+        )}
+
+        </div>
       </div>
 
       <Fab onClick={abrirNueva} aria-label="Nueva entrega" disabled={items.length === 0} />
