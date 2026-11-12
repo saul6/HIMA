@@ -156,11 +156,11 @@ function PendientesPanel({
               </button>
             </div>
 
-            {pendientesDest.slice(0, 5).map(p => (
+            {pendientesDest.map(p => (
               <button
                 key={p.question_id}
                 onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
-                className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-start gap-2 active:opacity-70"
+                className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-start gap-2 active:opacity-70 [content-visibility:auto] [contain-intrinsic-size:auto_3.25rem]"
                 style={{ backgroundColor: 'var(--card)' }}
               >
                 <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ backgroundColor: 'var(--border)' }} />
@@ -169,7 +169,7 @@ function PendientesPanel({
               </button>
             ))}
 
-            {herenciasDest.slice(0, 3).map(p => (
+            {herenciasDest.map(p => (
               <button
                 key={`h-${p.question_id}`}
                 onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
