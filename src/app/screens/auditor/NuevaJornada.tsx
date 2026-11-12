@@ -40,25 +40,13 @@ function FilaOperacion({
       }
       lineas={
         <>
-          <span className="flex flex-wrap gap-2">
-            {fila.producto && (
-              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                {fila.producto}
-              </span>
-            )}
-            {fila.tipo_operacion && (
-              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                · {fila.tipo_operacion}
-              </span>
-            )}
-            {fila.modulos.length > 0 && (
-              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                · {fila.modulos.map(m => MODULO_LABELS[m] ?? `M${m}`).join(', ')}
-              </span>
-            )}
-            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-              · {fechaCorta(fila.fecha)}
-            </span>
+          <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+            {[
+              fila.producto,
+              fila.tipo_operacion,
+              fila.modulos.length > 0 ? fila.modulos.map(m => MODULO_LABELS[m] ?? `M${m}`).join(', ') : null,
+              fechaCorta(fila.fecha),
+            ].filter(Boolean).join(' · ')}
           </span>
           <span className="mt-1 flex flex-wrap gap-1.5">
             <Etiqueta tono={estadoAuditoria(fila.estado).tono}>{estadoAuditoria(fila.estado).texto}</Etiqueta>

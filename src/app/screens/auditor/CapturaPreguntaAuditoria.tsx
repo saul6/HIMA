@@ -4,7 +4,7 @@ import {
 } from 'react'
 import {
   CheckCircle, AlertCircle, Loader, AlertTriangle,
-  BarChart2, Pencil, X, Flag, Plus, History, Paperclip, XCircle,
+  BarChart2, Pencil, X, Flag, Plus, History, Paperclip, XCircle, Check,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
@@ -71,14 +71,14 @@ const RESP_OPTIONS: { value: AudRespuesta; label: string; activeStyle: { bg: str
   { value: 'deficiencia_menor',  label: 'D−',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
   { value: 'deficiencia_mayor',  label: 'D+',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
   { value: 'no_conformidad',     label: 'NC',  activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
-  { value: 'na',                 label: 'N/A', activeStyle: { bg: 'var(--muted)',             color: 'var(--muted-foreground)'  } },
+  { value: 'na',                 label: 'N/A', activeStyle: { bg: 'var(--muted-foreground)',  color: 'var(--background)'       } },
 ]
 
 const RESP_OPTIONS_M9: { value: AudRespuesta; label: string; activeStyle: { bg: string; color: string } }[] = [
   { value: 'excede_cumplimiento', label: 'Excede',    activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
   { value: 'cumplimiento_total',  label: 'Total',     activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
   { value: 'no_conformidad',      label: 'No cumple', activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
-  { value: 'na',                  label: 'N/A',       activeStyle: { bg: 'var(--muted)',             color: 'var(--muted-foreground)'  } },
+  { value: 'na',                  label: 'N/A',       activeStyle: { bg: 'var(--muted-foreground)',  color: 'var(--background)'       } },
 ]
 
 const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
@@ -868,13 +868,15 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onClick={() => !bloqueado && handleRespuesta(preguntaId, opt.value)}
                     disabled={bloqueado}
                     title={opt.label}
-                    className="flex-1 min-w-0 h-11 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50"
+                    aria-pressed={active}
+                    className="flex-1 min-w-0 h-11 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50 flex items-center justify-center gap-1"
                     style={
                       active
-                        ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, borderColor: 'transparent' }
+                        ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, border: `2px solid ${opt.value === 'na' ? 'var(--foreground)' : opt.activeStyle.color}` }
                         : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
                     }
                   >
+                    {active && <Check aria-hidden="true" size={12} strokeWidth={3} className="flex-shrink-0" />}
                     {opt.label}
                   </button>
                 )
