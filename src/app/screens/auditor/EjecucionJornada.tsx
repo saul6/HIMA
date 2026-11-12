@@ -285,14 +285,17 @@ export function EjecucionJornada() {
       const initialAud = ctx?.auditoria_id ?? firstOp?.auditoria_id ?? null
       setAuditoriaActiva(initialAud)
 
-      if (ctx?.question_id) {
-        setQuestionActiva(ctx.question_id)
-      } else if (preg.length > 0) {
-        setQuestionActiva(preg[0].question_id)
-      }
+      // La pregunta inicial debe existir en la operación inicial: `preg[0]` (o la del contexto guardado)
+      // puede ser de otra operación y entonces no habría captura que mostrar.
+      const aplicaEnInicial = (p: JornadaPregunta) => p.destinos.some(d => d.auditoria_id === initialAud)
+      const qInicial =
+        (ctx?.question_id ? preg.find(p => p.question_id === ctx.question_id && aplicaEnInicial(p)) : undefined)
+        ?? preg.find(aplicaEnInicial)
+        ?? preg[0]
+      if (qInicial) setQuestionActiva(qInicial.question_id)
 
       const modulos = [...new Set(preg.map(p => p.modulo))]
-      setModuloActivo(modulos[0] ?? null)
+      setModuloActivo(qInicial?.modulo ?? modulos[0] ?? null)
     } catch (e) {
       console.error('[EjecucionJornada] cargar', e)
       setErrorCarga(true)
