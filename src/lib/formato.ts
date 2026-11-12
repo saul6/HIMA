@@ -74,3 +74,12 @@ export function mesAnio(d: string | Date | null | undefined): string {
   const p = partes(d)
   return p ? `${MESES_LARGOS[p.mes - 1]} ${p.anio}` : '—'
 }
+
+// Los eventos de todo el día (visitas, capacitaciones) llegan de la vista como `fecha::timestamptz`,
+// es decir, la medianoche UTC de ese día: hay que leer el día en UTC. En México (UTC−6) caería el día anterior.
+// Los demás eventos traen hora real y se leen en la zona de México.
+// Criterio único para agrupar por día ('YYYY-MM-DD'); una columna `date` ya en ese formato se usa tal cual.
+export function dayKey(iso: string, todoElDia: boolean): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: todoElDia ? 'UTC' : ZONA })
+}
