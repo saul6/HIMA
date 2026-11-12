@@ -27,7 +27,7 @@ export function useCalendario(desde: string, hasta: string, tipos?: string[]) {
       let q = (supabase as any).from('v_aud_calendario').select('*')
         // Eventos que se traslapan con el mes: una visita de varios días que empieza el mes anterior
         // también aparece en los días que le tocan de este mes.
-        .lte('start_at', hasta)
+        .lte('start_at', `${hasta}T23:59:59-06:00`)
         .gte('end_at', desde)
         .order('start_at', { ascending: true })
       if (tipos && tipos.length) q = q.in('event_type', tipos)
