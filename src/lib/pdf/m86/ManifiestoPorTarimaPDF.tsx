@@ -5,6 +5,7 @@
 import { Document, View, Text } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { TablaDatos, type ColumnaDato, type CeldaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
@@ -69,7 +70,7 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
           { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt },
           { etiqueta: 'Empresa', valor: m.empresa },
           { icono: 'calendario', etiqueta: 'Fecha', valor: fecha },
-          { etiqueta: 'N°', valor: m.folio ?? 'Sin folio confirmado' },
+          { etiqueta: 'N°', valor: m.folio ?? '—' },
           ...(m.estado !== 'CERRADO' ? [{ etiqueta: 'Estado', valor: ESTADO_TXT[m.estado] ?? m.estado, colorValor: PC.negativo }] : []),
         ]}
       >
@@ -146,20 +147,13 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
           </View>
         </View>
 
-        <View wrap={false} style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
-          {[
-            { t: `Responsable ${orgNombre}`, n: m.conf_emergent_nombre },
-            { t: 'Responsable Empresa', n: m.conf_cliente_nombre },
-            { t: 'Firma del Chofer', n: m.conf_chofer_nombre },
-          ].map(({ t, n }) => (
-            <View key={t} style={{ width: 220 }}>
-              <Text style={{ fontSize: 8, color: PC.fieldValue, marginBottom: 2, minHeight: 10 }}>{n ?? ''}</Text>
-              <View style={{ borderBottomWidth: 0.8, borderBottomColor: PC.fieldValue }} />
-              <Text style={{ fontSize: 7.5, color: PC.textSub, marginTop: 3 }}>{t}</Text>
-              <Text style={{ fontSize: 6.5, color: PC.textSub }}>Firmo de conformidad</Text>
-            </View>
-          ))}
-        </View>
+        <PdfFirmas
+          signatures={[
+            { label: '', nombre: m.conf_emergent_nombre ?? '', caption: `Responsable ${orgNombre}\nFirmo de conformidad`, firma: null },
+            { label: '', nombre: m.conf_cliente_nombre ?? '', caption: 'Responsable Empresa\nFirmo de conformidad', firma: null },
+            { label: '', nombre: m.conf_chofer_nombre ?? '', caption: 'Firma del Chofer\nFirmo de conformidad', firma: null },
+          ]}
+        />
         <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4 }}>
           Los nombres son conformidades registradas en M.A.D.Y.; la firma manuscrita está en el papel{m.papel_resguardo ? ` (resguardo: ${m.papel_resguardo})` : ' (resguardo pendiente de registrar)'}.
         </Text>
