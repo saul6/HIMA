@@ -25,8 +25,10 @@ export function useCalendario(desde: string, hasta: string, tipos?: string[]) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let q = (supabase as any).from('v_aud_calendario').select('*')
-        .gte('start_at', desde)
+        // Eventos que se traslapan con el mes: una visita de varios días que empieza el mes anterior
+        // también aparece en los días que le tocan de este mes.
         .lte('start_at', hasta)
+        .gte('end_at', desde)
         .order('start_at', { ascending: true })
       if (tipos && tipos.length) q = q.in('event_type', tipos)
       const { data, error } = await q

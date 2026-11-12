@@ -36,7 +36,7 @@ import { useEntradaPantalla, useFundidoPlegable, avisoMotion, comportamientoScro
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
-import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
+import { fechaCorta, fechaHora, formatoPct, formatRango } from '@/lib/formato'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { NavegadorAgrupado, estadoDestino } from './NavegadorPreguntas'
 import type { ModuloNavegador } from './NavegadorPreguntas'
@@ -1141,6 +1141,31 @@ export function AuditorEjecucion() {
   const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
   const ent = useEntradaPantalla(!cargando && !errorMsg)
 
+  // Rango de la visita (aud_agenda): `aud_auditorias` solo guarda un día. Si hay varias visitas para la
+  // auditoría, la que contiene su fecha; si ninguna, la más reciente.
+  const fechaAuditoria = auditoria?.fecha
+  const [rangoVisita, setRangoVisita] = useState<{ inicio: string; fin: string } | null>(null)
+  useEffect(() => {
+    if (!auditoriaId || !fechaAuditoria) { setRangoVisita(null); return }
+    let vigente = true
+    ;(async () => {
+      const { data, error } = await (supabase as any).from('aud_agenda')
+        .select('fecha_inicio, fecha_fin')
+        .eq('auditoria_id', auditoriaId)
+        .eq('tipo', 'visita')
+        .order('fecha_inicio', { ascending: false })
+      if (!vigente) return
+      if (error || !data || data.length === 0) { setRangoVisita(null); return }
+      const v = (data as { fecha_inicio: string; fecha_fin: string }[])
+        .find(x => x.fecha_inicio <= fechaAuditoria && fechaAuditoria <= x.fecha_fin) ?? data[0]
+      setRangoVisita({ inicio: v.fecha_inicio, fin: v.fecha_fin })
+    })()
+    return () => { vigente = false }
+  }, [auditoriaId, fechaAuditoria])
+  const fechaVisitaTexto = auditoria
+    ? (rangoVisita && rangoVisita.inicio !== rangoVisita.fin ? formatRango(rangoVisita.inicio, rangoVisita.fin) : fechaCorta(auditoria.fecha))
+    : ''
+
   // Escritorio (xl+): el navegador y la columna de resumen quedan fijos bajo el header sticky.
   // Se publican como variables CSS en el contenedor: --alto-header (ModuloHeader, que no se edita) y
   // --alto-visible (lo que queda visible del área con scroll del Layout debajo del header).
@@ -1934,8 +1959,8 @@ export function AuditorEjecucion() {
         forzarTitulo={auditoria ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría') : undefined}
         subtitulo={auditoria
           ? (auditoria.instalacion_id
-            ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${fechaCorta(auditoria.fecha)}`
-            : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${fechaCorta(auditoria.fecha)}`)
+            ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${fechaVisitaTexto}`
+            : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${fechaVisitaTexto}`)
           : undefined}
         onBack={() => navigate(backTarget, { state: backState })}
         acciones={(

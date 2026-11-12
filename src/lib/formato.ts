@@ -83,3 +83,24 @@ export function dayKey(iso: string, todoElDia: boolean): string {
   if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
   return new Date(iso).toLocaleDateString('en-CA', { timeZone: todoElDia ? 'UTC' : ZONA })
 }
+
+/** Días 'YYYY-MM-DD' de `inicio` a `fin`, ambos incluidos (cruza mes y año). Si fin < inicio, solo inicio. */
+export function diasDelRango(inicio: string, fin: string): string[] {
+  const [y, m, d] = inicio.split('-').map(Number)
+  const [yf, mf, df] = fin.split('-').map(Number)
+  const t0 = Date.UTC(y, m - 1, d)
+  const t1 = Date.UTC(yf, mf - 1, df)
+  if (!(t1 > t0)) return [inicio]
+  const dias: string[] = []
+  for (let t = t0, n = 0; t <= t1 && n < 366; t += 86_400_000, n++) dias.push(new Date(t).toISOString().slice(0, 10))
+  return dias
+}
+
+/** "12 nov – 14 nov" (o "12 nov" si inicio y fin son el mismo día). Recibe 'YYYY-MM-DD'. */
+export function formatRango(inicio: string, fin: string): string {
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+  const i = new Date(inicio + 'T12:00:00').toLocaleDateString('es-MX', opts)
+  if (inicio === fin) return i
+  const f = new Date(fin + 'T12:00:00').toLocaleDateString('es-MX', opts)
+  return `${i} – ${f}`
+}

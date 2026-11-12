@@ -8,7 +8,7 @@ import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAgenda } from './estados'
-import { dayKey } from '@/lib/formato'
+import { dayKey, diasDelRango } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -160,12 +160,17 @@ export function CalendarioConsolidado() {
   const eventosPorDia = useMemo(() => {
     const map = new Map<string, EventoCalendario[]>()
     for (const ev of eventos) {
-      const key = dayKey(ev.start_at, ev.all_day)
-      if (!map.has(key)) map.set(key, [])
-      map.get(key)!.push(ev)
+      const ini = dayKey(ev.start_at, ev.all_day)
+      // Los eventos de todo el día de varios días aparecen en cada día, de inicio a fin.
+      const dias = ev.all_day && ev.end_at ? diasDelRango(ini, dayKey(ev.end_at, true)) : [ini]
+      for (const key of dias) {
+        if (key < desde || key > hasta) continue // solo los días del mes que se está viendo
+        if (!map.has(key)) map.set(key, [])
+        map.get(key)!.push(ev)
+      }
     }
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
-  }, [eventos])
+  }, [eventos, desde, hasta])
 
   return (
     <div className="flex flex-col gap-4">
