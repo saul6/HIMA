@@ -610,7 +610,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     const [evidenciaOpen, setEvidenciaOpen] = useState(false)
 
     // ── Carga visual ──────────────────────────────────────────────────────────
-    const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
+    // `modulosData` se llena a mitad de la carga (antes de respuestas y herencia): no sirve para saber
+    // si ya hay contenido que mostrar. Se considera "con datos" solo tras terminar una carga completa.
+    const yaCargoRef = useRef(false)
+    if (!cargando) yaCargoRef.current = true
+    const mostrarSkeleton = useMostrarCarga(cargando, yaCargoRef.current)
     const reducirMovimiento = useReducedMotion()
     // Fundido solo si esta captura nació cargando (primera aparición del contenido)
     const nacioCargandoRef = useRef(cargando)
