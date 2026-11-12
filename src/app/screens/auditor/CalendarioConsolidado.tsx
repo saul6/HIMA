@@ -8,6 +8,7 @@ import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAgenda } from './estados'
+import { dayKey, diasDelRango } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -26,14 +27,6 @@ const TIPO_CONFIG: Record<string, { fillVar: string; textVar: string }> = {
 interface CalendarioTipo { event_type: string; descripcion: string }
 
 const pad = (n: number) => String(n).padStart(2, '0')
-
-// Los eventos de todo el día (visitas, capacitaciones) llegan de la vista como `fecha::timestamptz`,
-// es decir, la medianoche UTC de ese día: hay que leer el día en UTC. En México (UTC−6) caería el día anterior.
-// Los demás eventos traen hora real y se leen en la zona de México.
-function dayKey(iso: string, todoElDia: boolean): string {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
-  return new Date(iso).toLocaleDateString('en-CA', { timeZone: todoElDia ? 'UTC' : 'America/Mexico_City' })
-}
 
 function formatDayHeader(yyyymmdd: string): string {
   const [y, m, d] = yyyymmdd.split('-').map(Number)
@@ -167,12 +160,17 @@ export function CalendarioConsolidado() {
   const eventosPorDia = useMemo(() => {
     const map = new Map<string, EventoCalendario[]>()
     for (const ev of eventos) {
-      const key = dayKey(ev.start_at, ev.all_day)
-      if (!map.has(key)) map.set(key, [])
-      map.get(key)!.push(ev)
+      const ini = dayKey(ev.start_at, ev.all_day)
+      // Los eventos de todo el día de varios días aparecen en cada día, de inicio a fin.
+      const dias = ev.all_day && ev.end_at ? diasDelRango(ini, dayKey(ev.end_at, true)) : [ini]
+      for (const key of dias) {
+        if (key < desde || key > hasta) continue // solo los días del mes que se está viendo
+        if (!map.has(key)) map.set(key, [])
+        map.get(key)!.push(ev)
+      }
     }
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
-  }, [eventos])
+  }, [eventos, desde, hasta])
 
   return (
     <div className="flex flex-col gap-4">

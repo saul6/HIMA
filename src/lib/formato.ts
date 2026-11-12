@@ -74,3 +74,35 @@ export function mesAnio(d: string | Date | null | undefined): string {
   const p = partes(d)
   return p ? `${MESES_LARGOS[p.mes - 1]} ${p.anio}` : '—'
 }
+
+// Los eventos de todo el día (visitas, capacitaciones) llegan de la vista como `fecha::timestamptz`,
+// es decir, la medianoche UTC de ese día: hay que leer el día en UTC. En México (UTC−6) caería el día anterior.
+// Los demás eventos traen hora real y se leen en la zona de México.
+// Criterio único para agrupar por día ('YYYY-MM-DD'); una columna `date` ya en ese formato se usa tal cual.
+export function dayKey(iso: string, todoElDia: boolean): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: todoElDia ? 'UTC' : ZONA })
+}
+
+/** Días 'YYYY-MM-DD' de `inicio` a `fin`, ambos incluidos (cruza mes y año). Si fin < inicio, solo inicio. */
+export function diasDelRango(inicio: string, fin: string): string[] {
+  const [y, m, d] = inicio.split('-').map(Number)
+  const [yf, mf, df] = fin.split('-').map(Number)
+  const t0 = Date.UTC(y, m - 1, d)
+  const t1 = Date.UTC(yf, mf - 1, df)
+  if (!(t1 > t0)) return [inicio]
+  const dias: string[] = []
+  for (let t = t0, n = 0; t <= t1 && n < 366; t += 86_400_000, n++) dias.push(new Date(t).toISOString().slice(0, 10))
+  return dias
+}
+
+/** "12 nov – 14 nov" (o "12 nov" si inicio y fin son el mismo día). Recibe 'YYYY-MM-DD'. */
+export function formatRango(inicio: string, fin: string): string {
+  const corta = (s: string) => {
+    const p = partes(s)
+    return p ? `${p.dia} ${MESES_CORTOS[p.mes - 1]}` : '—'
+  }
+  const i = corta(inicio)
+  if (inicio === fin) return i
+  return `${i} – ${corta(fin)}`
+}

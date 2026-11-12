@@ -10,6 +10,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { formatRango } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -24,14 +25,6 @@ interface EventoAgenda {
   auditoria_id: string | null
   instalacion_id: string | null
   notas: string | null
-}
-
-function formatRango(inicio: string, fin: string): string {
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
-  const i = new Date(inicio + 'T12:00:00').toLocaleDateString('es-MX', opts)
-  if (inicio === fin) return i
-  const f = new Date(fin + 'T12:00:00').toLocaleDateString('es-MX', opts)
-  return `${i} – ${f}`
 }
 
 function ChipVisita() {
