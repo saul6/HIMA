@@ -69,7 +69,7 @@ const PERIODOS: { key: PeriodoKey; label: string }[] = [
 
 const ROL_LABELS: Record<string, string> = {
   admin_org: 'Admin', super_admin: 'Super Admin',
-  asesor_tecnico: 'Asesor', operario: 'Operario', auditor: 'Auditor',
+  asesor_tecnico: 'Encargado', operario: 'Operario', auditor: 'Auditor',
 }
 
 // ── Chip de estado ────────────────────────────────────────────────────────────

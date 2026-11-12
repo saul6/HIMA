@@ -25,7 +25,7 @@ import { useMisVouchers } from '@/hooks/useNomina'
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
   admin_org: 'Administrador',
-  asesor_tecnico: 'Asesor Técnico',
+  asesor_tecnico: 'Encargado',
   operario: 'Operario de campo',
 }
 
