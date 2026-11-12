@@ -50,7 +50,7 @@ const LIMITE_POR_PLAN: Record<string, number | null> = {
 const ROL_LABELS: Record<string, string> = {
   super_admin: 'Super admin',
   admin_org: 'Administrador',
-  asesor_tecnico: 'Asesor técnico',
+  asesor_tecnico: 'Encargado',
   operario: 'Operario',
   auditor: 'Auditor',
 }

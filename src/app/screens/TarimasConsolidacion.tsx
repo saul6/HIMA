@@ -247,7 +247,7 @@ function Cuadre({ ranchoId }: { ranchoId: string }) {
 
 export function TarimasConsolidacion() {
   const { profile } = useAuthContext()
-  const puedeCorregir = ['admin_org', 'asesor_tecnico', 'super_admin'].includes(profile?.rol ?? '')
+  const puedeCorregir = ['admin_org', 'super_admin'].includes(profile?.rol ?? '')
   const { ranchos } = useRanchos()
   const [ranchoId, setRanchoId] = useState('')
   useEffect(() => { if (ranchos.length && !ranchoId) setRanchoId(ranchos[0].id) }, [ranchos, ranchoId])

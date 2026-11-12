@@ -175,7 +175,8 @@ export function ActividadEquipo() {
   const { profile, codigoClave } = useAuthContext()
   const { modulos, terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
-  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  // Administrador y Encargado ven la actividad del equipo (solo lectura)
+  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico' || profile?.rol === 'super_admin'
 
   const [periodo, setPeriodo] = useState<Periodo>('30d')
   const [usuario, setUsuario] = useState('')

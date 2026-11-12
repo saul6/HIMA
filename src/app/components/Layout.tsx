@@ -93,7 +93,7 @@ const ROL_LABELS: Record<string, string> = {
   admin_org: 'Administrador',
   auditor: 'Auditor',
   super_admin: 'Super Admin',
-  asesor_tecnico: 'Asesor técnico',
+  asesor_tecnico: 'Encargado',
   operario: 'Operario',
 }
 
@@ -137,7 +137,8 @@ export function Layout() {
 
   const mostrarAplicaciones    = !esAuditor && (loadingModulos || modulos.some(m => m.clave === "aplicaciones"));
   const mostrarInventario      = !esAuditor && (loadingModulos || modulos.some(m => m.clave === "inventario"));
-  const mostrarActividadEquipo = !esAuditor && (loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho'));
+  const esEncargado = profile?.rol === 'asesor_tecnico';
+  const mostrarActividadEquipo = !esAuditor && (loadingModulos || ((esAdmin || esEncargado) && terminosSitio.singular !== 'Rancho'));
   const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
   const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
   const mostrarMetricas        = !esAuditor;

@@ -76,7 +76,8 @@ export function useActividadEquipo(filtros: FiltrosActividad) {
   const [error, setError] = useState<string | null>(null)
 
   const { desde, hasta, usuario, modulo, rancho, solo } = filtros
-  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  // Administrador y Encargado ven la actividad del equipo (solo lectura)
+  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico' || profile?.rol === 'super_admin'
 
   const cargar = useCallback(async () => {
     if (!profile?.org_id || !esAdmin) {

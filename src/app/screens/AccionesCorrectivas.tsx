@@ -149,6 +149,8 @@ export function AccionesCorrectivas() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  // El Encargado gestiona y cierra acciones correctivas como el administrador (asignar hallazgos sigue siendo solo del administrador)
+  const puedeGestionar = esAdmin || profile?.rol === 'asesor_tecnico'
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
   const { items, loading, error, refetch, guardarCapa, cerrarCapa, agregarFoto, eliminarFotoDb } =
@@ -203,13 +205,13 @@ export function AccionesCorrectivas() {
   // Quien no es admin edita una CAPA existente solo si es su responsable o quien la creó
   function puedeEditarCapa(item: NcBandejaItem | null): boolean {
     const a = item?.accion
-    if (!a || esAdmin) return true
+    if (!a || puedeGestionar) return true
     return a.ownerUserId === profile?.id || a.creadoPor === profile?.id
   }
   const soloLectura = !!selectedItem && !puedeEditarCapa(selectedItem)
   // La BD solo deja editar el hallazgo a quien lo registró o al administrador
   const puedeEditarHallazgo =
-    esAdmin || !selectedItem?.accion || selectedItem.accion.hallazgoCreadoPor === profile?.id
+    puedeGestionar || !selectedItem?.accion || selectedItem.accion.hallazgoCreadoPor === profile?.id
 
   function abrirSheet(item: NcBandejaItem) {
     setSelectedItem(item)
@@ -325,7 +327,7 @@ export function AccionesCorrectivas() {
         await agregarFoto(capaId, path, fp.tipo, fp.leyenda.trim() || null)
       }
 
-      if (cerrar && esAdmin) {
+      if (cerrar && puedeGestionar) {
         await cerrarCapa(hallazgoId, capaId)
       }
 
@@ -865,7 +867,7 @@ export function AccionesCorrectivas() {
             onPrincipal={() => handleGuardar(false)}
             onCancelar={cerrarSheet}
             cargando={guardando}
-            aviso={esAdmin && online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' ? (
+            aviso={puedeGestionar && online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' ? (
               <Boton
                 variante="secundario"
                 className="w-full"

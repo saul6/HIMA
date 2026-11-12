@@ -78,7 +78,7 @@ async function cargarDatosPerfilBase(
       }
     }
 
-    if (profile.rol !== 'operario' && profile.rol !== 'admin_org') {
+    if (profile.rol !== 'operario' && profile.rol !== 'admin_org' && profile.rol !== 'asesor_tecnico') {
       devLog('[auth] rol sin productor asociado:', profile.rol)
       return { profile, productor: null, asesorProfile: null, responsableProfile: null, error: null }
     }
