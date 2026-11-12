@@ -58,6 +58,8 @@ interface Props {
   encabezadoFijo?: boolean
   /** Lo pone PaginaEstandar (integrarFirmas): bloque que sigue a la tabla (firmas). Va como último hermano de los renglones para que el último renglón viaje con él y no queden solo. */
   firmasDespues?: ReactNode
+  /** Alto (pt) que ocupa `firmasDespues`, para que el último renglón viaje con él. Por defecto, el de un bloque de firmas. */
+  reservaDespues?: number
 }
 
 const PAD = 4
@@ -174,9 +176,9 @@ export function alturaPieza(pieza: Pieza, w: number[], fuente: number): number {
 
 export function TablaDatos({
   columnas, filas: filasEntrada, anchoTotal = ANCHO_UTIL.landscape, vacio,
-  fuente = 8, fuenteEnc = 7, encabezadoSuperior, encabezadoFijo = true, firmasDespues,
+  fuente = 8, fuenteEnc = 7, encabezadoSuperior, encabezadoFijo = true, firmasDespues, reservaDespues,
 }: Props) {
-  const reservaFirmas = firmasDespues ? ALTO_FIRMAS : 0
+  const reservaFirmas = firmasDespues ? (reservaDespues ?? ALTO_FIRMAS) : 0
   const suma = columnas.reduce((a, c) => a + c.ancho, 0) || 1
   const w = repartirAnchos(columnas, anchoTotal, fuente, fuenteEnc)
   // Columnas `largo`: el texto que pasa del umbral sale de la celda (queda un resumen) y va debajo de su renglón.
