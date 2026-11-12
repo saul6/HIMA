@@ -572,7 +572,7 @@ export function EjecucionJornada() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
                   <DropdownMenuLabel className="text-caption uppercase tracking-wide text-muted-foreground">Jornada</DropdownMenuLabel>
-                  <DropdownMenuItem onSelect={() => navigate('/auditor/jornada/nueva')}>
+                  <DropdownMenuItem onSelect={() => navigate(`/auditor/jornada/nueva?jornada=${jornadaId}`)}>
                     <Plus aria-hidden="true" />
                     Agregar operación
                   </DropdownMenuItem>
@@ -780,7 +780,7 @@ export function EjecucionJornada() {
 
             {/* Agregar operación */}
             <button
-              onClick={() => { setMenuAbierto(false); navigate('/auditor/jornada/nueva') }}
+              onClick={() => { setMenuAbierto(false); navigate(`/auditor/jornada/nueva?jornada=${jornadaId}`) }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-left active:opacity-70"
               style={{ backgroundColor: 'var(--muted)' }}
             >
