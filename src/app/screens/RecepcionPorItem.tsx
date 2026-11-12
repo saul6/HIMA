@@ -8,6 +8,9 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -42,11 +45,11 @@ function avisar(e: any) {
 const ROL_TXT: Record<M82RolHoja, string> = { REALIZA: 'Realiza', REVISA: 'Revisa (encargado de turno)', VERIFICA: 'Verifica (responsable de inocuidad)' }
 const ROLES: M82RolHoja[] = ['REALIZA', 'REVISA', 'VERIFICA']
 
-const ESTADO_UI: Record<M82Estado, { texto: string; fondo: string; color: string }> = {
-  PRECAPTURA: { texto: 'Precaptura', fondo: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  ACEPTADA: { texto: 'Aceptada', fondo: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  RETENIDA: { texto: 'Retenida', fondo: 'var(--muted)', color: 'var(--foreground)' },
-  RECHAZADA: { texto: 'Rechazada', fondo: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' },
+const ESTADO_UI: Record<M82Estado, { texto: string; tono: TonoEtiqueta }> = {
+  PRECAPTURA: { texto: 'Precaptura', tono: 'pendiente' },
+  ACEPTADA: { texto: 'Aceptada', tono: 'menta' },
+  RETENIDA: { texto: 'Retenida', tono: 'neutral' },
+  RECHAZADA: { texto: 'Rechazada', tono: 'error' },
 }
 
 interface LineaForm { codigo: string; cajas: string }
@@ -263,15 +266,18 @@ export function RecepcionPorItem() {
         tituloFallback="Recepción Diaria de Fruta por Ítem"
         subtitulo={`${codigoFmt} · Por evento`}
         acciones={
-          <button onClick={pdfDia} disabled={pdfCargando}
-            className="hidden min-[1224px]:flex items-center gap-2 h-9 px-3 rounded-[0.625rem] border border-border text-sm disabled:opacity-50">
-            {pdfCargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />}
-            PDF del día
-          </button>
+          <>
+            <button onClick={pdfDia} disabled={pdfCargando}
+              className="hidden min-[1224px]:flex items-center gap-2 h-9 px-3 rounded-[0.625rem] border border-border text-sm disabled:opacity-50">
+              {pdfCargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />}
+              PDF del día
+            </button>
+            <BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />
+          </>
         }
       />
 
-      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
+      <div className="px-4 pt-3 min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
 
       <div className="p-4 space-y-3">
         <div className="flex gap-2 items-end">
@@ -374,48 +380,69 @@ export function RecepcionPorItem() {
           </section>
         )}
 
-        {loading ? <ListaSkeleton /> : entregas.length === 0 ? (
+        {loading ? <ListaSkeleton rejilla /> : entregas.length === 0 ? (
           <EstadoVacio icono={PackageOpen} titulo="Sin entregas en esta fecha" ayuda="Captura la primera con el botón +" />
-        ) : entregas.map(e => {
-          const ui = ESTADO_UI[e.estado]
-          const total = e.lineas.reduce((a, l) => a + (e.estado === 'ACEPTADA' ? (l.cajas_confirmadas ?? 0) : l.cajas_declaradas), 0)
-          return (
-            <div key={e.id} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">{e.hora} · Productor {e.codigo_productor}</p>
-                  <p className="text-xs text-muted-foreground truncate">{e.empresa} · {e.rancho_nombre} · {fechaCorta(e.fecha)}</p>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0" style={{ backgroundColor: ui.fondo, color: ui.color }}>{ui.texto}</span>
-              </div>
-              <ul className="space-y-0.5">
-                {e.lineas.map(l => {
-                  const it = itemPorCodigo.get(l.codigo)
-                  return (
-                    <li key={l.id} className="text-xs flex justify-between gap-2">
-                      <span className="truncate"><b>{l.codigo}</b> · {it?.presentacion ?? ''} <span className="text-muted-foreground">· {tituloBloque(it)} · {l.clasificacion === 'ORG' ? 'Org' : 'Conv'}</span></span>
-                      <span className="flex-shrink-0 font-semibold">{l.cajas_confirmadas ?? l.cajas_declaradas}{l.cajas_confirmadas != null && l.cajas_confirmadas !== l.cajas_declaradas ? ` (decl. ${l.cajas_declaradas})` : ''}</span>
-                    </li>
-                  )
-                })}
-              </ul>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted-foreground">{total} cajas{e.pase_anden ? ' · Pase de andén' : ''}</span>
-                <div className="flex gap-2">
-                  {e.estado === 'PRECAPTURA' && (
-                    <button onClick={() => borrar(e)} aria-label="Borrar precaptura" className="p-2 rounded-lg border border-border">
-                      <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    </button>
+        ) : (
+          <ListaTarjetas>
+            {entregas.map(e => {
+              const ui = ESTADO_UI[e.estado]
+              const total = e.lineas.reduce((a, l) => a + (e.estado === 'ACEPTADA' ? (l.cajas_confirmadas ?? 0) : l.cajas_declaradas), 0)
+              return (
+                <TarjetaRegistro
+                  key={e.id}
+                  sinFirmas
+                  meta={[
+                    <span className="hidden @min-[972px]/lista:inline">{e.empresa}</span>,
+                    <span className="hidden @min-[972px]/lista:inline">{e.rancho_nombre}</span>,
+                    <span className="hidden @min-[972px]/lista:inline">{fechaCorta(e.fecha)}</span>,
+                  ]}
+                  titulo={`${e.hora} · Productor ${e.codigo_productor}`}
+                  tituloTexto={`${e.hora} · Productor ${e.codigo_productor}`}
+                  tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                  contenido={(
+                    <>
+                      <p className="text-xs text-muted-foreground truncate @min-[972px]/lista:hidden">{e.empresa} · {e.rancho_nombre} · {fechaCorta(e.fecha)}</p>
+                      <div className="mt-1.5 hidden flex-wrap items-center gap-2 @min-[972px]/lista:flex">
+                        <Etiqueta tono={ui.tono}>{ui.texto}</Etiqueta>
+                        <Etiqueta tono="neutral">{total} cajas</Etiqueta>
+                        {e.pase_anden && <Etiqueta tono="neutral">Pase de andén</Etiqueta>}
+                      </div>
+                    </>
                   )}
-                  {(e.estado === 'PRECAPTURA' || e.estado === 'RETENIDA' || esSuperAdmin && e.estado !== 'ACEPTADA') && (
-                    <Boton type="button" tamano="sm" onClick={() => abrirDictamen(e)}>Dictamen y conteo</Boton>
-                  )}
-                </div>
-              </div>
-              {e.observaciones && <p className="text-xs text-muted-foreground">Obs.: {e.observaciones}</p>}
-            </div>
-          )
-        })}
+                  acciones={<Etiqueta tono={ui.tono} className="@min-[972px]/lista:hidden">{ui.texto}</Etiqueta>}
+                >
+                  <div className="mt-2 space-y-2">
+                    <ul className="space-y-0.5">
+                      {e.lineas.map(l => {
+                        const it = itemPorCodigo.get(l.codigo)
+                        return (
+                          <li key={l.id} className="text-xs flex justify-between gap-2">
+                            <span className="truncate"><b>{l.codigo}</b> · {it?.presentacion ?? ''} <span className="text-muted-foreground">· {tituloBloque(it)} · {l.clasificacion === 'ORG' ? 'Org' : 'Conv'}</span></span>
+                            <span className="flex-shrink-0 font-semibold">{l.cajas_confirmadas ?? l.cajas_declaradas}{l.cajas_confirmadas != null && l.cajas_confirmadas !== l.cajas_declaradas ? ` (decl. ${l.cajas_declaradas})` : ''}</span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">{total} cajas{e.pase_anden ? ' · Pase de andén' : ''}</span>
+                      <div className="flex gap-2">
+                        {e.estado === 'PRECAPTURA' && (
+                          <button onClick={() => borrar(e)} aria-label="Borrar precaptura" className="p-2 rounded-lg border border-border">
+                            <Trash2 className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        )}
+                        {(e.estado === 'PRECAPTURA' || e.estado === 'RETENIDA' || esSuperAdmin && e.estado !== 'ACEPTADA') && (
+                          <Boton type="button" tamano="sm" onClick={() => abrirDictamen(e)}>Dictamen y conteo</Boton>
+                        )}
+                      </div>
+                    </div>
+                    {e.observaciones && <p className="text-xs text-muted-foreground">Obs.: {e.observaciones}</p>}
+                  </div>
+                </TarjetaRegistro>
+              )
+            })}
+          </ListaTarjetas>
+        )}
       </div>
 
       <Fab onClick={abrirNueva} aria-label="Nueva entrega" disabled={items.length === 0} />
