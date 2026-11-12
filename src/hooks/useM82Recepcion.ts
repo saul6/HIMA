@@ -61,11 +61,15 @@ export interface M82Entrega {
   lineas: M82Linea[]
 }
 
+/** Relación productor → ítem → clase observada en el historial de recepción. Es solo sugerencia: no restringe ni llena la captura. */
+export interface M82Sugerencia { codigo_productor: string; codigo_item: string; clasificacion: 'ORG' | 'CONV' }
+
 export function useM82Catalogo() {
   const { profile } = useAuthContext()
   const orgId = profile?.org_id ?? null
   const [bloques, setBloques] = useState<M82Bloque[]>([])
   const [items, setItems] = useState<M82Item[]>([])
+  const [sugerencias, setSugerencias] = useState<M82Sugerencia[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -73,9 +77,10 @@ export function useM82Catalogo() {
     let vivo = true
     ;(async () => {
       setLoading(true)
-      const [b, i] = await Promise.all([
+      const [b, i, s] = await Promise.all([
         tbl('m82_bloques').select('*').eq('org_id', orgId).order('orden'),
         tbl('m82_items_catalogo').select('id, bloque_id, codigo, presentacion, clasificacion, orden').eq('org_id', orgId).eq('activo', true).order('orden'),
+        tbl('m82_sugerencias_productor').select('codigo_productor, codigo_item, clasificacion').eq('org_id', orgId),
       ])
       if (!vivo) return
       const bl: M82Bloque[] = b.data ?? []
@@ -84,12 +89,13 @@ export function useM82Catalogo() {
         (ordenBloque.get(x.bloque_id) ?? 0) - (ordenBloque.get(y.bloque_id) ?? 0) || x.orden - y.orden)
       setBloques(bl)
       setItems(it)
+      setSugerencias((s.data ?? []) as M82Sugerencia[])
       setLoading(false)
     })()
     return () => { vivo = false }
   }, [orgId])
 
-  return { bloques, items, loading }
+  return { bloques, items, sugerencias, loading }
 }
 
 export async function cargarEntregasM82(orgId: string, fecha: string): Promise<M82Entrega[]> {
