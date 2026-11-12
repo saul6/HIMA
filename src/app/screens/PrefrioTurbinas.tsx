@@ -8,6 +8,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -305,9 +306,10 @@ export function PrefrioTurbinas() {
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
-      <ModuloHeader tituloFallback="Entradas y Salidas de Prefrío por Turbina" subtitulo={`${codigoFmt} · ${config.camara_nombre}`} />
+      <ModuloHeader tituloFallback="Entradas y Salidas de Prefrío por Turbina" subtitulo={`${codigoFmt} · ${config.camara_nombre}`}
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />} />
 
-      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
+      <div className="px-4 pt-3 min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
 
       <div className="p-4 space-y-4">
         {error && (
@@ -317,11 +319,51 @@ export function PrefrioTurbinas() {
           </div>
         )}
 
+        {/* Turbinas como tarjetas (escritorio): el mismo filtro que las chips del celular */}
+        <div className="hidden gap-3 min-[1224px]:grid" style={{ gridTemplateColumns: `repeat(${turbinas.length + 1}, minmax(0, 1fr))` }}>
+          <button type="button" onClick={() => setFiltroTurbina(null)} aria-pressed={filtroTurbina === null}
+            className={`rounded-xl border p-3 text-left ${filtroTurbina === null ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+            <p className="text-xs text-muted-foreground">Todas</p>
+            <p className="mt-1 text-xl font-semibold">
+              {turbinas.reduce((a, t) => a + ocupacion(t), 0)}
+              <span className="text-sm font-normal text-muted-foreground"> / {turbinas.length * config.capacidad_turbina} posiciones</span>
+            </p>
+          </button>
+          {turbinas.map(t => {
+            const nv = nivel(ocupacion(t))
+            return (
+              <button key={t} type="button" onClick={() => setFiltroTurbina(t)} aria-pressed={filtroTurbina === t}
+                className={`rounded-xl border p-3 text-left ${filtroTurbina === t ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex items-center gap-1.5 text-sm font-semibold">T{t}{config.turbinas_org.includes(t) && <Etiqueta tono="neutral" className="font-normal">ORG</Etiqueta>}</p>
+                  <span className="text-xs text-muted-foreground" style={ESTILO_NIVEL[nv]}>{ocupacion(t)}/{config.capacidad_turbina}</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (ocupacion(t) / config.capacidad_turbina) * 100)}%`, ...(nv === 'ok' ? {} : { backgroundColor: ESTILO_NIVEL[nv].color }) }} />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="space-y-4 min-[1224px]:grid min-[1224px]:grid-cols-2 min-[1224px]:items-start min-[1224px]:gap-4 min-[1224px]:space-y-0">
         {/* Por entrar (declarados) */}
+        {porEntrar.length === 0 && (
+          <section className="hidden space-y-2 min-[1224px]:block">
+            <div className="flex items-center justify-between gap-2">
+              <TituloSeccion className="mb-0">Por entrar a prefrío</TituloSeccion>
+              <span className="text-xs text-muted-foreground">0</span>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">Sin grupos por entrar</div>
+          </section>
+        )}
         {porEntrar.length > 0 && (
           <section className="space-y-2">
-            <TituloSeccion>Por entrar a prefrío</TituloSeccion>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="flex items-center justify-between gap-2 -mb-2">
+              <TituloSeccion>Por entrar a prefrío</TituloSeccion>
+              <span className="mb-2.5 hidden text-xs text-muted-foreground min-[1224px]:inline">{porEntrar.length}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-2 md:max-[1223px]:grid-cols-2">
               {porEntrar.map(g => (
                 <div key={g.id} className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -348,7 +390,8 @@ export function PrefrioTurbinas() {
         <section className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <TituloSeccion>En prefrío ahora</TituloSeccion>
-            <div className="flex gap-1 flex-wrap">
+            <span className="mb-2.5 hidden text-xs text-muted-foreground min-[1224px]:inline">{activosVista.length}</span>
+            <div className="flex gap-1 flex-wrap min-[1224px]:hidden">
               <Chip activo={filtroTurbina === null} onClick={() => setFiltroTurbina(null)}>Todas</Chip>
               {turbinas.map(t => (
                 <Chip key={t} activo={filtroTurbina === t} onClick={() => setFiltroTurbina(t)}>
@@ -361,7 +404,7 @@ export function PrefrioTurbinas() {
           {loading ? <ListaSkeleton rows={2} /> : activosVista.length === 0 ? (
             <EstadoVacio icono={Snowflake} titulo="Nada en prefrío" ayuda="Registra la entrada con el botón +: el prefrío inicia al guardar" />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 md:max-[1223px]:grid-cols-2">
               {activosVista.map(g => {
                 const min = minutosDesde(g.entrada_en ?? '')
                 return (
@@ -396,6 +439,8 @@ export function PrefrioTurbinas() {
           )}
         </section>
 
+        </div>
+
         {/* Bitácora del día */}
         <section className="space-y-2">
           <TituloSeccion>Salidas del día</TituloSeccion>
@@ -409,7 +454,36 @@ export function PrefrioTurbinas() {
           {salidasDia.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin salidas registradas para grupos que entraron en esta fecha.</p>
           ) : (
-            <ul className="space-y-1">
+            <>
+            <div className="hidden overflow-hidden rounded-xl border border-border bg-card min-[1224px]:block">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs text-muted-foreground">
+                    <th className="px-4 py-2.5 font-medium">Ítem</th>
+                    <th className="px-4 py-2.5 font-medium">Tipo</th>
+                    <th className="px-4 py-2.5 font-medium">Turbina</th>
+                    <th className="px-4 py-2.5 font-medium">Tarimas · cajas</th>
+                    <th className="px-4 py-2.5 font-medium">Entrada</th>
+                    <th className="px-4 py-2.5 font-medium">Salida</th>
+                    <th className="px-4 py-2.5 font-medium">Tiempo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {salidasDia.map(({ g, s }) => (
+                    <tr key={s.id} className="border-b border-border last:border-b-0">
+                      <td className="px-4 py-2.5 font-semibold">{g.combinada ? g.presentacion : `#${g.codigo}`}</td>
+                      <td className="px-4 py-2.5"><Etiqueta tono="neutral" className="font-normal">{g.clasificacion}</Etiqueta></td>
+                      <td className="px-4 py-2.5">T{g.turbina}</td>
+                      <td className="px-4 py-2.5">{s.tarimas} tar. · {s.cajas} cajas</td>
+                      <td className="px-4 py-2.5">{horaLocal(g.entrada_en ?? '')} · {fmtTemp(g.temp_entrada_valor, g.temp_entrada_unidad)}</td>
+                      <td className="px-4 py-2.5">{horaLocal(s.salida_en)} · {fmtTemp(s.temp_salida_valor, s.temp_salida_unidad)}</td>
+                      <td className="px-4 py-2.5">{duracionHHMM(s.duracion_min)} h</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ul className="space-y-1 min-[1224px]:hidden">
               {salidasDia.map(({ g, s }) => (
                 <li key={s.id} className="text-xs rounded-[0.625rem] border border-border bg-card px-3 py-2 flex flex-wrap gap-x-3">
                   <b>{g.combinada ? g.presentacion : `#${g.codigo}`}</b><span>{g.clasificacion}</span><span>T{g.turbina}</span>
@@ -419,6 +493,7 @@ export function PrefrioTurbinas() {
                 </li>
               ))}
             </ul>
+            </>
           )}
         </section>
       </div>
