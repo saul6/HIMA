@@ -74,7 +74,7 @@ export function RecepcionPorItem() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
-  const { bloques, items, loading: loadingCat } = useM82Catalogo()
+  const { bloques, items, sugerencias: sugProductor, loading: loadingCat } = useM82Catalogo()
   const [fecha, setFecha] = useState(hoyMX())
   const { entregas, loading, error, refetch } = useM82Entregas(fecha)
   const esAdmin = profile?.rol === 'admin_org'
@@ -139,6 +139,14 @@ export function RecepcionPorItem() {
       (!filtroBloque || i.bloque_id === filtroBloque)
       && (!q || i.codigo.startsWith(q) || i.presentacion.toLowerCase().includes(q)))
   }, [items, busqueda, filtroBloque])
+
+  // Historial del productor: chips de sugerencia (solo los ítems del catálogo con la misma clase)
+  const sugeridos = useMemo(() => {
+    const cod = productor.trim()
+    if (!cod) return [] as M82Item[]
+    const sug = sugProductor.filter(x => x.codigo_productor === cod)
+    return items.filter(i => sug.some(x => x.codigo_item === i.codigo && x.clasificacion === i.clasificacion))
+  }, [productor, sugProductor, items])
 
   function agregarItem(codigo: string) {
     setLineas(ls => ls.some(l => l.codigo === codigo) ? ls : [...ls, { codigo, cajas: '' }])
@@ -463,6 +471,22 @@ export function RecepcionPorItem() {
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground font-semibold">Código del productor *</label>
               <input className={fieldCls} maxLength={60} value={productor} onChange={e => setProductor(e.target.value)} placeholder="Como viene en la papeleta o etiqueta" />
+              {sugeridos.length > 0 && (
+                <div className="space-y-1 pt-1">
+                  <p className="text-xs text-muted-foreground">Ha entregado antes (sugerencia; confirma lo que llega hoy):</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sugeridos.map(i => {
+                      const ya = lineas.some(l => l.codigo === i.codigo)
+                      return (
+                        <button key={i.id} type="button" disabled={ya} onClick={() => agregarItem(i.codigo)}
+                          className={`h-8 px-2.5 rounded-[0.625rem] border text-xs font-semibold disabled:opacity-40 ${ya ? 'border-primary' : 'border-border-control'}`}>
+                          {ya ? 'Agregado: ' : '+ '}#{i.codigo} {i.presentacion} · {i.clasificacion === 'ORG' ? 'Org' : 'Conv'}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
             {cambiarEmpresa ? (
               <div className="space-y-1">
