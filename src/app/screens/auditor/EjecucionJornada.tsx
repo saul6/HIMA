@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
   AlertCircle, Loader, RefreshCw,
@@ -22,6 +22,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
 } from '@/app/components/ui/alert-dialog'
+import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
@@ -43,20 +44,6 @@ function avancePct(conteo: JornadaConteo): number {
 }
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
-
-// Escritorio = `lg` en adelante (1024 px): ahí Pendientes y el menú ⋮ no son hojas desde abajo.
-const MQ_ESCRITORIO = '(min-width: 1024px)'
-function useEsEscritorio(): boolean {
-  return useSyncExternalStore(
-    cb => {
-      const mq = window.matchMedia(MQ_ESCRITORIO)
-      mq.addEventListener('change', cb)
-      return () => mq.removeEventListener('change', cb)
-    },
-    () => window.matchMedia(MQ_ESCRITORIO).matches,
-    () => false,
-  )
-}
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
