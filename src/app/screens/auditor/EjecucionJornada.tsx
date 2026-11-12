@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
   AlertCircle, Loader, RefreshCw,
@@ -22,6 +22,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
 } from '@/app/components/ui/alert-dialog'
+import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
@@ -43,20 +44,6 @@ function avancePct(conteo: JornadaConteo): number {
 }
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
-
-// Escritorio = `lg` en adelante (1024 px): ahí Pendientes y el menú ⋮ no son hojas desde abajo.
-const MQ_ESCRITORIO = '(min-width: 1024px)'
-function useEsEscritorio(): boolean {
-  return useSyncExternalStore(
-    cb => {
-      const mq = window.matchMedia(MQ_ESCRITORIO)
-      mq.addEventListener('change', cb)
-      return () => mq.removeEventListener('change', cb)
-    },
-    () => window.matchMedia(MQ_ESCRITORIO).matches,
-    () => false,
-  )
-}
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
@@ -169,11 +156,11 @@ function PendientesPanel({
               </button>
             </div>
 
-            {pendientesDest.slice(0, 5).map(p => (
+            {pendientesDest.map(p => (
               <button
                 key={p.question_id}
                 onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
-                className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-start gap-2 active:opacity-70"
+                className="w-full text-left rounded-xl border border-border px-3 py-2 flex items-start gap-2 active:opacity-70 [content-visibility:auto] [contain-intrinsic-size:auto_3.25rem]"
                 style={{ backgroundColor: 'var(--card)' }}
               >
                 <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ backgroundColor: 'var(--border)' }} />
@@ -182,7 +169,7 @@ function PendientesPanel({
               </button>
             ))}
 
-            {herenciasDest.slice(0, 3).map(p => (
+            {herenciasDest.map(p => (
               <button
                 key={`h-${p.question_id}`}
                 onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
@@ -298,14 +285,17 @@ export function EjecucionJornada() {
       const initialAud = ctx?.auditoria_id ?? firstOp?.auditoria_id ?? null
       setAuditoriaActiva(initialAud)
 
-      if (ctx?.question_id) {
-        setQuestionActiva(ctx.question_id)
-      } else if (preg.length > 0) {
-        setQuestionActiva(preg[0].question_id)
-      }
+      // La pregunta inicial debe existir en la operación inicial: `preg[0]` (o la del contexto guardado)
+      // puede ser de otra operación y entonces no habría captura que mostrar.
+      const aplicaEnInicial = (p: JornadaPregunta) => p.destinos.some(d => d.auditoria_id === initialAud)
+      const qInicial =
+        (ctx?.question_id ? preg.find(p => p.question_id === ctx.question_id && aplicaEnInicial(p)) : undefined)
+        ?? preg.find(aplicaEnInicial)
+        ?? preg[0]
+      if (qInicial) setQuestionActiva(qInicial.question_id)
 
       const modulos = [...new Set(preg.map(p => p.modulo))]
-      setModuloActivo(modulos[0] ?? null)
+      setModuloActivo(qInicial?.modulo ?? modulos[0] ?? null)
     } catch (e) {
       console.error('[EjecucionJornada] cargar', e)
       setErrorCarga(true)
@@ -585,7 +575,7 @@ export function EjecucionJornada() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
                   <DropdownMenuLabel className="text-caption uppercase tracking-wide text-muted-foreground">Jornada</DropdownMenuLabel>
-                  <DropdownMenuItem onSelect={() => navigate('/auditor/jornada/nueva')}>
+                  <DropdownMenuItem onSelect={() => navigate(`/auditor/jornada/nueva?jornada=${jornadaId}`)}>
                     <Plus aria-hidden="true" />
                     Agregar operación
                   </DropdownMenuItem>
@@ -793,7 +783,7 @@ export function EjecucionJornada() {
 
             {/* Agregar operación */}
             <button
-              onClick={() => { setMenuAbierto(false); navigate('/auditor/jornada/nueva') }}
+              onClick={() => { setMenuAbierto(false); navigate(`/auditor/jornada/nueva?jornada=${jornadaId}`) }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-left active:opacity-70"
               style={{ backgroundColor: 'var(--muted)' }}
             >

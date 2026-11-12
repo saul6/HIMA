@@ -610,7 +610,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     const [evidenciaOpen, setEvidenciaOpen] = useState(false)
 
     // ── Carga visual ──────────────────────────────────────────────────────────
-    const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
+    // `modulosData` se llena a mitad de la carga (antes de respuestas y herencia): no sirve para saber
+    // si ya hay contenido que mostrar. Se considera "con datos" solo tras terminar una carga completa.
+    const yaCargoRef = useRef(false)
+    if (!cargando) yaCargoRef.current = true
+    const mostrarSkeleton = useMostrarCarga(cargando, yaCargoRef.current)
     const reducirMovimiento = useReducedMotion()
     // Fundido solo si esta captura nació cargando (primera aparición del contenido)
     const nacioCargandoRef = useRef(cargando)
@@ -872,7 +876,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     className="flex-1 min-w-0 h-11 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50 flex items-center justify-center gap-1"
                     style={
                       active
-                        ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, border: `2px solid ${opt.value === 'na' ? 'var(--foreground)' : opt.activeStyle.color}` }
+                        ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, borderWidth: '2px', borderColor: opt.value === 'na' ? 'var(--foreground)' : opt.activeStyle.color }
                         : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
                     }
                   >

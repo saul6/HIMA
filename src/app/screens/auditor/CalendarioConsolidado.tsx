@@ -27,8 +27,12 @@ interface CalendarioTipo { event_type: string; descripcion: string }
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-function dayKey(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+// Los eventos de todo el día (visitas, capacitaciones) llegan de la vista como `fecha::timestamptz`,
+// es decir, la medianoche UTC de ese día: hay que leer el día en UTC. En México (UTC−6) caería el día anterior.
+// Los demás eventos traen hora real y se leen en la zona de México.
+function dayKey(iso: string, todoElDia: boolean): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: todoElDia ? 'UTC' : 'America/Mexico_City' })
 }
 
 function formatDayHeader(yyyymmdd: string): string {
@@ -163,7 +167,7 @@ export function CalendarioConsolidado() {
   const eventosPorDia = useMemo(() => {
     const map = new Map<string, EventoCalendario[]>()
     for (const ev of eventos) {
-      const key = dayKey(ev.start_at)
+      const key = dayKey(ev.start_at, ev.all_day)
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(ev)
     }

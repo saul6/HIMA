@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, AlertCircle, Loader, RefreshCw, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
@@ -21,17 +21,19 @@ const MODULO_LABELS: Record<number, string> = {
 }
 
 function FilaOperacion({
-  fila, selected, onToggle,
+  fila, selected, onToggle, yaEnEstaJornada = false,
 }: {
   fila: JornadaCandidataFila
   selected: boolean
   onToggle: () => void
+  yaEnEstaJornada?: boolean
 }) {
   return (
     <FilaRegistro
       seleccionable
       seleccionado={selected}
-      onClick={onToggle}
+      onClick={yaEnEstaJornada ? () => {} : onToggle}
+      className={yaEnEstaJornada ? 'opacity-60' : undefined}
       titulo={
         <>
           {fila.operacion}
@@ -51,7 +53,9 @@ function FilaOperacion({
           <span className="mt-1 flex flex-wrap gap-1.5">
             <Etiqueta tono={estadoAuditoria(fila.estado).tono}>{estadoAuditoria(fila.estado).texto}</Etiqueta>
             {fila.efimera && <Etiqueta>Instalación no vinculada</Etiqueta>}
-            {fila.en_jornada_abierta && <Etiqueta tono="sky">Ya en jornada abierta</Etiqueta>}
+            {yaEnEstaJornada
+              ? <Etiqueta tono="sky">Ya en esta jornada</Etiqueta>
+              : fila.en_jornada_abierta && <Etiqueta tono="sky">Ya en jornada abierta</Etiqueta>}
           </span>
         </>
       }
@@ -61,7 +65,12 @@ function FilaOperacion({
 
 export function NuevaJornada() {
   const navigate = useNavigate()
-  const { candidatas, cargandoCandidatas, errorCandidatas, cargarCandidatas, crearJornada } = useAuditorJornada()
+  const [searchParams] = useSearchParams()
+  const jornadaDestino = searchParams.get('jornada')
+  const { candidatas, cargandoCandidatas, errorCandidatas, cargarCandidatas, crearJornada, agregarOperacion, cargarDetalle } = useAuditorJornada()
+
+  // Con ?jornada=<id> se agrega a esa jornada en lugar de crear una nueva.
+  const [destino, setDestino] = useState<{ nombre: string; ya: Set<string> } | null>(null)
 
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set())
   const [nombre, setNombre] = useState('')
@@ -71,6 +80,21 @@ export function NuevaJornada() {
   const hoy = hoyMX()
 
   useEffect(() => { cargarCandidatas() }, [cargarCandidatas])
+
+  useEffect(() => {
+    if (!jornadaDestino) { setDestino(null); return }
+    let vigente = true
+    cargarDetalle(jornadaDestino).then(det => {
+      if (!vigente) return
+      if (!det || det.jornada.estado !== 'abierta') {
+        toast.error(det ? 'La jornada ya terminó' : 'Jornada no encontrada')
+        navigate('/auditor', { replace: true })
+        return
+      }
+      setDestino({ nombre: det.jornada.nombre, ya: new Set(det.operaciones.map(o => o.auditoria_id)) })
+    })
+    return () => { vigente = false }
+  }, [jornadaDestino, cargarDetalle, navigate])
 
   const nombreDefault = `Jornada ${hoy.split('-').reverse().join('/')}`
 
@@ -100,6 +124,31 @@ export function NuevaJornada() {
   const nProductores = new Set(
     candidatas.filter(c => seleccionados.has(c.auditoria_id)).map(c => c.productor)
   ).size
+
+  async function handleAgregar() {
+    if (!jornadaDestino || seleccionados.size === 0 || creando) return
+    setCreando(true)
+    let agregadas = 0
+    try {
+      for (const audId of seleccionados) {
+        try {
+          await agregarOperacion(jornadaDestino, audId)
+          agregadas++
+        } catch (e) {
+          const nombreOp = candidatas.find(c => c.auditoria_id === audId)?.operacion ?? 'Operación'
+          const msg = (e as { message?: string })?.message || 'No se pudo agregar'
+          toast.error(`${nombreOp}: ${msg}`)
+          console.error('[NuevaJornada] agregarOperacion', e)
+        }
+      }
+    } finally {
+      setCreando(false)
+    }
+    if (agregadas > 0) {
+      toast.success(agregadas === 1 ? 'Operación agregada a la jornada' : `${agregadas} operaciones agregadas a la jornada`)
+      navigate(`/auditor/jornada/${jornadaDestino}`, { replace: true })
+    }
+  }
 
   async function handleCrear() {
     if (seleccionados.size === 0) return
@@ -131,8 +180,10 @@ export function NuevaJornada() {
 
       <ModuloHeader
         tituloFallback="Auditar por bloque"
-        subtitulo="Selecciona las operaciones a incluir en la jornada"
-        onBack={() => navigate('/auditor')}
+        subtitulo={jornadaDestino
+          ? (destino ? `Agregar a ${destino.nombre}` : 'Agregar a la jornada')
+          : 'Selecciona las operaciones a incluir en la jornada'}
+        onBack={() => navigate(jornadaDestino ? `/auditor/jornada/${jornadaDestino}` : '/auditor')}
         acciones={cargandoCandidatas ? (
           <span className="flex size-11 items-center justify-center">
             <Loader aria-hidden="true" size={16} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
@@ -192,6 +243,7 @@ export function NuevaJornada() {
                 fila={fila}
                 selected={seleccionados.has(fila.auditoria_id)}
                 onToggle={() => toggleOperacion(fila.auditoria_id)}
+                yaEnEstaJornada={!!destino?.ya.has(fila.auditoria_id)}
               />
             ))}
           </div>
@@ -227,6 +279,7 @@ export function NuevaJornada() {
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}
+          {!jornadaDestino && (
           <input
             aria-label="Nombre de la jornada (opcional)"
             type="text"
@@ -242,9 +295,16 @@ export function NuevaJornada() {
               padding: '0.5rem 0.75rem',
             }}
           />
+          )}
+          {jornadaDestino ? (
+            <Boton onClick={handleAgregar} cargando={creando} disabled={!destino} className="w-full">
+              <Plus aria-hidden="true" size={15} />Agregar {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} a la jornada
+            </Boton>
+          ) : (
           <Boton onClick={handleCrear} cargando={creando} className="w-full">
             <Plus aria-hidden="true" size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
           </Boton>
+          )}
         </div>
         </Portal>
       )}
