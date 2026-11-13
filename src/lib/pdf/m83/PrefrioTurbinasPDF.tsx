@@ -18,17 +18,18 @@ export interface M83DatosPDF {
   grupos: M83Grupo[]   // del día y empresa, sin cancelados
 }
 
+// Anchos relativos: Fruta y Presentación llevan el espacio libre; tarimas, cajas, horas, temperaturas y tiempo, angostas.
 const COLS: ColumnaDato[] = [
-  { texto: 'Orgánico / Convencional', ancho: 50, align: 'center' },
-  { texto: 'Fruta', ancho: 52 },
-  { texto: 'Presentación', ancho: 150 },
-  { texto: 'N° de tarimas', ancho: 38, align: 'center' },
-  { texto: 'Total cajas', ancho: 38, align: 'center' },
-  { texto: 'Entrada · Hora', ancho: 42, align: 'center' },
-  { texto: 'Entrada · Temperatura', ancho: 54, align: 'center' },
-  { texto: 'Salida · Hora', ancho: 48, align: 'center' },
-  { texto: 'Salida · Temperatura', ancho: 54, align: 'center' },
-  { texto: 'Tiempo total', ancho: 40, align: 'center' },
+  { texto: 'Orgánico / Convencional', ancho: 44, align: 'center' },
+  { texto: 'Fruta', ancho: 84 },
+  { texto: 'Presentación', ancho: 200 },
+  { texto: 'N° de tarimas', ancho: 30, align: 'center' },
+  { texto: 'Total cajas', ancho: 30, align: 'center' },
+  { texto: 'Entrada · Hora', ancho: 36, align: 'center' },
+  { texto: 'Entrada · Temperatura', ancho: 46, align: 'center' },
+  { texto: 'Salida · Hora', ancho: 40, align: 'center' },
+  { texto: 'Salida · Temperatura', ancho: 46, align: 'center' },
+  { texto: 'Tiempo total', ancho: 32, align: 'center' },
 ]
 
 export function filasPrefrio(grupos: M83Grupo[]): CeldaDato[][] {

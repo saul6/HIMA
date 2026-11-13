@@ -2,7 +2,9 @@
 // Una hoja por página del formato (bloques de la misma página van juntos); si un bloque rebasa su capacidad
 // (columnas de ítem o renglones) salen hojas de continuación. Nunca se recortan datos.
 import { Document, View, Text } from '@react-pdf/renderer'
+import type { ReactNode } from 'react'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { SIN_ENCOGER } from '@/lib/pdf/disenoNuevo/estilos'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato, type CeldaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
@@ -107,7 +109,7 @@ export function construirSegmentos(d: M82DatosPDF): Segmento[] {
 const siX = (v: boolean | null): CeldaDato =>
   v === true ? 'Si' : v === false ? { texto: 'X', color: PC.negativo, negrita: true } : ''
 
-function TablaBloque({ s }: { s: Segmento }) {
+function TablaBloque({ s, items, extras }: { s: Segmento; items: M82Item[]; extras?: ReactNode }) {
   // Solo las columnas de ítems recibidos (sin columnas "#" vacías).
   const cols: (string | null)[] = s.codigos
   const anchoItem = s.bloque.max_columnas > 3 ? 34 : 54
@@ -135,15 +137,33 @@ function TablaBloque({ s }: { s: Segmento }) {
     ['Recepción del día', ...cols.map((c) => (c ? String(s.totDia.get(c) ?? 0) : ''))],
     ['Pase aduanal', ...cols.map((c) => (c ? String(s.totPase.get(c) ?? 0) : ''))],
   ]
+  // "# 010" es el código del ítem (formato oficial); debajo, en letra pequeña, su presentación.
+  const presentacion = new Map(items.map((i) => [i.codigo, i.presentacion]))
+  const claveItems = cols.filter((c): c is string => !!c && !!presentacion.get(c)).map((c) => `# ${c} ${presentacion.get(c)}`).join('  ·  ')
   const titulo = `ENTRADA · PRODUCTO: ${s.bloque.titulo}${s.continuacion > 0 ? ` · CONTINUACIÓN ${s.continuacion}` : ''}`
+  // Los totales (y, en la última hoja, observaciones, leyenda y firmas) viajan con el último renglón de la tabla:
+  // nunca quedan solos en una página. Si no caben en la página 1, pasan juntos a la siguiente.
+  const anchoTot = 150 + anchoItem * Math.max(cols.length, 1)
+  // Un bloque corto (título + tabla + totales) no se parte entre páginas: pasa completo a la siguiente si no cabe.
+  // Con observaciones, leyenda y firmas (última hoja) o si es largo, solo viajan juntos el último renglón y lo que sigue.
+  const altoEstimado = 28 + 32 + s.renglones.length * 25 + 90 + (extras ? 260 : 0)
+  const completo = altoEstimado <= 330
   return (
+    <View {...(completo ? { wrap: false } : {})} style={SIN_ENCOGER}>
     <Seccion titulo={titulo}>
-      <TablaDatos columnas={columnas} filas={filas} fuente={7.5} vacio="Sin entradas aceptadas en este bloque" />
-      <View style={{ marginTop: 6, width: 150 + anchoItem * Math.max(cols.length, 1) }}>
-        <TablaDatos columnas={colsTot} filas={filasTot} fuente={7.5} encabezadoFijo={false}
-          anchoTotal={150 + anchoItem * Math.max(cols.length, 1)} />
-      </View>
+      <TablaDatos columnas={columnas} filas={filas} fuente={7.5} vacio="Sin entradas aceptadas en este bloque"
+        reservaDespues={extras ? 250 : 110}
+        firmasDespues={(
+          <View wrap={false}>
+            {claveItems ? <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4 }}>{claveItems}</Text> : null}
+            <View style={{ marginTop: 6, width: anchoTot }}>
+              <TablaDatos columnas={colsTot} filas={filasTot} fuente={7.5} encabezadoFijo={false} anchoTotal={anchoTot} />
+            </View>
+            {extras}
+          </View>
+        )} />
     </Seccion>
+    </View>
   )
 }
 
@@ -194,23 +214,25 @@ function PaginasEmpresa({ d, codigoClave }: { d: M82DatosPDF; codigoClave: strin
               { etiqueta: 'Hoja', valor: `${i + 1} de ${hojas.length}` },
             ]}
           >
-            {grupo.map((s, j) => <TablaBloque key={j} s={s} />)}
-            {ultima ? (
-              <View wrap={false}>
-                {obs ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: obs }]} anchoTotal={841.89 - 80} /> : null}
-                <Text style={{ fontSize: 6.5, color: PC.textSub, marginBottom: 6 }}>
-                  BE: buen estado · L: limpio · LP: libre de plagas. Si = cumple; X = no cumple. En caso de encontrar alguna plaga la carga no será recibida.
-                  Se deberá especificar en la recepción de fruta diariamente los datos solicitados en dicho formato, especificando si la fruta es Orgánica (Org) o Convencional (Conv.) o si es fruta de pase de andén.
-                </Text>
-                <PdfFirmas
-                  signatures={[
-                    { label: '', nombre: d.firmas?.realiza?.firmante ?? '', caption: 'Realiza', firma: d.firmas?.realiza ?? null },
-                    { label: '', nombre: d.firmas?.revisa?.firmante ?? '', caption: 'Revisa (encargado de turno)', firma: d.firmas?.revisa ?? null },
-                    { label: '', nombre: d.firmas?.verifica?.firmante ?? '', caption: 'Verifica (responsable de inocuidad)', firma: d.firmas?.verifica ?? null },
-                  ]}
-                />
-              </View>
-            ) : null}
+            {grupo.map((s, j) => (
+              <TablaBloque key={j} s={s} items={d.items}
+                extras={ultima && j === grupo.length - 1 ? (
+                  <View>
+                    {obs ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: obs }]} anchoTotal={841.89 - 80} /> : null}
+                    <Text style={{ fontSize: 6.5, color: PC.textSub, marginBottom: 6 }}>
+                      BE: buen estado · L: limpio · LP: libre de plagas. Si = cumple; X = no cumple. En caso de encontrar alguna plaga la carga no será recibida.
+                      Se deberá especificar en la recepción de fruta diariamente los datos solicitados en dicho formato, especificando si la fruta es Orgánica (Org) o Convencional (Conv.) o si es fruta de pase de andén.
+                    </Text>
+                    <PdfFirmas
+                      signatures={[
+                        { label: '', nombre: d.firmas?.realiza?.firmante ?? '', caption: 'Realiza', firma: d.firmas?.realiza ?? null },
+                        { label: '', nombre: d.firmas?.revisa?.firmante ?? '', caption: 'Revisa (encargado de turno)', firma: d.firmas?.revisa ?? null },
+                        { label: '', nombre: d.firmas?.verifica?.firmante ?? '', caption: 'Verifica (responsable de inocuidad)', firma: d.firmas?.verifica ?? null },
+                      ]}
+                    />
+                  </View>
+                ) : undefined} />
+            ))}
           </PaginaEstandar>
         )
       })}

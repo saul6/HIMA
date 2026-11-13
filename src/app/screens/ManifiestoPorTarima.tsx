@@ -10,6 +10,9 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -52,6 +55,12 @@ const ESTADO: Record<EstadoManifiesto, { t: string; f: string; c: string }> = {
   SUSPENDIDO: { t: 'Suspendido', f: 'var(--agro-danger-fill)', c: 'var(--agro-danger-text)' },
 }
 
+// Etiqueta de estado de la lista: en proceso = info; cerrado = menta; suspendido / sello pendiente = rojo suave.
+const ESTADO_TONO: Record<EstadoManifiesto, TonoEtiqueta> = {
+  BORRADOR: 'neutral', LLEGADA_INSPECCIONADA: 'pendiente', EN_CARGA: 'pendiente', CARGA_COMPLETA: 'pendiente', PENDIENTE_CONFORMIDADES: 'pendiente',
+  CIERRE_LOCAL_SELLO_PENDIENTE: 'error', CERRADO: 'menta', SUSPENDIDO: 'error',
+}
+
 function Chip({ activo, onClick, children, malo }: { activo: boolean; onClick: () => void; children: React.ReactNode; malo?: boolean }) {
   return (
     <button type="button" onClick={onClick}
@@ -64,14 +73,14 @@ function Chip({ activo, onClick, children, malo }: { activo: boolean; onClick: (
 
 function Etapa({ titulo, hecho, abierta, onToggle, children }: { titulo: string; hecho: boolean; abierta: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
-    <section className="rounded-[0.625rem] border border-border bg-card">
-      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3">
+    <section className={`rounded-[0.625rem] border border-border bg-card min-[1224px]:max-w-3xl ${abierta ? '' : 'min-[1224px]:hidden'}`}>
+      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 min-[1224px]:hidden">
         <span className="text-sm font-semibold">{titulo}</span>
         <span className="flex items-center gap-2 text-xs" style={{ color: hecho ? 'var(--agro-success-text)' : 'var(--muted-foreground)' }}>
           {hecho ? 'Listo' : 'Pendiente'} <ChevronDown className={`w-4 h-4 transition-transform ${abierta ? 'rotate-180' : ''}`} />
         </span>
       </button>
-      {abierta && <div className="px-4 pb-4 space-y-3">{children}</div>}
+      {abierta && <div className="px-4 pb-4 space-y-3 min-[1224px]:pt-4">{children}</div>}
     </section>
   )
 }
@@ -314,23 +323,47 @@ export function ManifiestoPorTarima() {
   if (!selId) {
     return (
       <div className="flex flex-col min-h-full bg-background pb-safe-nav">
-        <ModuloHeader tituloFallback="Manifiesto de Embarque" subtitulo={`${codigoFmt} · Por embarque`} />
-        <div className="px-4 pt-3 max-w-3xl w-full mx-auto"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
-        <div className="p-4 space-y-2 max-w-3xl w-full mx-auto">
+        <ModuloHeader tituloFallback="Manifiesto de Embarque" subtitulo={`${codigoFmt} · Por embarque`}
+          acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />} />
+        <div className="px-4 pt-3 max-w-3xl w-full mx-auto min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
+        <div className="p-4 space-y-2 max-w-3xl min-[1224px]:max-w-none w-full mx-auto">
           {error && <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar manifiestos.</p>}
-          {loading ? <ListaSkeleton rows={3} /> : manifiestos.length === 0 ? (
+          {loading ? <ListaSkeleton rejilla /> : manifiestos.length === 0 ? (
             <EstadoVacio icono={Truck} titulo="Sin manifiestos" ayuda="Crea el manifiesto cuando llegue el tráiler con el botón +" />
-          ) : manifiestos.map((m: M86Manifiesto) => (
-            <button key={m.id} type="button" onClick={() => setSelId(m.id)} className="w-full text-left rounded-[0.625rem] border border-border bg-card p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">N° {m.folio ?? 'sin folio'} · {m.empresa}</p>
-                  <p className="text-xs text-muted-foreground truncate">{fechaCorta(m.fecha)} · {m.transportista ?? '—'} · {m.tractor_placas ?? '—'}</p>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0" style={{ backgroundColor: ESTADO[m.estado].f, color: ESTADO[m.estado].c }}>{ESTADO[m.estado].t}</span>
-              </div>
-            </button>
-          ))}
+          ) : (
+            <ListaTarjetas>
+              {manifiestos.map((m: M86Manifiesto) => (
+                <TarjetaRegistro
+                  key={m.id}
+                  sinFirmas
+                  alHacerClic={() => setSelId(m.id)}
+                  meta={[
+                    <span className="hidden @min-[972px]/lista:inline">{m.empresa}</span>,
+                    <span className="hidden @min-[972px]/lista:inline">{fechaCorta(m.fecha)}</span>,
+                  ]}
+                  titulo={(
+                    <>
+                      <span className="@min-[972px]/lista:hidden">N° {m.folio ?? 'sin folio'} · {m.empresa}</span>
+                      <span className="hidden @min-[972px]/lista:inline">N° {m.folio ?? 'sin folio'}</span>
+                    </>
+                  )}
+                  tituloTexto={`N° ${m.folio ?? 'sin folio'}`}
+                  tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                  contenido={(
+                    <>
+                      <p className="text-xs text-muted-foreground truncate @min-[972px]/lista:hidden">{fechaCorta(m.fecha)} · {m.transportista ?? '—'} · {m.tractor_placas ?? '—'}</p>
+                      <div className="mt-1.5 hidden flex-wrap items-center gap-2 @min-[972px]/lista:flex">
+                        <Etiqueta tono={ESTADO_TONO[m.estado]}>{ESTADO[m.estado].t}</Etiqueta>
+                        {m.transportista && <Etiqueta tono="neutral">{m.transportista}</Etiqueta>}
+                        {m.tractor_placas && <Etiqueta tono="neutral">{m.tractor_placas}</Etiqueta>}
+                      </div>
+                    </>
+                  )}
+                  acciones={<Etiqueta tono={ESTADO_TONO[m.estado]} className="@min-[972px]/lista:hidden">{ESTADO[m.estado].t}</Etiqueta>}
+                />
+              ))}
+            </ListaTarjetas>
+          )}
         </div>
         <ConsolidadoRangoSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}
           ayuda="Todos los manifiestos del periodo en un solo PDF." vacio="No hay manifiestos en ese periodo"
@@ -374,10 +407,18 @@ export function ManifiestoPorTarima() {
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
       <ModuloHeader tituloFallback="Manifiesto de Embarque" subtitulo={m ? `N° ${m.folio ?? 'sin folio'} · ${m.empresa}` : codigoFmt}
-        onBack={() => { setSelId(null); refetch() }} />
-      <div className="p-4 space-y-3 max-w-3xl w-full mx-auto">
+        onBack={() => { setSelId(null); refetch() }}
+        acciones={m ? (
+          <>
+            <Etiqueta tono={ESTADO_TONO[m.estado]} className="hidden min-[1224px]:inline-flex">{ESTADO[m.estado].t}</Etiqueta>
+            <button onClick={pdf} disabled={pdfCargando} className="hidden h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-semibold disabled:opacity-50 min-[1224px]:flex">
+              {pdfCargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />} PDF
+            </button>
+          </>
+        ) : undefined} />
+      <div className="p-4 space-y-3 max-w-3xl w-full mx-auto min-[1224px]:max-w-none">
         {(!m || cargandoDet && !det) ? <ListaSkeleton rows={3} /> : (<>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 min-[1224px]:hidden">
             <button type="button" className="text-xs flex items-center gap-1 text-muted-foreground" onClick={() => { setSelId(null); refetch() }}><ChevronLeft className="w-4 h-4" /> Manifiestos</button>
             <div className="flex items-center gap-2">
               <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: ESTADO[m.estado].f, color: ESTADO[m.estado].c }}>{ESTADO[m.estado].t}</span>
@@ -393,13 +434,36 @@ export function ManifiestoPorTarima() {
             </div>
           )}
 
+          {/* Escritorio: resumen del transporte y tarjetas de avance (eligen la misma etapa que antes) */}
+          <div className="hidden items-center justify-between gap-6 rounded-xl border border-border bg-card px-4 py-3 min-[1224px]:flex">
+            <div className="flex min-w-0 flex-wrap gap-x-8 gap-y-1 text-sm">
+              <div className="min-w-0"><p className="text-xs text-muted-foreground">Transporte</p><p className="font-semibold">{m.transportista ?? 'Sin transportista'} · Chofer {m.chofer ?? '—'}</p></div>
+              <div><p className="text-xs text-muted-foreground">Tractor / econ.</p><p className="font-semibold">{m.tractor_placas ?? '—'} / {m.tractor_economico ?? '—'}</p></div>
+              <div><p className="text-xs text-muted-foreground">Caja</p><p className="font-semibold">{m.caja_pies ?? '—'} pies / econ. {m.caja_economico ?? '—'}</p></div>
+            </div>
+            {!cerrado && <button type="button" className="flex-shrink-0 text-xs underline" style={{ color: 'var(--primary)' }} onClick={() => { setDatos({}); setDatosOpen(true) }}>Cotejar o corregir datos del transporte y folio</button>}
+          </div>
+          <div className="hidden grid-cols-3 gap-3 min-[1224px]:grid">
+            {([
+              { k: 'A', titulo: 'A · Llegada', hecho: !!m.llegada_en && transporteOk, extra: '' },
+              { k: 'B', titulo: 'B · Carga', hecho: !!m.carga_en && tarimasOk && cargadas.length > 0, extra: `${cargadas.length} tarimas · ${totales.reduce((a, t) => a + t.cajas, 0)} cajas` },
+              { k: 'C', titulo: 'C · Salida y cierre', hecho: cerrado, extra: '' },
+            ] as const).map(c => (
+              <button key={c.k} type="button" onClick={() => setAbierta(c.k)} aria-pressed={abierta === c.k}
+                className={`rounded-xl border px-4 py-3 text-left ${abierta === c.k ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                <p className="text-sm font-semibold">{c.titulo}</p>
+                <p className="text-xs" style={{ color: c.hecho ? 'var(--agro-success-text)' : 'var(--muted-foreground)' }}>{c.hecho ? 'Listo' : 'Pendiente'}{c.extra ? ` · ${c.extra}` : ''}</p>
+              </button>
+            ))}
+          </div>
+
           {/* A · Llegada */}
           <Etapa titulo="A · Llegada" hecho={!!m.llegada_en && transporteOk} abierta={abierta === 'A'} onToggle={() => setAbierta('A')}>
-            <div className="text-xs text-muted-foreground space-y-0.5">
+            <div className="text-xs text-muted-foreground space-y-0.5 min-[1224px]:hidden">
               <p>{m.transportista ?? 'Sin transportista'} · Chofer {m.chofer ?? '—'}</p>
               <p>Tractor {m.tractor_placas ?? '—'} / econ. {m.tractor_economico ?? '—'} · Caja {m.caja_pies ?? '—'} pies / econ. {m.caja_economico ?? '—'}</p>
             </div>
-            {!cerrado && <button type="button" className="text-xs underline" style={{ color: 'var(--primary)' }} onClick={() => { setDatos({}); setDatosOpen(true) }}>Cotejar o corregir datos del transporte y folio</button>}
+            {!cerrado && <button type="button" className="text-xs underline min-[1224px]:hidden" style={{ color: 'var(--primary)' }} onClick={() => { setDatos({}); setDatosOpen(true) }}>Cotejar o corregir datos del transporte y folio</button>}
             <EventoCamion etiqueta="Llegada" en={m.llegada_en} t={m.llegada_temp} unidad={u} deshabilitado={cerrado || suspendido}
               onGuardar={async (t, en) => { await accion('LLEGADA', { temp: t, en }, 'Llegada registrada') }} />
             <div className="flex items-center justify-between gap-2">

@@ -1,11 +1,15 @@
 // M84 · Producto no conforme (papeleta PRO-07). Retener (al ingreso o fruta ya aceptada) → dictamen de Calidad.
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { X, Loader2, FileDown, ShieldAlert, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { cn } from '@/app/components/ui/utils'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -28,10 +32,11 @@ function avisar(e: any) {
   const m = mensajeErrorM84(e)
   if (m.tipo === 'warning') toast.warning(m.texto, { duration: 7000 }); else toast.error(m.texto, { duration: 7000 })
 }
-const UI: Record<M84Papeleta['estado'], { texto: string; fondo: string; color: string }> = {
-  RETENIDA: { texto: 'Retenida', fondo: 'var(--muted)', color: 'var(--foreground)' },
-  LIBERADA: { texto: 'Liberada', fondo: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  RECHAZADA: { texto: 'Rechazada', fondo: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' },
+// Retenida = neutro; liberada / rechazada = resultado con significado (menta / rojo suave).
+const UI: Record<M84Papeleta['estado'], { texto: string; tono: TonoEtiqueta }> = {
+  RETENIDA: { texto: 'Retenida', tono: 'neutral' },
+  LIBERADA: { texto: 'Liberada', tono: 'menta' },
+  RECHAZADA: { texto: 'Rechazada', tono: 'error' },
 }
 
 function Chip({ activo, onClick, children }: { activo: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -133,31 +138,61 @@ export function ProductoNoConforme() {
     try { await generarProductoNoConformePDF([p], orgId, codigoClave) } catch (e: any) { toast.error(e?.message ?? 'Error al generar PDF') } finally { setPdfId(null) }
   }
 
+  const BotonPdf = ({ p, className }: { p: M84Papeleta; className?: string }) => (
+    <button onClick={() => pdfDe(p)} disabled={pdfId === p.id} aria-label="PDF de la papeleta" className={cn('p-2 rounded-lg border border-border disabled:opacity-50', className)}>
+      {pdfId === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />}
+    </button>
+  )
+
   const Tarjeta = ({ p }: { p: M84Papeleta }) => (
-    <div className="rounded-[0.625rem] border border-border bg-card p-3 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate">#{p.codigo} · {p.embalaje} · {p.cajas} cajas</p>
-          <p className="text-xs text-muted-foreground truncate">{p.empresa} · {p.origen === 'INGRESO' ? 'Al ingreso' : 'Posterior'} · {fechaCorta(p.fecha)} {hora(p.retenida_en)}</p>
+    <TarjetaRegistro
+      sinFirmas
+      meta={[
+        <span className="hidden @min-[972px]/lista:inline">{p.empresa}</span>,
+        <span className="hidden @min-[972px]/lista:inline">{p.origen === 'INGRESO' ? 'Al ingreso' : 'Posterior'}</span>,
+        <span className="hidden @min-[972px]/lista:inline">{fechaCorta(p.fecha)} {hora(p.retenida_en)}</span>,
+      ]}
+      titulo={(
+        <>
+          <span className="@min-[972px]/lista:hidden">#{p.codigo} · {p.embalaje} · {p.cajas} cajas</span>
+          <span className="hidden @min-[972px]/lista:inline">#{p.codigo} · {p.embalaje}</span>
+        </>
+      )}
+      tituloTexto={`#${p.codigo} · ${p.embalaje}`}
+      tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+      contenido={(
+        <>
+          <p className="text-xs text-muted-foreground truncate @min-[972px]/lista:hidden">{p.empresa} · {p.origen === 'INGRESO' ? 'Al ingreso' : 'Posterior'} · {fechaCorta(p.fecha)} {hora(p.retenida_en)}</p>
+          <div className="mt-1.5 hidden flex-wrap items-center gap-2 @min-[972px]/lista:flex">
+            <Etiqueta tono={UI[p.estado].tono}>{UI[p.estado].texto}</Etiqueta>
+            <Etiqueta tono="neutral">{p.cajas} cajas</Etiqueta>
+          </div>
+        </>
+      )}
+      acciones={(
+        <>
+          <Etiqueta tono={UI[p.estado].tono} className="@min-[972px]/lista:hidden">{UI[p.estado].texto}</Etiqueta>
+          {BotonPdf({ p, className: "hidden @min-[972px]/lista:inline-flex" })}
+        </>
+      )}
+    >
+      <div className="mt-2 space-y-2">
+        <p className="text-xs"><span className="text-muted-foreground">Motivo:</span> {p.motivo}</p>
+        {p.dictamen && <p className="text-xs"><span className="text-muted-foreground">Dictamen:</span> {p.dictamen}{p.disposicion ? ` · Disposición: ${p.disposicion}` : ''}</p>}
+        <div className="flex gap-2">
+          {p.estado === 'RETENIDA' && <Boton type="button" tamano="sm" className="flex-1" onClick={() => abrirDictamen(p)}>Dictamen de Calidad</Boton>}
+          {BotonPdf({ p, className: "@min-[972px]/lista:hidden" })}
         </div>
-        <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0" style={{ backgroundColor: UI[p.estado].fondo, color: UI[p.estado].color }}>{UI[p.estado].texto}</span>
       </div>
-      <p className="text-xs"><span className="text-muted-foreground">Motivo:</span> {p.motivo}</p>
-      {p.dictamen && <p className="text-xs"><span className="text-muted-foreground">Dictamen:</span> {p.dictamen}{p.disposicion ? ` · Disposición: ${p.disposicion}` : ''}</p>}
-      <div className="flex gap-2">
-        {p.estado === 'RETENIDA' && <Boton type="button" tamano="sm" className="flex-1" onClick={() => abrirDictamen(p)}>Dictamen de Calidad</Boton>}
-        <button onClick={() => pdfDe(p)} disabled={pdfId === p.id} aria-label="PDF de la papeleta" className="p-2 rounded-lg border border-border disabled:opacity-50">
-          {pdfId === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />}
-        </button>
-      </div>
-    </div>
+    </TarjetaRegistro>
   )
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
-      <ModuloHeader tituloFallback="Producto No Conforme" subtitulo={`${codigoFmt} · Por evento`} />
+      <ModuloHeader tituloFallback="Producto No Conforme" subtitulo={`${codigoFmt} · Por evento`}
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />} />
 
-      <div className="px-4 pt-3"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
+      <div className="px-4 pt-3 min-[1224px]:hidden"><BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} /></div>
       <div className="p-4 space-y-4">
         {error && (
           <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
@@ -167,14 +202,14 @@ export function ProductoNoConforme() {
         )}
         <section className="space-y-2">
           <TituloSeccion>Retenidas sin dictamen</TituloSeccion>
-          {loading ? <ListaSkeleton rows={2} /> : abiertas.length === 0
+          {loading ? <ListaSkeleton rejilla /> : abiertas.length === 0
             ? <EstadoVacio icono={ShieldAlert} titulo="Sin producto retenido" ayuda="Si Calidad retiene fruta, genera la papeleta con el botón +" />
-            : <div className="grid grid-cols-1 md:grid-cols-2 gap-2">{abiertas.map(p => <Tarjeta key={p.id} p={p} />)}</div>}
+            : <ListaTarjetas>{abiertas.map(p => <Fragment key={p.id}>{Tarjeta({ p })}</Fragment>)}</ListaTarjetas>}
         </section>
         {cerradas.length > 0 && (
           <section className="space-y-2">
             <TituloSeccion>Con dictamen (últimos 30 días)</TituloSeccion>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">{cerradas.map(p => <Tarjeta key={p.id} p={p} />)}</div>
+            <ListaTarjetas>{cerradas.map(p => <Fragment key={p.id}>{Tarjeta({ p })}</Fragment>)}</ListaTarjetas>
           </section>
         )}
       </div>

@@ -2,6 +2,7 @@
 import { Document, View, Text } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
@@ -11,12 +12,11 @@ const TZ = 'America/Mexico_City'
 const hora = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }) : '')
 const dia = (iso: string | null) => (iso ? fechaPdf(new Date(iso).toLocaleDateString('en-CA', { timeZone: TZ })) : '')
 
+/** Firma del diseño estándar (PdfFirmas): nombre sobre la línea y rótulo debajo; sin firma digital, la línea queda para firma a mano. */
 function LineaFirma({ etiqueta, nombre }: { etiqueta: string; nombre: string | null }) {
   return (
-    <View style={{ marginTop: 28, width: 260 }}>
-      <Text style={{ fontSize: 9, color: PC.fieldValue, marginBottom: 2, minHeight: 11 }}>{nombre ?? ''}</Text>
-      <View style={{ borderBottomWidth: 0.8, borderBottomColor: PC.fieldValue }} />
-      <Text style={{ fontSize: 7.5, color: PC.textSub, marginTop: 3 }}>{etiqueta}</Text>
+    <View style={{ width: 260 }}>
+      <PdfFirmas signatures={[{ label: '', nombre: nombre ?? '', caption: etiqueta, firma: null }]} />
     </View>
   )
 }
@@ -56,7 +56,8 @@ export function ProductoNoConformePDF({ papeletas, orgNombre, codigoClave }: { p
               <FranjaDatos porRenglon={1} campos={[{ etiqueta: 'Motivo de la retención', valor: p.motivo }]} />
               <LineaFirma etiqueta="Firma de quien retiene en Calidad" nombre={p.retiene_nombre} />
             </Seccion>
-            <View style={{ marginTop: 18 }}>
+            {/* El dictamen corto va completo en la misma hoja; uno largo se parte por su texto. */}
+            <View {...((p.dictamen?.length ?? 0) + (p.disposicion?.length ?? 0) < 400 ? { wrap: false } : {})} style={{ marginTop: 18 }}>
               <Seccion titulo="DICTAMEN">
                 <FranjaDatos porRenglon={3} campos={[
                   { icono: 'calendario', etiqueta: 'Fecha', valor: dia(p.dictamen_en) || ' ' },
