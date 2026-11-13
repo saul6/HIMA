@@ -63,14 +63,14 @@ export function ManifiestoPorTarimaPDF({ d, orgNombre, codigoClave }: { d: M86De
         titulo="MANIFIESTO DE EMBARQUE"
         subtitulo={orgNombre}
         codigoFmt={codigoFmt}
-        folio={m.folio ?? '—'}
+        folio={m.folio ?? 'Sin folio confirmado'}
         emision={fecha}
-        detalleCompacto={`${codigoFmt}  |  N° ${m.folio ?? '—'}  |  ${fecha}`}
+        detalleCompacto={`${codigoFmt}  |  N° ${m.folio ?? 'Sin folio confirmado'}  |  ${fecha}`}
         camposDatos={[
           { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt },
           { etiqueta: 'Empresa', valor: m.empresa },
           { icono: 'calendario', etiqueta: 'Fecha', valor: fecha },
-          { etiqueta: 'N°', valor: m.folio ?? '—' },
+          { etiqueta: 'N°', valor: m.folio ?? 'Sin folio confirmado' },
           ...(m.estado !== 'CERRADO' ? [{ etiqueta: 'Estado', valor: ESTADO_TXT[m.estado] ?? m.estado, colorValor: PC.negativo }] : []),
         ]}
       >
