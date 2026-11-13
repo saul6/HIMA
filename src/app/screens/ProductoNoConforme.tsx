@@ -1,5 +1,5 @@
 // M84 · Producto no conforme (papeleta PRO-07). Retener (al ingreso o fruta ya aceptada) → dictamen de Calidad.
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { X, Loader2, FileDown, ShieldAlert, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -172,7 +172,7 @@ export function ProductoNoConforme() {
       acciones={(
         <>
           <Etiqueta tono={UI[p.estado].tono} className="@min-[972px]/lista:hidden">{UI[p.estado].texto}</Etiqueta>
-          <BotonPdf p={p} className="hidden @min-[972px]/lista:inline-flex" />
+          {BotonPdf({ p, className: "hidden @min-[972px]/lista:inline-flex" })}
         </>
       )}
     >
@@ -181,7 +181,7 @@ export function ProductoNoConforme() {
         {p.dictamen && <p className="text-xs"><span className="text-muted-foreground">Dictamen:</span> {p.dictamen}{p.disposicion ? ` · Disposición: ${p.disposicion}` : ''}</p>}
         <div className="flex gap-2">
           {p.estado === 'RETENIDA' && <Boton type="button" tamano="sm" className="flex-1" onClick={() => abrirDictamen(p)}>Dictamen de Calidad</Boton>}
-          <BotonPdf p={p} className="@min-[972px]/lista:hidden" />
+          {BotonPdf({ p, className: "@min-[972px]/lista:hidden" })}
         </div>
       </div>
     </TarjetaRegistro>
@@ -204,12 +204,12 @@ export function ProductoNoConforme() {
           <TituloSeccion>Retenidas sin dictamen</TituloSeccion>
           {loading ? <ListaSkeleton rejilla /> : abiertas.length === 0
             ? <EstadoVacio icono={ShieldAlert} titulo="Sin producto retenido" ayuda="Si Calidad retiene fruta, genera la papeleta con el botón +" />
-            : <ListaTarjetas>{abiertas.map(p => <Tarjeta key={p.id} p={p} />)}</ListaTarjetas>}
+            : <ListaTarjetas>{abiertas.map(p => <Fragment key={p.id}>{Tarjeta({ p })}</Fragment>)}</ListaTarjetas>}
         </section>
         {cerradas.length > 0 && (
           <section className="space-y-2">
             <TituloSeccion>Con dictamen (últimos 30 días)</TituloSeccion>
-            <ListaTarjetas>{cerradas.map(p => <Tarjeta key={p.id} p={p} />)}</ListaTarjetas>
+            <ListaTarjetas>{cerradas.map(p => <Fragment key={p.id}>{Tarjeta({ p })}</Fragment>)}</ListaTarjetas>
           </section>
         )}
       </div>
