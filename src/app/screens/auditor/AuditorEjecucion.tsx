@@ -2196,6 +2196,15 @@ export function AuditorEjecucion() {
                 </div>
               )}
 
+              {/* Aviso único de auditoría cerrada, al inicio de las preguntas (las tarjetas ya no lo repiten) */}
+              {cerrada && (
+                <div className="rounded-xl px-4 py-3 text-center" style={{ backgroundColor: 'var(--muted)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+                    Auditoría cerrada — solo lectura
+                  </p>
+                </div>
+              )}
+
               {/* Módulos → Bloques → Preguntas */}
               {modulosData.map(modulo => {
                 const respondidasModulo = modulo.preguntas.filter(p => respuestasMap.get(p.id)).length
@@ -2246,6 +2255,7 @@ export function AuditorEjecucion() {
                               onEstadoGuardado={status => setSavingMap(prev => ({ ...prev, [preg.id]: status }))}
                               canWriteNC={canWriteNC}
                               canAuditWrite={!cerrada && can('audit.write')}
+                              ocultarAvisoCerrada
                               hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
                               reincidencia={reincidenciaMap.get(preg.id)}
                               onRespuestaChanged={(_, resp) => {
@@ -2283,14 +2293,6 @@ export function AuditorEjecucion() {
                 )
               })}
 
-              {cerrada && (
-                <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
-                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                    Auditoría cerrada — solo lectura
-                  </p>
-                </div>
-              )}
-
             </motion.div>
 
           {/* Barra de acciones al pie: sticky dentro del área con scroll del Layout, sin motion.
@@ -2303,7 +2305,7 @@ export function AuditorEjecucion() {
               {/* Desde 1480 px: 2×2; si queda un botón suelto (preliminar o cerrada), ocupa todo el ancho. */}
               {auditoria && allPreguntas.length > 0 && (
                 <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} aria-label="Descargar reporte PDF" className="hidden md:inline-flex min-[1480px]:w-full min-[1480px]:px-2">
-                  <Download aria-hidden="true" size={15} /> <span className={cerrada ? undefined : 'min-[1480px]:hidden'}>Descargar reporte </span>PDF
+                  <Download aria-hidden="true" size={15} /> <span><span className={cerrada ? undefined : 'min-[1480px]:hidden'}>Descargar reporte </span>PDF</span>
                 </Boton>
               )}
               {!cerrada && allPreguntas.length > 0 && (
