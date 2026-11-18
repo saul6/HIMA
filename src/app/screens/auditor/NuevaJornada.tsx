@@ -15,6 +15,7 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
@@ -210,13 +211,20 @@ export function NuevaJornada() {
           </div>
         )}
 
+        {/* Cargando: esqueleto de la lista */}
+        {cargandoCandidatas && !errorCandidatas && candidatas.length === 0 && (
+          <div className="px-4 pt-4">
+            <ListaSkeleton rows={4} onReintentar={cargarCandidatas} />
+          </div>
+        )}
+
         {/* Vacío */}
         {!cargandoCandidatas && !errorCandidatas && candidatas.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center px-6">
             <EstadoVacio
               icono={Info}
               titulo="Sin auditorías disponibles"
-              ayuda="No hay auditorías abiertas a las que tengas acceso. Crea una desde el perfil del productor."
+              ayuda="No hay auditorías abiertas a las que tengas acceso. Crea una desde Inicio con el botón «+»."
               accion={(
                 <Boton variante="secundario" onClick={() => navigate('/auditor')}>
                   Ir al inicio
