@@ -43,12 +43,10 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
   const [guardando, setGuardando]             = useState(false)
   const ent = useEntradaPantalla(!cargando)
 
-  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
-    return <Navigate to="/" replace />
-  }
+  const sinAcceso = profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin'
 
   useEffect(() => {
-    if (!orgId || !profile?.id) return
+    if (!orgId || !profile?.id || sinAcceso) return
     let cancelado = false
     async function init() {
       setCargando(true)
@@ -151,6 +149,10 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
     color: 'var(--foreground)',
     padding: '0 0.75rem',
     fontSize: '0.875rem',
+  }
+
+  if (sinAcceso) {
+    return <Navigate to="/" replace />
   }
 
   return (

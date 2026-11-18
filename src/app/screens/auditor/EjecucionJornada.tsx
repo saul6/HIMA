@@ -263,6 +263,10 @@ export function EjecucionJornada() {
 
   const capturaRef = useRef<CapturaPreguntaRef | null>(null)
   const contextoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const scrollCapturaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (scrollCapturaTimerRef.current) clearTimeout(scrollCapturaTimerRef.current)
+  }, [])
 
   // ── Carga inicial ──
 
@@ -926,7 +930,7 @@ export function EjecucionJornada() {
             if (!okOp) return
             await cambiarPregunta(qId)
             // Scroll al campo
-            setTimeout(() => {
+            scrollCapturaTimerRef.current = setTimeout(() => {
               const el = document.getElementById('captura-pregunta')
               el?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
             }, 100)

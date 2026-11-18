@@ -1361,6 +1361,10 @@ export function AuditorEjecucion() {
   }
 
   const panelHallazgosRef = useRef<HTMLDivElement>(null)
+  const scrollValidacionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (scrollValidacionTimerRef.current) clearTimeout(scrollValidacionTimerRef.current)
+  }, [])
 
   // Sheet: crear hallazgo
   const [sheetHallazgo, setSheetHallazgo] = useState<{ preguntaId: string; instanciaId: string } | null>(null)
@@ -1580,7 +1584,7 @@ export function AuditorEjecucion() {
           setValidando(false)
         }
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría. Revisa el panel de validación.')
-        setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' }), 150)
+        scrollValidacionTimerRef.current = setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' }), 150)
       } else if (errMsg.includes('AUDITORIA_CERRADA')) {
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'La auditoría ya está cerrada.')
       } else {
@@ -2245,8 +2249,8 @@ export function AuditorEjecucion() {
                         respondidas={pregBloque.filter(p => respuestasMap.get(p.id)).length}
                       >
                         {pregBloque.map(preg => (
+                          <div key={preg.id} style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 320px' }}>
                             <CapturaPreguntaAuditoria
-                              key={preg.id}
                               ref={getCapturaRef(preg.id)}
                               auditoriaId={auditoriaId!}
                               preguntaId={preg.id}
@@ -2285,6 +2289,7 @@ export function AuditorEjecucion() {
                                 panelHallazgosRef.current?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
                               }}
                             />
+                          </div>
                         ))}
                       </BloqueAuditoria>
                     )
@@ -2568,8 +2573,8 @@ export function AuditorEjecucion() {
                                 {cfg.label} · {grupo.length}
                               </span>
                             </div>
-                            {grupo.map((item, i) => (
-                              <div key={i} className="px-3 py-2 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+                            {grupo.map(item => (
+                              <div key={`${item.code}|${item.message}`} className="px-3 py-2 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
                                 <p className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>{item.message}</p>
                               </div>
                             ))}

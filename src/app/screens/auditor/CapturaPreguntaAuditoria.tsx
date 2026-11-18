@@ -290,6 +290,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     // Cuenta de ediciones: el borrador local solo se borra si no se escribió nada después de guardar
     const editSeqRef = useRef(0)
     const borradorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    useEffect(() => () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }, [])
 
     type ArgsGuardado = { resp: AudRespuesta | null; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean }
 
@@ -399,7 +403,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           onEstadoGuardado?.('saved')
           onAfterSave?.(pregId)
           onScoringInvalidated?.()
-          setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500)
+          savedTimerRef.current = setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500)
         })
         .catch((err: unknown) => {
           pendingRef.current.promise = null
@@ -976,8 +980,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="rounded-lg px-3 py-2 flex flex-col gap-1"
               style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}
             >
-              {causasNA.map((causa, i) => (
-                <div key={i} className="flex flex-col gap-0.5">
+              {causasNA.map(causa => (
+                <div key={`${causa.regla_id}|${causa.causa}`} className="flex flex-col gap-0.5">
                   <p className="text-caption font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                     N/A — {causa.causa}
                   </p>
@@ -1171,8 +1175,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         <p className="text-small font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                           Conflictos encontrados — revisar antes de continuar:
                         </p>
-                        {reglaConflictos.map((c, i) => (
-                          <p key={i} className="text-small" style={{ color: 'var(--agro-info-text)' }}>
+                        {reglaConflictos.map(c => (
+                          <p key={`${c.question_id}|${c.tipo}|${c.valor}`} className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                             {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${c.valor}` : `hallazgo abierto: ${c.valor}`}
                           </p>
                         ))}

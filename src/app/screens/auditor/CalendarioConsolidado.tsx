@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { ChevronLeft, ChevronRight, CalendarDays, Loader, RefreshCw } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { supabase } from '@/lib/supabase'
+import { hoyMX } from '@/lib/fecha'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
@@ -104,8 +105,8 @@ export function CalendarioConsolidado() {
   const [tiposActivos, setTiposActivos] = useState<Set<string>>(new Set())
 
   const { año, mes, desde, hasta, nombreMes } = useMemo(() => {
-    const hoy = new Date()
-    const base = new Date(hoy.getFullYear(), hoy.getMonth() + mesOffset, 1)
+    const [hoyAño, hoyMes] = hoyMX().split('-').map(Number)
+    const base = new Date(hoyAño, hoyMes - 1 + mesOffset, 1)
     const y = base.getFullYear()
     const m = base.getMonth()
     const lastDay = new Date(y, m + 1, 0).getDate()
