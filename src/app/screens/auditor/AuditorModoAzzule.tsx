@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import { Copy, CheckCircle, Loader, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
@@ -57,6 +57,11 @@ export function AuditorModoAzzule() {
   const [marcando, setMarcando] = useState(false)
   const [copied, setCopied] = useState(false)
   const ent = useEntradaPantalla(!loading && items.length > 0)
+  const copiadoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (copiadoTimerRef.current) clearTimeout(copiadoTimerRef.current)
+  }, [])
 
   useEffect(() => {
     if (!auditoriaId) return
@@ -140,7 +145,7 @@ export function AuditorModoAzzule() {
     try {
       await navigator.clipboard.writeText(texto)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
+      copiadoTimerRef.current = setTimeout(() => setCopied(false), 2500)
       toast.success('Texto copiado al portapapeles')
     } catch {
       toast.error('No se pudo copiar. Copia el texto manualmente.')

@@ -1361,6 +1361,10 @@ export function AuditorEjecucion() {
   }
 
   const panelHallazgosRef = useRef<HTMLDivElement>(null)
+  const scrollValidacionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (scrollValidacionTimerRef.current) clearTimeout(scrollValidacionTimerRef.current)
+  }, [])
 
   // Sheet: crear hallazgo
   const [sheetHallazgo, setSheetHallazgo] = useState<{ preguntaId: string; instanciaId: string } | null>(null)
@@ -1580,7 +1584,7 @@ export function AuditorEjecucion() {
           setValidando(false)
         }
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría. Revisa el panel de validación.')
-        setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' }), 150)
+        scrollValidacionTimerRef.current = setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' }), 150)
       } else if (errMsg.includes('AUDITORIA_CERRADA')) {
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'La auditoría ya está cerrada.')
       } else {

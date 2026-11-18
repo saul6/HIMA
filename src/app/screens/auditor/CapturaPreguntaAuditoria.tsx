@@ -290,6 +290,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     // Cuenta de ediciones: el borrador local solo se borra si no se escribió nada después de guardar
     const editSeqRef = useRef(0)
     const borradorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    useEffect(() => () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }, [])
 
     type ArgsGuardado = { resp: AudRespuesta | null; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean }
 
@@ -399,7 +403,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           onEstadoGuardado?.('saved')
           onAfterSave?.(pregId)
           onScoringInvalidated?.()
-          setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500)
+          savedTimerRef.current = setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500)
         })
         .catch((err: unknown) => {
           pendingRef.current.promise = null
