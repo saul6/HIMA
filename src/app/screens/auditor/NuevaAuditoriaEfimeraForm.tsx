@@ -50,12 +50,10 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
   const [guardando, setGuardando] = useState(false)
   const ent = useEntradaPantalla(!cargando)
 
-  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
-    return <Navigate to="/" replace />
-  }
+  const sinAcceso = profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin'
 
   useEffect(() => {
-    if (!profile?.id) return
+    if (!profile?.id || sinAcceso) return
     let cancelado = false
     async function init() {
       setCargando(true)
@@ -139,6 +137,10 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
     } finally {
       setGuardando(false)
     }
+  }
+
+  if (sinAcceso) {
+    return <Navigate to="/" replace />
   }
 
   return (

@@ -93,12 +93,10 @@ export function AuditorInstalacionDetalle() {
   const [confirmado, setConfirmado] = useState(false)
   const [vinculando, setVinculando] = useState(false)
 
-  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
-    return <Navigate to="/" replace />
-  }
+  const sinAcceso = profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin'
 
   useEffect(() => {
-    if (!instalacionId) return
+    if (!instalacionId || sinAcceso) return
     let cancelado = false
     async function cargar() {
       setCargando(true)
@@ -243,6 +241,10 @@ export function AuditorInstalacionDetalle() {
     } finally {
       setVinculando(false)
     }
+  }
+
+  if (sinAcceso) {
+    return <Navigate to="/" replace />
   }
 
   return (

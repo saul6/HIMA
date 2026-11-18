@@ -176,13 +176,11 @@ export function AuditorHome() {
 
   const hoy = hoyMX()
 
-  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
-    return <Navigate to="/" replace />
-  }
+  const sinAcceso = profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin'
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!profile?.id) return
+    if (!profile?.id || sinAcceso) return
     let cancelled = false
 
     async function cargar() {
@@ -229,6 +227,10 @@ export function AuditorHome() {
 
   const itemsVencidos = colaFiltrada.filter(i => esVencida(i, hoy))
   const itemsResto = colaFiltrada.filter(i => !esVencida(i, hoy))
+
+  if (sinAcceso) {
+    return <Navigate to="/" replace />
+  }
 
   return (
     <div className="flex flex-col min-h-screen pb-24" style={{ backgroundColor: 'var(--background)' }}>
