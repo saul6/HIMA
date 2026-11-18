@@ -64,6 +64,8 @@ interface Props {
   onAjusteActualizado?: (pregId: string, ajuste: AjusteInfo | null) => void
   onScoringInvalidated?: () => void
   onAfterSave?: (pregId: string) => void
+  /** La pantalla ya muestra un aviso general de auditoría cerrada: no repetirlo en cada tarjeta. */
+  ocultarAvisoCerrada?: boolean
 }
 
 const RESP_OPTIONS: { value: AudRespuesta; label: string; activeStyle: { bg: string; color: string } }[] = [
@@ -233,6 +235,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
       onRegistrarHallazgo, onVerHallazgos,
       reincidencia,
       onRespuestaChanged, onAjusteActualizado, onScoringInvalidated, onAfterSave,
+      ocultarAvisoCerrada,
     },
     ref,
   ) {
@@ -1900,7 +1903,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           )}
 
           {/* ── Aviso cerrada ── */}
-          {cerrada && (
+          {cerrada && !ocultarAvisoCerrada && (
             <div
               className="flex items-center gap-1.5 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}

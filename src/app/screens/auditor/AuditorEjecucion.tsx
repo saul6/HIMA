@@ -420,7 +420,7 @@ function PanelValidacion({
   return (
     <div id="panel-validacion"
       data-abierto={abierto}
-      className="rounded-xl border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]"
+      className="rounded-xl border overflow-hidden min-[1480px]:shrink-0"
       style={{
         backgroundColor: reviewLoadError ? 'var(--agro-danger-fill)' : tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
         borderColor: reviewLoadError ? 'var(--agro-red)' : tieneBlockers ? 'var(--agro-red)' : 'var(--border)',
@@ -479,7 +479,7 @@ function PanelValidacion({
       </button>
 
       {/* Cuerpo: plegar solo lo oculta */}
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
@@ -666,7 +666,7 @@ function PanelScoring({
   }
 
   return (
-    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]" style={{ backgroundColor: 'var(--card)' }}>
+    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:shrink-0" style={{ backgroundColor: 'var(--card)' }}>
       {/* Cabecera */}
       <button
         type="button"
@@ -707,7 +707,7 @@ function PanelScoring({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
           {/* Etiqueta invariante */}
           <p className="text-caption pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
@@ -962,7 +962,7 @@ function PanelHallazgos({
   }
 
   return (
-    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]" style={{ backgroundColor: 'var(--card)' }}>
+    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:shrink-0" style={{ backgroundColor: 'var(--card)' }}>
       <button
         type="button"
         onClick={() => setAbierto(v => !v)}
@@ -981,7 +981,7 @@ function PanelHallazgos({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border min-[1480px]:[&>.py-16]:py-6">
           {hallazgos.length === 0 ? (
             cargando ? (
@@ -1189,6 +1189,12 @@ export function AuditorEjecucion() {
       // Alto real de la barra de acciones (columna derecha desde 1480 px): el resumen toma el resto.
       const barra = columnas.querySelector<HTMLElement>('[data-barra-acciones]')
       columnas.style.setProperty('--alto-acciones', `${barra ? barra.getBoundingClientRect().height : 0}px`)
+      // La columna de resumen solo recibe foco de teclado cuando tiene scroll propio (desde 1480 px).
+      const resumen = columnas.querySelector<HTMLElement>('[data-resumen-auditoria]')
+      if (resumen) {
+        if (getComputedStyle(resumen).overflowY === 'auto') resumen.tabIndex = 0
+        else resumen.removeAttribute('tabindex')
+      }
     }
     medir()
     const observer = new ResizeObserver(medir)
@@ -2013,9 +2019,15 @@ export function AuditorEjecucion() {
             className="hidden xl:block xl:[grid-area:nav] xl:sticky xl:top-[calc(var(--alto-header,0px)+1rem)] xl:max-h-[calc(var(--alto-visible,100vh)-2rem)] xl:overflow-y-auto overscroll-contain rounded-xl border border-border bg-card"
           />
 
-          {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:h-[calc(var(--alto-visible,100vh)-2rem-var(--alto-acciones,0px)-1rem)] min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0">
-            <motion.div className="flex flex-col gap-4 min-[1480px]:flex-1 min-[1480px]:min-h-0" {...ent(0)}>
+          {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija
+              que se desplaza sola (cada panel con su alto natural). El foco con teclado solo se activa en esa vista (ver el efecto de medidas). */}
+          <div
+            data-resumen-auditoria
+            role="region"
+            aria-label="Resumen de la auditoría"
+            className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:h-[calc(var(--alto-visible,100vh)-2rem-var(--alto-acciones,0px)-1rem)] min-[1480px]:overflow-y-auto min-[1480px]:overscroll-contain min-[1480px]:rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            <motion.div className="flex flex-col gap-4" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
               {esquemaCargaEstado === 'error' && (
@@ -2077,7 +2089,7 @@ export function AuditorEjecucion() {
               )}
 
               {/* Panel de hallazgos */}
-              <div ref={panelHallazgosRef} className="min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:has-[[data-abierto=false]]:shrink-0 min-[1480px]:has-[[data-abierto=true]]:flex-[1_1_0]">
+              <div ref={panelHallazgosRef} className="min-[1480px]:shrink-0">
                 <PanelHallazgos
                   hallazgos={hallazgos}
                   preguntas={allPreguntas}
@@ -2184,6 +2196,15 @@ export function AuditorEjecucion() {
                 </div>
               )}
 
+              {/* Aviso único de auditoría cerrada, al inicio de las preguntas (las tarjetas ya no lo repiten) */}
+              {cerrada && (
+                <div className="rounded-xl px-4 py-3 text-center" style={{ backgroundColor: 'var(--muted)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+                    Auditoría cerrada — solo lectura
+                  </p>
+                </div>
+              )}
+
               {/* Módulos → Bloques → Preguntas */}
               {modulosData.map(modulo => {
                 const respondidasModulo = modulo.preguntas.filter(p => respuestasMap.get(p.id)).length
@@ -2234,6 +2255,7 @@ export function AuditorEjecucion() {
                               onEstadoGuardado={status => setSavingMap(prev => ({ ...prev, [preg.id]: status }))}
                               canWriteNC={canWriteNC}
                               canAuditWrite={!cerrada && can('audit.write')}
+                              ocultarAvisoCerrada
                               hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
                               reincidencia={reincidenciaMap.get(preg.id)}
                               onRespuestaChanged={(_, resp) => {
@@ -2271,14 +2293,6 @@ export function AuditorEjecucion() {
                 )
               })}
 
-              {cerrada && (
-                <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
-                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                    Auditoría cerrada — solo lectura
-                  </p>
-                </div>
-              )}
-
             </motion.div>
 
           {/* Barra de acciones al pie: sticky dentro del área con scroll del Layout, sin motion.
@@ -2286,11 +2300,12 @@ export function AuditorEjecucion() {
           {hayBarra && (
             <div
               data-barra-acciones
-              className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 min-[1480px]:[grid-area:resumen] min-[1480px]:self-end min-[1480px]:bottom-4 min-[1480px]:flex-col min-[1480px]:items-stretch min-[1480px]:rounded-xl min-[1480px]:border min-[1480px]:p-3 ${cerrada ? 'hidden md:flex' : 'flex'}`}
+              className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 min-[1480px]:[grid-area:resumen] min-[1480px]:self-end min-[1480px]:bottom-4 min-[1480px]:grid min-[1480px]:grid-cols-2 min-[1480px]:items-stretch min-[1480px]:rounded-xl min-[1480px]:border min-[1480px]:p-3 min-[1480px]:[&>*:last-child:nth-child(odd)]:col-span-2 ${cerrada ? 'hidden md:flex' : 'flex'}`}
             >
+              {/* Desde 1480 px: 2×2; si queda un botón suelto (preliminar o cerrada), ocupa todo el ancho. */}
               {auditoria && allPreguntas.length > 0 && (
-                <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex min-[1480px]:w-full">
-                  <Download aria-hidden="true" size={15} /> Descargar reporte PDF
+                <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} aria-label="Descargar reporte PDF" className="hidden md:inline-flex min-[1480px]:w-full min-[1480px]:px-2">
+                  <Download aria-hidden="true" size={15} /> <span><span className={cerrada ? undefined : 'min-[1480px]:hidden'}>Descargar reporte </span>PDF</span>
                 </Boton>
               )}
               {!cerrada && allPreguntas.length > 0 && (
@@ -2300,7 +2315,7 @@ export function AuditorEjecucion() {
                       variante="secundario"
                       onClick={handleValidar}
                       disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
-                      className="px-3 md:px-4 min-[1480px]:w-full"
+                      className="px-3 md:px-4 min-[1480px]:w-full min-[1480px]:px-2"
                     >
                       {validando
                         ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
@@ -2313,7 +2328,7 @@ export function AuditorEjecucion() {
                       variante="secundario"
                       onClick={() => handleCambiarEstado('preliminar')}
                       disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                      className="hidden md:inline-flex min-[1480px]:w-full"
+                      className="hidden md:inline-flex min-[1480px]:w-full min-[1480px]:px-2"
                     >
                       {cambiando ? 'Guardando…' : 'Marcar preliminar'}
                     </Boton>
@@ -2321,7 +2336,7 @@ export function AuditorEjecucion() {
                   <Boton
                     onClick={() => handleCambiarEstado('cerrada')}
                     disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                    className="px-3 md:px-4 min-[1480px]:w-full"
+                    className="px-3 md:px-4 min-[1480px]:w-full min-[1480px]:px-2"
                   >
                     {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
                   </Boton>
