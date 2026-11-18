@@ -96,13 +96,13 @@ export function diasDelRango(inicio: string, fin: string): string[] {
   return dias
 }
 
-/** "12 nov – 14 nov" (o "12 nov" si inicio y fin son el mismo día). Recibe 'YYYY-MM-DD'. */
+/** "13 – 15 nov 2026" (o "13 nov 2026" si inicio y fin son el mismo día). Recibe 'YYYY-MM-DD'. */
 export function formatRango(inicio: string, fin: string): string {
-  const corta = (s: string) => {
-    const p = partes(s)
-    return p ? `${p.dia} ${MESES_CORTOS[p.mes - 1]}` : '—'
-  }
-  const i = corta(inicio)
-  if (inicio === fin) return i
-  return `${i} – ${corta(fin)}`
+  if (inicio === fin) return fechaCorta(inicio)
+  const i = partes(inicio)
+  const f = partes(fin)
+  if (!i || !f) return `${fechaCorta(inicio)} – ${fechaCorta(fin)}`
+  if (i.anio !== f.anio) return `${fechaCorta(inicio)} – ${fechaCorta(fin)}`
+  if (i.mes === f.mes) return `${i.dia} – ${f.dia} ${MESES_CORTOS[f.mes - 1]} ${f.anio}`
+  return `${i.dia} ${MESES_CORTOS[i.mes - 1]} – ${f.dia} ${MESES_CORTOS[f.mes - 1]} ${f.anio}`
 }

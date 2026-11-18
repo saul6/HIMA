@@ -11,6 +11,7 @@ import { PC } from '@/lib/pdf/components/tokens'
 import { formatPortadaM15, formatPortadaM16, formatPortadaM17, type PortadaLinea } from './portadaConfig'
 import type { ModuloAuditoria } from '@/hooks/useAuditoria'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
@@ -96,13 +97,7 @@ const C_COMENT   = 195
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFechaPDF(iso: string): string {
-  try {
-    const d = new Date(iso + 'T12:00:00')
-    const dd = String(d.getDate()).padStart(2, '0')
-    const mm = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]
-    const yy = String(d.getFullYear()).slice(2)
-    return `${dd}-${mm}-${yy}`
-  } catch { return iso }
+  return fechaCorta(iso)
 }
 
 function respLabel(r: string | undefined): string {
