@@ -655,7 +655,7 @@ export function EjecucionJornada() {
                   {operacionActiva.productor} · {operacionActiva.operacion}
                 </p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                  {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} pendientes
+                  {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} {(operacionActiva.conteo.pendientes ?? 0) === 1 ? 'pendiente' : 'pendientes'}
                 </p>
               </div>
             )}

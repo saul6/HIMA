@@ -763,7 +763,7 @@ function PanelScoring({
                 {[
                   ['Evaluadas', `${calculo.conteo.resueltas ?? calculo.conteo.evaluadas}/${calculo.conteo.total}`],
                   ['Puntos ganados', `${calculo.puntos_ganados}`],
-                  ['Perdida', `−${calculo.perdida} pts`],
+                  ['Pérdida', `−${calculo.perdida} pts`],
                   ['Pendientes', `${calculo.pendientes} pts`],
                 ].map(([lbl, val]) => (
                   <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>

@@ -66,7 +66,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
 
   async function handleSiguiente() {
     if (!nombre.trim()) { toast.warning('Escribe el nombre de la instalación'); return }
-    if (!fechaInicio || !fechaFin) { toast.warning('Indica la(s) fecha(s) de visita'); return }
+    if (!fechaInicio || !fechaFin) { toast.warning('Indica las fechas de visita'); return }
     if (fechaFin < fechaInicio) { toast.warning('La fecha de fin debe ser igual o posterior al inicio'); return }
 
     if (modulos.length === 0 && !cargandoModulos) {
