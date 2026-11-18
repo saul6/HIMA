@@ -2249,8 +2249,8 @@ export function AuditorEjecucion() {
                         respondidas={pregBloque.filter(p => respuestasMap.get(p.id)).length}
                       >
                         {pregBloque.map(preg => (
+                          <div key={preg.id} style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 320px' }}>
                             <CapturaPreguntaAuditoria
-                              key={preg.id}
                               ref={getCapturaRef(preg.id)}
                               auditoriaId={auditoriaId!}
                               preguntaId={preg.id}
@@ -2289,6 +2289,7 @@ export function AuditorEjecucion() {
                                 panelHallazgosRef.current?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
                               }}
                             />
+                          </div>
                         ))}
                       </BloqueAuditoria>
                     )
