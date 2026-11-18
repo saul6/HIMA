@@ -16,7 +16,7 @@ const tbl = (name: string) => (supabase as any).from(name)
 const HERENCIA_EXCLUIR = new Set(['sin_confirmar', 'conflicto', 'revalidar', 'rechazado'])
 
 const NOTA_FINAL =
-  'M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, a Azzule Systems, al auditor autorizado ni al organismo de certificacion. La decision oficial corresponde al proceso externo.'
+  'M.A.D.Y. organiza, valida y da seguimiento. No sustituye a PrimusGFS, a Azzule Systems, al auditor autorizado ni al organismo de certificación. La decisión oficial corresponde al proceso externo.'
 
 const BUCKET_EVIDENCIA = 'auditoria-evidencia'
 const EXT_IMAGEN = /\.(jpe?g|png)$/i
@@ -226,7 +226,7 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
         const nombre = asset.documento_codigo ? `${asset.documento_codigo} (${archivo})` : archivo
         lista.push({ nombre, uri: urisImagen.get(asset.storage_path) ?? null })
       } else if (snap) {
-        lista.push({ nombre: `Registro M.A.D.Y${snap.source_module_code ? ' · ' + String(snap.source_module_code).toUpperCase() : ''}`, uri: null })
+        lista.push({ nombre: `Registro M.A.D.Y.${snap.source_module_code ? ' · ' + String(snap.source_module_code).toUpperCase() : ''}`, uri: null })
       }
       evByInst.set(u.entity_id, lista)
     }
@@ -350,7 +350,7 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
       firmas: ['Auditor - Firma', 'Responsable de Inocuidad - Firma'],
       notaFinal: NOTA_FINAL,
       esBorrador,
-      tipoAuditoria: 'Auditoria externa PrimusGFS',
+      tipoAuditoria: 'Auditoría externa PrimusGFS',
       terminoSitio,
     }
 
@@ -360,11 +360,11 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
   const doc = createElement(
     Document,
     {
-      title: `Reporte de Auditoria PrimusGFS - ${ranchoNombre} ${auditoria.fecha}`,
+      title: `Reporte de Auditoría PrimusGFS - ${ranchoNombre} ${auditoria.fecha}`,
       author: 'M.A.D.Y.',
       creator: 'M.A.D.Y. Inocuidad Inteligente',
       producer: 'M.A.D.Y. Inocuidad Inteligente',
-      keywords: 'MADY, inocuidad, auditoria, primusgfs',
+      keywords: 'M.A.D.Y., inocuidad, auditoría, primusgfs',
     },
     ...pages
   )

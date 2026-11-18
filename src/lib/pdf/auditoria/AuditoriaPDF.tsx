@@ -432,7 +432,7 @@ export function AuditoriaPagina({
       {esBorrador && (
         <View style={{ backgroundColor: '#FAEEDA', borderLeftWidth: 3, borderLeftColor: '#F5A623', borderLeftStyle: 'solid', paddingVertical: 4, paddingHorizontal: 8, marginBottom: 10 }}>
           <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#854F0B' }}>
-            BORRADOR - auditoria en proceso
+            BORRADOR - auditoría en proceso
           </Text>
         </View>
       )}
