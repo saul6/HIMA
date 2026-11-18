@@ -9,6 +9,7 @@ export function AvisosToaster() {
   return (
     <Toaster
       position="top-center"
+      containerAriaLabel="Notificaciones"
       theme={resolvedTheme}
       icons={{ success: <Check className="mady-palomita" size={16} strokeWidth={3} aria-hidden="true" /> }}
       toastOptions={{ classNames: { toast: 'mady-toast' } }}
