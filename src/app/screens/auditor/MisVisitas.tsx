@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { Calendar, Check } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 import { DUR, EASE_OUT } from '@/lib/motion'
 import { formatRango } from '@/lib/formato'
 
@@ -23,8 +24,27 @@ interface EventoAgenda {
   fecha_fin: string
   estado: 'pendiente' | 'hecho'
   auditoria_id: string | null
-  instalacion_id: string | null
-  notas: string | null
+}
+
+type Seccion = 'pendientes' | 'hechos'
+const PAGINA = 20
+const COLUMNAS = 'id,tipo,titulo,fecha_inicio,fecha_fin,estado,auditoria_id'
+
+// Trae PAGINA + 1 filas para saber si hay más sin una consulta extra.
+// Pendientes: más próximas primero. Completados: más recientes primero. `id` desempata
+// para que dos eventos con la misma fecha no cambien de lugar entre páginas.
+function consultarSeccion(seccion: Seccion, desde: number) {
+  const base = tbl('aud_agenda').select(COLUMNAS)
+  const filtrada = seccion === 'pendientes' ? base.eq('estado', 'pendiente') : base.neq('estado', 'pendiente')
+  return filtrada
+    .order('fecha_inicio', { ascending: seccion === 'pendientes' })
+    .order('id', { ascending: true })
+    .range(desde, desde + PAGINA)
+}
+
+function sinRepetidos(previos: EventoAgenda[], nuevos: EventoAgenda[]) {
+  const vistos = new Set(previos.map(e => e.id))
+  return [...previos, ...nuevos.filter(e => !vistos.has(e.id))]
 }
 
 function ChipVisita() {
@@ -106,10 +126,15 @@ function EventoCard({
 export function MisVisitas() {
   const { profile } = useAuthContext()
   const navigate = useNavigate()
-  const [eventos, setEventos] = useState<EventoAgenda[]>([])
+  const [pendientes, setPendientes] = useState<EventoAgenda[]>([])
+  const [hechos, setHechos] = useState<EventoAgenda[]>([])
+  const [hayMas, setHayMas] = useState<Record<Seccion, boolean>>({ pendientes: false, hechos: false })
+  const [cargandoMas, setCargandoMas] = useState<Record<Seccion, boolean>>({ pendientes: false, hechos: false })
+  // Filas ya leídas del servidor por sección (el siguiente range() empieza ahí).
+  const desdeRef = useRef<Record<Seccion, number>>({ pendientes: 0, hechos: 0 })
   const [cargando, setCargando] = useState(true)
   const reducedMotion = useReducedMotion()
-  const mostrarSkeleton = useMostrarCarga(cargando, eventos.length > 0)
+  const mostrarSkeleton = useMostrarCarga(cargando, pendientes.length + hechos.length > 0)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -120,11 +145,15 @@ export function MisVisitas() {
   async function cargar() {
     setCargando(true)
     try {
-      const { data, error } = await tbl('aud_agenda')
-        .select('*')
-        .order('fecha_inicio', { ascending: true })
-      if (error) throw error
-      setEventos(data ?? [])
+      const [rp, rh] = await Promise.all([consultarSeccion('pendientes', 0), consultarSeccion('hechos', 0)])
+      if (rp.error) throw rp.error
+      if (rh.error) throw rh.error
+      const dp = (rp.data ?? []) as EventoAgenda[]
+      const dh = (rh.data ?? []) as EventoAgenda[]
+      desdeRef.current = { pendientes: Math.min(dp.length, PAGINA), hechos: Math.min(dh.length, PAGINA) }
+      setPendientes(dp.slice(0, PAGINA))
+      setHechos(dh.slice(0, PAGINA))
+      setHayMas({ pendientes: dp.length > PAGINA, hechos: dh.length > PAGINA })
     } catch (e) {
       console.error('[MisVisitas]', e)
       toast.error('No se pudo cargar la agenda')
@@ -133,19 +162,57 @@ export function MisVisitas() {
     }
   }
 
+  async function verMas(seccion: Seccion) {
+    if (cargandoMas[seccion]) return
+    setCargandoMas(prev => ({ ...prev, [seccion]: true }))
+    try {
+      const { data, error } = await consultarSeccion(seccion, desdeRef.current[seccion])
+      if (error) throw error
+      const filas = (data ?? []) as EventoAgenda[]
+      desdeRef.current[seccion] += Math.min(filas.length, PAGINA)
+      const agregar = (prev: EventoAgenda[]) => sinRepetidos(prev, filas.slice(0, PAGINA))
+      if (seccion === 'pendientes') setPendientes(agregar)
+      else setHechos(agregar)
+      setHayMas(prev => ({ ...prev, [seccion]: filas.length > PAGINA }))
+    } catch (e) {
+      console.error('[MisVisitas] verMas', e)
+      toast.error('No se pudo cargar la agenda')
+    } finally {
+      setCargandoMas(prev => ({ ...prev, [seccion]: false }))
+    }
+  }
+
   async function marcarHecho(id: string) {
     try {
       const { error } = await tbl('aud_agenda').update({ estado: 'hecho' }).eq('id', id)
       if (error) throw error
-      setEventos(prev => prev.map(e => e.id === id ? { ...e, estado: 'hecho' as const } : e))
+      const ev = pendientes.find(e => e.id === id)
+      if (!ev) return
+      // En el servidor la sección de pendientes ahora tiene una fila menos.
+      desdeRef.current.pendientes = Math.max(0, desdeRef.current.pendientes - 1)
+      setPendientes(prev => prev.filter(e => e.id !== id))
+      setHechos(prev => {
+        const nuevo = { ...ev, estado: 'hecho' as const }
+        // Completados va de más reciente a más antiguo.
+        const i = prev.findIndex(e => e.fecha_inicio < nuevo.fecha_inicio)
+        return i === -1 ? [...prev, nuevo] : [...prev.slice(0, i), nuevo, ...prev.slice(i)]
+      })
     } catch (e) {
       console.error('[MisVisitas] marcarHecho', e)
       toast.error('No se pudo actualizar. Reintenta.')
     }
   }
 
-  const pendientes = eventos.filter(e => e.estado === 'pendiente')
-  const hechos = eventos.filter(e => e.estado === 'hecho')
+  function botonVerMas(seccion: Seccion) {
+    if (!hayMas[seccion]) return null
+    return (
+      <div className="mt-3 flex justify-center">
+        <Boton variante="secundario" onClick={() => verMas(seccion)} cargando={cargandoMas[seccion]}>
+          Ver más
+        </Boton>
+      </div>
+    )
+  }
 
   if (cargando) {
     return mostrarSkeleton ? <ListaSkeleton rows={4} /> : null
@@ -177,6 +244,7 @@ export function MisVisitas() {
             ))}
           </div>
         )}
+        {botonVerMas('pendientes')}
       </section>
 
       {hechos.length > 0 && (
@@ -194,6 +262,7 @@ export function MisVisitas() {
               />
             ))}
           </div>
+          {botonVerMas('hechos')}
         </section>
       )}
     </div>
