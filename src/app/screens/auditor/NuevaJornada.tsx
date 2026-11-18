@@ -159,6 +159,7 @@ export function NuevaJornada() {
       const jornadaId = await crearJornada(
         nombre.trim() || nombreDefault,
         [...seleccionados],
+        eventIdRef.current,
       )
       navigate(`/auditor/jornada/${jornadaId}`, { replace: true })
     } catch (e) {
@@ -169,7 +170,8 @@ export function NuevaJornada() {
         toast.error('No se pudo crear la jornada. Reintenta.')
       }
       console.error('[NuevaJornada] crearJornada', e)
-      eventIdRef.current = null  // permitir reintento
+      // El event_id se conserva: si la jornada sí se creó y solo se perdió la respuesta,
+      // el reintento devuelve la misma jornada (idempotente) en lugar de crear otra.
     } finally {
       setCreando(false)
     }
