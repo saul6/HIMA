@@ -120,8 +120,8 @@ export function useAuditorJornada() {
     }
   }, [])
 
-  const crearJornada = useCallback(async (nombre: string, auditoriaIds: string[]): Promise<string> => {
-    const eventId = crypto.randomUUID()
+  const crearJornada = useCallback(async (nombre: string, auditoriaIds: string[], eventIdExterno?: string): Promise<string> => {
+    const eventId = eventIdExterno ?? crypto.randomUUID()
     const { data, error } = await rpc('aud_jornada_crear', {
       p_nombre: nombre,
       p_auditorias: auditoriaIds,
