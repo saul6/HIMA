@@ -304,7 +304,7 @@ export function EvidenciaPanel({
   async function handleAbrir(storagePath: string) {
     try {
       const url = await getSignedUrlEvidencia(storagePath)
-      window.open(url, '_blank')
+      window.open(url, '_blank', 'noopener,noreferrer')
     } catch (e) {
       console.error('[EvidenciaPanel] getSignedUrl', e)
       toast.error('No se pudo abrir el archivo. Reintenta.')
@@ -662,7 +662,7 @@ export function EvidenciaPanel({
                         <div className="flex items-center gap-2 mt-0.5">
                           {reg.source_route && (
                             <button
-                              onClick={() => window.open(reg.source_route!, '_blank')}
+                              onClick={() => window.open(reg.source_route!, '_blank', 'noopener,noreferrer')}
                               className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                               style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                             >
@@ -792,7 +792,7 @@ export function EvidenciaPanel({
                       <div className="flex items-center gap-2 mt-0.5">
                         {reg.source_route && (
                           <button
-                            onClick={() => window.open(reg.source_route!, '_blank')}
+                            onClick={() => window.open(reg.source_route!, '_blank', 'noopener,noreferrer')}
                             className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
