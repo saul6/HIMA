@@ -160,7 +160,7 @@ const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }
   BLOCKER:  { label: 'Bloqueante', bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
   REQUIRED: { label: 'Requerido',  bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   WARNING:  { label: 'Aviso',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
+  INFO:     { label: 'Informativa', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
 }
 
 const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; tono: TonoEtiqueta }> = {
@@ -652,8 +652,8 @@ function PanelScoring({
 
   function tituloPrincipal(): string {
     if (scoringEstado === 'cargando' && !calculo) return 'Calculando…'
-    if (!calculo) return 'Scoring en vivo'
-    if (estado === 'BLOCKED_MISSING_MAX') return 'Scoring en vivo — máximos pendientes'
+    if (!calculo) return 'Puntaje en vivo'
+    if (estado === 'BLOCKED_MISSING_MAX') return 'Puntaje en vivo — máximos pendientes'
     if (estado === 'IN_PROGRESS') {
       const ev = calculo.conteo.resueltas ?? calculo.conteo.evaluadas
       const tot = calculo.conteo.total
@@ -662,7 +662,7 @@ function PanelScoring({
     if (estado === 'INTERNAL_COMPLETE') return `Resultado interno: ${calculo.resultado_bruto}%`
     if (estado === 'REQUIRES_VALIDATION') return `Revisión requerida · ${calculo.resultado_bruto}% normativo`
     if (estado === 'NO_SCORABLE_CRITERIA') return 'Sin criterios puntuables'
-    return 'Scoring en vivo'
+    return 'Puntaje en vivo'
   }
 
   return (
@@ -2565,7 +2565,7 @@ export function AuditorEjecucion() {
                           ? { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  label: 'Bloqueante' }
                           : sev === 'WARNING'
                           ? { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', label: 'Aviso' }
-                          : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Info' }
+                          : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Informativa' }
                         return (
                           <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                             <div className="px-3 py-1.5" style={{ backgroundColor: cfg.bg }}>

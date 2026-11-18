@@ -8,7 +8,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
-import { estadoAgenda } from './estados'
+import { estadoAgenda, textoLimpio } from './estados'
 import { dayKey, diasDelRango } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -278,7 +278,7 @@ export function CalendarioConsolidado() {
                     index={index}
                     reducedMotion={reducedMotion}
                     evento={ev}
-                    tipoLabel={tipoLabelMap.get(ev.event_type) ?? ev.event_type}
+                    tipoLabel={tipoLabelMap.get(ev.event_type) ?? textoLimpio(ev.event_type)}
                     onNavegar={ev.route ? () => navigate(ev.route!) : null}
                   />
                 ))}
