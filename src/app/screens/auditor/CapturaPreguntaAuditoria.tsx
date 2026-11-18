@@ -976,8 +976,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="rounded-lg px-3 py-2 flex flex-col gap-1"
               style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}
             >
-              {causasNA.map((causa, i) => (
-                <div key={i} className="flex flex-col gap-0.5">
+              {causasNA.map(causa => (
+                <div key={`${causa.regla_id}|${causa.causa}`} className="flex flex-col gap-0.5">
                   <p className="text-caption font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                     N/A — {causa.causa}
                   </p>
@@ -1171,8 +1171,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         <p className="text-small font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                           Conflictos encontrados — revisar antes de continuar:
                         </p>
-                        {reglaConflictos.map((c, i) => (
-                          <p key={i} className="text-small" style={{ color: 'var(--agro-info-text)' }}>
+                        {reglaConflictos.map(c => (
+                          <p key={`${c.question_id}|${c.tipo}|${c.valor}`} className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                             {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${c.valor}` : `hallazgo abierto: ${c.valor}`}
                           </p>
                         ))}

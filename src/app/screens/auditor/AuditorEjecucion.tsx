@@ -2568,8 +2568,8 @@ export function AuditorEjecucion() {
                                 {cfg.label} · {grupo.length}
                               </span>
                             </div>
-                            {grupo.map((item, i) => (
-                              <div key={i} className="px-3 py-2 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+                            {grupo.map(item => (
+                              <div key={`${item.code}|${item.message}`} className="px-3 py-2 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
                                 <p className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>{item.message}</p>
                               </div>
                             ))}
