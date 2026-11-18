@@ -469,7 +469,7 @@ export function EvidenciaPanel({
                           : { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                         }
                       >
-                        {esAsset ? 'Carga externa' : `M.A.D.Y · ${snap?.source_module_code ?? '?'}`}
+                        {esAsset ? 'Carga externa' : `M.A.D.Y. · ${snap?.source_module_code ?? '?'}`}
                       </span>
                       {asset?.evidencia_tipo && (
                         <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
@@ -631,7 +631,7 @@ export function EvidenciaPanel({
                             className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
-                            M.A.D.Y · {reg.source_module_code.toUpperCase()}
+                            M.A.D.Y. · {reg.source_module_code.toUpperCase()}
                           </span>
                           <span
                             className="text-caption font-semibold px-1.5 py-0.5 rounded-full"
@@ -770,7 +770,7 @@ export function EvidenciaPanel({
                           className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                           style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                         >
-                          Origen: M.A.D.Y · {reg.source_module_code.toUpperCase()}
+                          Origen: M.A.D.Y. · {reg.source_module_code.toUpperCase()}
                         </span>
                         <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                           {fechaCorta(reg.record_date)}
