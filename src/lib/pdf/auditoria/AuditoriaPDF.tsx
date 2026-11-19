@@ -373,7 +373,7 @@ export function AuditoriaPagina({
   const codigoFmt   = moduloCodigoOpt ?? `${codigoClave}-F-SC-SIG`
   const folioDsp    = auditoriaId.slice(0, 8).toUpperCase()
   const firmaLabels = firmasOpt ?? ['Responsable de Inocuidad — Firma']
-  const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoria interna'
+  const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoría interna'
 
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
@@ -607,7 +607,7 @@ export function AuditoriaPDF(props: AuditoriaPaginaProps) {
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={subtitulo}
-      keywords="MADY, inocuidad, auditoria"
+      keywords="M.A.D.Y., inocuidad, auditoría"
     >
       <AuditoriaPagina {...props} />
     </Document>
@@ -631,7 +631,7 @@ export function AuditoriaConsolidadoPDF({
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`${cfg.subtitulo} — Reporte consolidado`}
-      keywords="MADY, inocuidad, auditoria, consolidado"
+      keywords="M.A.D.Y., inocuidad, auditoría, consolidado"
     >
       {auditorias.map((a) => (
         <AuditoriaPagina key={a.auditoriaId} {...a} />
