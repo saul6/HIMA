@@ -54,6 +54,7 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
 
   // Precarga en segundo plano todos los recursos necesarios para trabajar sin red
   const ejecutarPrecarga = useCallback(async () => {
+    if (profile?.rol === 'auditor') return
     if (!userId || !orgId || !navigator.onLine) return
     await precargarCache(userId, orgId, [
       {
@@ -436,7 +437,7 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     // Precarga de listas de trazabilidad M48 por sitio (LR, LPT, LC, FE)
     await precargarM48(userId, orgId!)
     await precargarListasRecientes(userId, orgId!, new Set(modulosRef.current.filter((m) => m.desbloqueado).map((m) => m.codigo)))
-  }, [userId, orgId])
+  }, [userId, orgId, profile?.rol])
 
   async function precargarDiasM9(userId: string, orgId: string) {
     const mes = new Date().toISOString().slice(0, 7)
