@@ -97,7 +97,7 @@ export function NuevaJornada() {
     return () => { vigente = false }
   }, [jornadaDestino, cargarDetalle, navigate])
 
-  const nombreDefault = `Jornada ${hoy.split('-').reverse().join('/')}`
+  const nombreDefault = `Jornada ${fechaCorta(hoy)}`
 
   const porProductor = useMemo(() => {
     const map = new Map<string, JornadaCandidataFila[]>()
