@@ -1,5 +1,5 @@
-// Formato de números y fechas SOLO para mostrar en pantalla. Nunca usar para valores que se
-// guardan, claves, filtros, orden, nombres de archivo, PDF ni Excel.
+// Formato de números y fechas para mostrar en pantalla y en los PDF del reporte. Nunca usar para
+// valores que se guardan, claves, filtros, orden, nombres de archivo ni Excel.
 
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 const MESES_LARGOS = [
