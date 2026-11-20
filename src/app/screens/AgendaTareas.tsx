@@ -193,6 +193,17 @@ function TareaCard({
   )
 }
 
+/**
+ * Copia los bytes de una foto a memoria. Un File de la cámara o la galería puede
+ * apuntar a un archivo del teléfono que luego ya no se puede leer; la copia no.
+ * Lanza si el archivo no se puede leer o está vacío.
+ */
+async function copiaEnMemoria(f: File): Promise<File> {
+  const buf = await f.arrayBuffer()
+  if (buf.byteLength === 0) throw new Error('archivo vacío')
+  return new File([buf], f.name, { type: f.type || 'image/jpeg' })
+}
+
 // ── FotoPreview ───────────────────────────────────────────────────────────────
 
 interface FotoLocal {
@@ -358,7 +369,15 @@ function DetalleSheet({
       if (!raw.type.startsWith('image/')) { toast.warning('Solo se permiten imágenes'); continue }
       if (raw.size > 10 * 1024 * 1024) { toast.warning('La imagen supera 10 MB'); continue }
       const toastId = toast.loading('Optimizando foto…')
-      const compressed = await comprimirImagen(raw, 9.5, 'AGENDA').finally(() => toast.dismiss(toastId))
+      let copia: File
+      try {
+        copia = await copiaEnMemoria(raw)
+      } catch {
+        toast.dismiss(toastId)
+        toast.warning('Esta foto ya no está disponible en el teléfono. Vuelve a agregarla.')
+        continue
+      }
+      const compressed = await comprimirImagen(copia, 9.5, 'AGENDA').finally(() => toast.dismiss(toastId))
       const uid = crypto.randomUUID()
       const preview = URL.createObjectURL(compressed)
       setFotosLocales(prev => [...prev, { uid, file: compressed, preview }])
