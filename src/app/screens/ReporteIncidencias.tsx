@@ -65,6 +65,17 @@ const MAX_FOTOS_INCIDENCIA = MAX_FOTOS.m13PorIncidencia   // Tope duro por incid
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 const MAX_REINTENTOS_FOTO = 3
 
+/**
+ * Copia los bytes de una foto a memoria. Un File de la cámara o la galería puede
+ * apuntar a un archivo del teléfono que luego ya no se puede leer; la copia no.
+ * Lanza si el archivo no se puede leer o está vacío.
+ */
+async function copiaEnMemoria(f: File): Promise<File> {
+  const buf = await f.arrayBuffer()
+  if (buf.byteLength === 0) throw new Error('archivo vacío')
+  return new File([buf], f.name, { type: f.type || 'image/jpeg' })
+}
+
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
@@ -82,6 +93,8 @@ interface FotoLocal {
   subida?: boolean
   /** El borrador la mencionaba pero el archivo no está: hay que volver a agregarla. */
   faltante?: boolean
+  /** Con `faltante`: el archivo existía pero ya no se pudo leer del teléfono. */
+  noLegible?: boolean
 }
 
 interface IncidenciaLocal {
@@ -246,13 +259,34 @@ function IncidenciaForm({
     // 1) La foto original entra al borrador ANTES de procesarla: si la página
     //    muere optimizando, la foto sigue ahí.
     try { sessionStorage.setItem('m13:camara', '1') } catch { /* ignore */ }
-    const nuevas: FotoLocal[] = aAgregar.map((f) => ({
-      uid: crypto.randomUUID(),
-      file: f,
-      preview: URL.createObjectURL(f),
-      estado: 'original',
-      intentos: 0,
-    }))
+    //    El File del teléfono apunta a un archivo que el sistema puede borrar: se copia
+    //    a memoria de inmediato, una foto a la vez, y solo la copia entra al estado y al borrador.
+    const nuevas: FotoLocal[] = []
+    let noLeidas = 0
+    for (const f of aAgregar) {
+      try {
+        const copia = await copiaEnMemoria(f)
+        nuevas.push({
+          uid: crypto.randomUUID(),
+          file: copia,
+          preview: URL.createObjectURL(copia),
+          estado: 'original',
+          intentos: 0,
+        })
+      } catch {
+        noLeidas++
+      }
+    }
+    if (noLeidas > 0) {
+      toast.warning(
+        `${noLeidas} foto(s) no se pudieron leer del teléfono. Vuelve a tomarlas o elígelas de nuevo.`,
+        { duration: 8000 }
+      )
+    }
+    if (nuevas.length === 0) {
+      try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
+      return
+    }
     onAgregarFotos(inc.uid, nuevas)
     await onGuardarYa()
 
@@ -316,7 +350,11 @@ function IncidenciaForm({
           {inc.fotos.filter((f) => f.faltante).map((f) => (
             <div key={f.uid} className="flex items-center gap-2">
               <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              <span className="flex-1 min-w-0">Falta una foto: vuelve a agregarla</span>
+              <span className="flex-1 min-w-0">
+                {f.noLegible
+                  ? 'Esta foto ya no está disponible en el teléfono. Vuelve a agregarla.'
+                  : 'Falta una foto: vuelve a agregarla'}
+              </span>
               <button type="button" onClick={() => onQuitarFoto(inc.uid, f.uid)} className="font-semibold underline">
                 Quitar
               </button>
@@ -1207,6 +1245,7 @@ export function ReporteIncidencias() {
       // PASO 3: Subir fotos secuencialmente con reintento (hasta MAX_REINTENTOS_FOTO por foto)
       let procesadas = 0
       let fallidas = 0
+      let noLegibles = 0
       const detalleFallos: string[] = []
       let sesionExpirada = false
 
@@ -1220,6 +1259,22 @@ export function ReporteIncidencias() {
             fotosSubidasPorIncidencia[i].push({ id: fotoLocal.uid, storage_path: path, orden: j + 1 })
             continue
           }
+          // Verificar que la foto se puede leer ANTES de subirla (de una en una). Lo que se
+          // sube es esta copia en memoria, nunca el File que apunta al archivo del teléfono.
+          let copia: File
+          try {
+            copia = await copiaEnMemoria(fotoLocal.file)
+          } catch {
+            noLegibles++
+            mutarIncidencias((prev) => prev.map((x) => x.uid !== inc.uid ? x : {
+              ...x,
+              fotos: x.fotos.map((f) => f.uid === fotoLocal.uid ? { ...f, faltante: true, noLegible: true } : f),
+            }))
+            procesadas++
+            setProgreso({ total: totalFotosASubir, procesadas, fallidas, fase: 'fotos' })
+            continue
+          }
+
           let subida = false
           let motivoFallo = 'error desconocido'
 
@@ -1227,9 +1282,9 @@ export function ReporteIncidencias() {
             try {
               let archivoASubir: File
               archivoASubir =
-                fotoLocal.file.type === 'image/jpeg' && fotoLocal.file.size <= 1.5 * 1024 * 1024
-                  ? fotoLocal.file
-                  : await comprimirImagen(fotoLocal.file, 5.5)
+                copia.type === 'image/jpeg' && copia.size <= 1.5 * 1024 * 1024
+                  ? copia
+                  : await comprimirImagen(copia, 5.5)
               if (archivoASubir.size > MAX_FOTO_BYTES) {
                 throw new Error(
                   `La foto ${j + 1} de la incidencia ${i + 1} es demasiado grande (${(archivoASubir.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
@@ -1297,9 +1352,16 @@ export function ReporteIncidencias() {
       registrarEvento('M13', 'guardar_fin', { ms: Date.now() - inicioMs, fallidas }, orgId)
 
       // PASO 4: Resultado. Con fotos fallidas el reporte NO está confirmado: el borrador se queda
-      if (fallidas > 0) {
+      if (fallidas > 0 || noLegibles > 0) {
+        const partes: string[] = []
+        if (noLegibles > 0) {
+          partes.push(`${noLegibles} foto(s) ya no están disponibles en el teléfono: vuelve a agregarlas o quítalas (aparecen marcadas en su incidencia)`)
+        }
+        if (fallidas > 0) {
+          partes.push(`${fallidas} foto(s) no se pudieron subir (${detalleFallos.slice(0, 3).join('; ')}${detalleFallos.length > 3 ? '…' : ''})`)
+        }
         toast.warning(
-          `${fallidas} foto(s) no se pudieron subir (${detalleFallos.slice(0, 3).join('; ')}${detalleFallos.length > 3 ? '…' : ''}). Tu borrador sigue guardado: toca "Terminar de subir" para reintentar.`,
+          `${partes.join('. ')}. Tu borrador sigue guardado: las demás fotos ya subieron; toca "Terminar de subir" para completar.`,
           { duration: 12000 }
         )
         await refetch()
