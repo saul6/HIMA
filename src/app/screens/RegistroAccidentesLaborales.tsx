@@ -73,6 +73,17 @@ const ATENCIONES_UI = [
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
+/**
+ * Copia los bytes de una foto a memoria. Un File de la cámara o la galería puede
+ * apuntar a un archivo del teléfono que luego ya no se puede leer; la copia no.
+ * Lanza si el archivo no se puede leer o está vacío.
+ */
+async function copiaEnMemoria(f: File): Promise<File> {
+  const buf = await f.arrayBuffer()
+  if (buf.byteLength === 0) throw new Error('archivo vacío')
+  return new File([buf], f.name, { type: f.type || 'image/jpeg' })
+}
+
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
 interface FotoLocal {
@@ -390,8 +401,15 @@ export function RegistroAccidentesLaborales() {
     const lote = files.slice(0, disponibles)
     for (const [idx, raw] of lote.entries()) {
       const toastId = toast.loading(`Optimizando foto ${idx + 1} de ${lote.length}…`)
+      let copia: File
       try {
-        const compressed = await comprimirImagen(raw, 5.5, 'M20')
+        copia = await copiaEnMemoria(raw)
+      } catch {
+        toast.warning('Esta foto ya no está disponible en el teléfono. Vuelve a agregarla.', { id: toastId })
+        continue
+      }
+      try {
+        const compressed = await comprimirImagen(copia, 5.5, 'M20')
         if (compressed.size > MAX_FOTO_BYTES) {
           toast.error('La foto es muy grande, intenta con una de menor resolución', { id: toastId })
           continue
