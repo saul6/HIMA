@@ -63,6 +63,17 @@ function formatFecha(iso: string | null | undefined): string {
   } catch { return iso }
 }
 
+/**
+ * Copia los bytes de una foto a memoria. Un File de la cámara o la galería puede
+ * apuntar a un archivo del teléfono que luego ya no se puede leer; la copia no.
+ * Lanza si el archivo no se puede leer o está vacío.
+ */
+async function copiaEnMemoria(f: File): Promise<File> {
+  const buf = await f.arrayBuffer()
+  if (buf.byteLength === 0) throw new Error('archivo vacío')
+  return new File([buf], f.name, { type: f.type || 'image/jpeg' })
+}
+
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
 type FiltroEstado = 'todas' | 'pendientes' | 'cerradas'
@@ -362,8 +373,17 @@ export function AccionesCorrectivas() {
     const file = e.target.files?.[0]
     if (!file) return
     const toastId = toast.loading('Optimizando foto...')
+    let copia: File
     try {
-      const compressed = await comprimirImagen(file, 9, 'M26')
+      copia = await copiaEnMemoria(file)
+    } catch {
+      toast.dismiss(toastId)
+      toast.warning('Esta foto ya no está disponible en el teléfono. Vuelve a agregarla.')
+      e.target.value = ''
+      return
+    }
+    try {
+      const compressed = await comprimirImagen(copia, 9, 'M26')
       toast.dismiss(toastId)
       const preview = URL.createObjectURL(compressed)
       setFotosPendientes((prev) => [
