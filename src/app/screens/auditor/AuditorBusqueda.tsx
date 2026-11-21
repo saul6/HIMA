@@ -233,7 +233,7 @@ export function AuditorBusqueda() {
                           {item.fecha && (
                             <p
                               className="text-caption mt-0.5"
-                              style={{ color: 'var(--muted-foreground)', opacity: 0.7 }}
+                              style={{ color: 'var(--muted-foreground)' }}
                             >
                               {fechaCorta(item.fecha)}
                             </p>
