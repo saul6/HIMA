@@ -11,6 +11,7 @@ import { PC } from '@/lib/pdf/components/tokens'
 import { formatPortadaM15, formatPortadaM16, formatPortadaM17, type PortadaLinea } from './portadaConfig'
 import type { ModuloAuditoria } from '@/hooks/useAuditoria'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
@@ -96,13 +97,7 @@ const C_COMENT   = 195
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFechaPDF(iso: string): string {
-  try {
-    const d = new Date(iso + 'T12:00:00')
-    const dd = String(d.getDate()).padStart(2, '0')
-    const mm = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]
-    const yy = String(d.getFullYear()).slice(2)
-    return `${dd}-${mm}-${yy}`
-  } catch { return iso }
+  return fechaCorta(iso)
 }
 
 function respLabel(r: string | undefined): string {
@@ -378,7 +373,7 @@ export function AuditoriaPagina({
   const codigoFmt   = moduloCodigoOpt ?? `${codigoClave}-F-SC-SIG`
   const folioDsp    = auditoriaId.slice(0, 8).toUpperCase()
   const firmaLabels = firmasOpt ?? ['Responsable de Inocuidad — Firma']
-  const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoria interna'
+  const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoría interna'
 
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
@@ -437,7 +432,7 @@ export function AuditoriaPagina({
       {esBorrador && (
         <View style={{ backgroundColor: '#FAEEDA', borderLeftWidth: 3, borderLeftColor: '#F5A623', borderLeftStyle: 'solid', paddingVertical: 4, paddingHorizontal: 8, marginBottom: 10 }}>
           <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#854F0B' }}>
-            BORRADOR - auditoria en proceso
+            BORRADOR - auditoría en proceso
           </Text>
         </View>
       )}
@@ -612,7 +607,7 @@ export function AuditoriaPDF(props: AuditoriaPaginaProps) {
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={subtitulo}
-      keywords="MADY, inocuidad, auditoria"
+      keywords="M.A.D.Y., inocuidad, auditoría"
     >
       <AuditoriaPagina {...props} />
     </Document>
@@ -636,7 +631,7 @@ export function AuditoriaConsolidadoPDF({
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`${cfg.subtitulo} — Reporte consolidado`}
-      keywords="MADY, inocuidad, auditoria, consolidado"
+      keywords="M.A.D.Y., inocuidad, auditoría, consolidado"
     >
       {auditorias.map((a) => (
         <AuditoriaPagina key={a.auditoriaId} {...a} />

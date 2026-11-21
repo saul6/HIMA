@@ -241,7 +241,7 @@ export function AuditorHome() {
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-foreground truncate font-semibold">{`Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}</p>
-            <p className="text-xs text-muted-foreground">Auditores · M.A.D.Y</p>
+            <p className="text-xs text-muted-foreground">Auditores · M.A.D.Y.</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Boton variante="icono" onClick={() => navigate('/auditor/agenda?tab=calendario')} aria-label="Calendario">

@@ -27,6 +27,7 @@ const ROL_LABEL: Record<string, string> = {
   admin_org: 'Administrador',
   asesor_tecnico: 'Encargado',
   operario: 'Operario de campo',
+  auditor: 'Auditor',
 }
 
 function inicialesDe(nombre: string): string {
@@ -414,7 +415,7 @@ export function Perfil() {
           style={{ fontWeight: 500 }}
         >
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-foreground flex-1 text-left">Sincronización offline</span>
+          <span className="text-sm text-foreground flex-1 text-left">Sincronización sin conexión</span>
         </button>
 
         </motion.div>

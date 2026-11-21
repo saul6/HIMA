@@ -414,7 +414,7 @@ export function AuditorInstalacionDetalle() {
                   Acción permanente e irreversible
                 </p>
                 <p className="text-small mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
-                  El expediente completo (auditorías, NC, acciones correctivas, evidencias y snapshots) se transfiere a la organización productora destino. No se crea un sitio duplicado. Esta acción no puede deshacerse desde el front.
+                  El expediente completo (auditorías, no conformidades, acciones correctivas, evidencias y copias de los datos) se pasa a la organización productora destino. No se crea un sitio duplicado. Esta acción no se puede deshacer desde esta pantalla.
                 </p>
               </div>
             </div>

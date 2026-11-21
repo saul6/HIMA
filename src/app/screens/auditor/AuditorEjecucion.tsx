@@ -160,7 +160,7 @@ const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }
   BLOCKER:  { label: 'Bloqueante', bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
   REQUIRED: { label: 'Requerido',  bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   WARNING:  { label: 'Aviso',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
+  INFO:     { label: 'Informativa', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
 }
 
 const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; tono: TonoEtiqueta }> = {
@@ -652,8 +652,8 @@ function PanelScoring({
 
   function tituloPrincipal(): string {
     if (scoringEstado === 'cargando' && !calculo) return 'Calculando…'
-    if (!calculo) return 'Scoring en vivo'
-    if (estado === 'BLOCKED_MISSING_MAX') return 'Scoring en vivo — máximos pendientes'
+    if (!calculo) return 'Puntaje en vivo'
+    if (estado === 'BLOCKED_MISSING_MAX') return 'Puntaje en vivo — máximos pendientes'
     if (estado === 'IN_PROGRESS') {
       const ev = calculo.conteo.resueltas ?? calculo.conteo.evaluadas
       const tot = calculo.conteo.total
@@ -662,7 +662,7 @@ function PanelScoring({
     if (estado === 'INTERNAL_COMPLETE') return `Resultado interno: ${calculo.resultado_bruto}%`
     if (estado === 'REQUIRES_VALIDATION') return `Revisión requerida · ${calculo.resultado_bruto}% normativo`
     if (estado === 'NO_SCORABLE_CRITERIA') return 'Sin criterios puntuables'
-    return 'Scoring en vivo'
+    return 'Puntaje en vivo'
   }
 
   return (
@@ -763,7 +763,7 @@ function PanelScoring({
                 {[
                   ['Evaluadas', `${calculo.conteo.resueltas ?? calculo.conteo.evaluadas}/${calculo.conteo.total}`],
                   ['Puntos ganados', `${calculo.puntos_ganados}`],
-                  ['Perdida', `−${calculo.perdida} pts`],
+                  ['Pérdida', `−${calculo.perdida} pts`],
                   ['Pendientes', `${calculo.pendientes} pts`],
                 ].map(([lbl, val]) => (
                   <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
@@ -2436,7 +2436,7 @@ export function AuditorEjecucion() {
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
               {/* Estado interno M.A.D.Y */}
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
+                <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y.</p>
                 <select
                   aria-label="Estado interno"
                   value={formAccion.internal_status ?? 'REGISTERED'}
@@ -2468,7 +2468,7 @@ export function AuditorEjecucion() {
               </div>
 
               {/* Contraparte externa */}
-              <Campo etiqueta="Contraparte externa (sin usuario MADY)" className="gap-1" claseEtiqueta="text-caption font-medium">
+              <Campo etiqueta="Contraparte externa (sin usuario de M.A.D.Y.)" className="gap-1" claseEtiqueta="text-caption font-medium">
                 {({ id }) => (
                   <input id={id}
                     type="text"
@@ -2541,7 +2541,7 @@ export function AuditorEjecucion() {
                   {/* Disclaimer */}
                   <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
                     <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
-                      M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
+                      M.A.D.Y. organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
                     </p>
                   </div>
 
@@ -2565,7 +2565,7 @@ export function AuditorEjecucion() {
                           ? { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  label: 'Bloqueante' }
                           : sev === 'WARNING'
                           ? { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', label: 'Aviso' }
-                          : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Info' }
+                          : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Informativa' }
                         return (
                           <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                             <div className="px-3 py-1.5" style={{ backgroundColor: cfg.bg }}>

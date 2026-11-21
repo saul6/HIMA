@@ -26,6 +26,7 @@ import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
+import { textoEstadoNc, textoLimpio } from './estados'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { DUR, EASE_OUT } from '@/lib/motion'
@@ -763,7 +764,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         } else if (r.estado === 'MANUAL_OTHER_CATEGORY') {
           setAjusteWarning({ tipo: 'OTHER_CATEGORY', mensaje: r.mensaje, clasificacion_sugerida: r.clasificacion_sugerida })
         } else {
-          setAjusteWarning({ tipo: 'OFF_MATRIX', mensaje: 'Valor fuera de la matriz: escenario interno en conflicto, no es puntaje normativo.' })
+          setAjusteWarning({ tipo: 'OFF_MATRIX', mensaje: 'Este valor no coincide con la matriz de PrimusGFS. Queda como cálculo interno de trabajo y no cuenta como puntaje oficial.' })
         }
       } catch (e) {
         console.error('[CapturaPregunta] aud_ajustar_puntaje', e)
@@ -1177,7 +1178,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         </p>
                         {reglaConflictos.map(c => (
                           <p key={`${c.question_id}|${c.tipo}|${c.valor}`} className="text-small" style={{ color: 'var(--agro-info-text)' }}>
-                            {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${c.valor}` : `hallazgo abierto: ${c.valor}`}
+                            {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${(RESP_TOOLTIPS[c.valor as AudRespuesta] ?? textoLimpio(c.valor)).toLowerCase()}` : `no conformidad ${textoEstadoNc(c.valor).toLowerCase()}`}
                           </p>
                         ))}
                       </div>

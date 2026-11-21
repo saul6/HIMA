@@ -176,7 +176,7 @@ export function AuditorModoAzzule() {
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-4">
         <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
-          M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
+          M.A.D.Y. organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
         </p>
         {loading ? (
           <div aria-busy="true" aria-label="Cargando hallazgos">

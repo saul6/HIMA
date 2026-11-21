@@ -10,6 +10,25 @@ import { supabase } from '@/lib/supabase'
 import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { ahora, ms, emitirEvento } from '@/lib/telemetria'
 import { fechaCorta } from '@/lib/formato'
+import { estadoAuditoria, textoEstadoNc, textoEstadoInternoAccion, textoEstadoExternoAccion, textoLimpio } from './estados'
+
+// La base manda el subtítulo con códigos («NC · OPEN»); aquí solo se traduce para mostrarlo.
+function subtituloLegible(tipo: BusquedaResultado['tipo'], sub: string): string {
+  if (tipo === 'HALLAZGO') {
+    const m = /^NC · (.+)$/.exec(sub)
+    return m ? `NC · ${textoEstadoNc(m[1])}` : sub
+  }
+  if (tipo === 'AUDITORIA') return estadoAuditoria(sub).texto
+  if (tipo === 'ACCION') {
+    const m = /^Interno: (.*) · Externo: (.*)$/.exec(sub)
+    return m ? `Interno: ${textoEstadoInternoAccion(m[1])} · Externo: ${textoEstadoExternoAccion(m[2])}` : sub
+  }
+  if (tipo === 'EVIDENCIA') {
+    const m = /^Evidencia · (.+)$/.exec(sub)
+    return m ? `Evidencia · ${textoLimpio(m[1])}` : sub
+  }
+  return sub
+}
 
 interface BusquedaResultado {
   tipo: 'ORGANIZACION' | 'RANCHO' | 'AUDITORIA' | 'HALLAZGO' | 'ACCION' | 'EVIDENCIA'
@@ -207,7 +226,7 @@ export function AuditorBusqueda() {
                               className="text-xs mt-0.5 truncate"
                               style={{ color: 'var(--muted-foreground)' }}
                             >
-                              {item.subtitulo}
+                              {subtituloLegible(tipo, item.subtitulo)}
                             </p>
                           )}
                           {item.fecha && (
