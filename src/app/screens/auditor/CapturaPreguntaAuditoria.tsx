@@ -1209,7 +1209,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         Confirmar N/A en dependientes
                       </Boton>
                       {reglaConflictos && reglaConflictos.length > 0 && (
-                        <button
+                        <Boton variante="secundario"
                           disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
                           onClick={async () => {
                             if (!reglaExplicacion.trim()) return
@@ -1227,11 +1227,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             } catch { /* handled */ }
                             finally { setAplicandoReglaId(null) }
                           }}
-                          className="flex-shrink-0 h-8 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-1.5 before:-inset-x-1"
+                          className="flex-shrink-0 gap-1"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                         >
                           Confirmar de todos modos
-                        </button>
+                        </Boton>
                       )}
                     </div>
                   </div>
@@ -1551,13 +1551,9 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <Boton onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
                   Confirmar
                 </Boton>
-                <button
-                  onClick={() => setAjusteOpen(false)}
-                  className="flex-1 h-9 rounded-lg text-small font-medium"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
+                <Boton variante="secundario" onClick={() => setAjusteOpen(false)} className="flex-1">
                   Cancelar
-                </button>
+                </Boton>
               </div>
             </div>
           )}

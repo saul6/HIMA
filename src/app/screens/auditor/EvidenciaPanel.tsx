@@ -371,16 +371,15 @@ export function EvidenciaPanel({
                 </Boton>
               )}
               {canLink && (
-                <button
+                <Boton variante="secundario"
                   aria-expanded={showGateway}
                   aria-controls={gatewayId}
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  className="gap-1"
                 >
                   <Database aria-hidden="true" size={10} />
                   Buscar en otro módulo
-                </button>
+                </Boton>
               )}
             </div>
           )}
