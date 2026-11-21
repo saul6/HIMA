@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { BORDE_CAMPO } from './estilosCampo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -13,7 +14,7 @@ const tbl = (name: string) => (supabase as any).from(name)
 const inputSt: React.CSSProperties = {
   width: '100%', height: '2.5rem',
   borderRadius: 'var(--radius)',
-  border: '1px solid var(--border)',
+  border: BORDE_CAMPO,
   backgroundColor: 'var(--input-background)',
   color: 'var(--foreground)',
   padding: '0 0.75rem',

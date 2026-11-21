@@ -16,6 +16,7 @@ import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { fechaCorta } from '@/lib/formato'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { BORDE_CAMPO } from './estilosCampo'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   documento_procedimiento: 'Documento / Procedimiento',
@@ -326,7 +327,7 @@ export function EvidenciaPanel({
 
   const inputBase: React.CSSProperties = {
     borderRadius: 'var(--radius)',
-    border: '1px solid var(--border)',
+    border: BORDE_CAMPO,
     backgroundColor: 'var(--input-background)',
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',

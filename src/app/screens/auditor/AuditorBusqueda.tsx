@@ -11,6 +11,7 @@ import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { ahora, ms, emitirEvento } from '@/lib/telemetria'
 import { fechaCorta } from '@/lib/formato'
 import { estadoAuditoria, textoEstadoNc, textoEstadoInternoAccion, textoEstadoExternoAccion, textoLimpio } from './estados'
+import { BORDE_CAMPO } from './estilosCampo'
 
 // La base manda el subtítulo con códigos («NC · OPEN»); aquí solo se traduce para mostrarlo.
 function subtituloLegible(tipo: BusquedaResultado['tipo'], sub: string): string {
@@ -129,7 +130,7 @@ export function AuditorBusqueda() {
           className="w-full h-9 pl-9 pr-4 rounded-lg text-sm text-left outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           style={{
             backgroundColor: 'var(--input-background)',
-            border: '1px solid var(--border)',
+            border: BORDE_CAMPO,
             color: 'var(--muted-foreground)',
           }}
         >
