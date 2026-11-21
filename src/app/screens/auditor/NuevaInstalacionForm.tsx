@@ -124,7 +124,7 @@ export function NuevaInstalacionForm({ onClose }: { onClose: () => void }) {
       )}
     </Campo>
 
-    <Campo etiqueta="Contacto (opcional)" className="gap-1.5">
+    <Campo etiqueta="Contacto" className="gap-1.5">
       {({ id }) => (
         <input id={id}
           type="text"
