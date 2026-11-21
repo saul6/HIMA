@@ -527,7 +527,7 @@ export function AuditoriaPagina({
                   : resp?.respuesta === 'na'
                     ? s.qCellNA
                   : {}
-                const ptsLabel = preg.puntos > 0 && resp
+                const ptsLabel = preg.puntos > 0 && resp && resp.respuesta !== 'na'
                   ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
                   : ''
 
