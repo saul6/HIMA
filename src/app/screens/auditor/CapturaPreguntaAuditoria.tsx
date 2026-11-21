@@ -1128,7 +1128,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             <Checkbox
                               checked={reglaConfirmaciones[cond.clave] ?? false}
                               onCheckedChange={v => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: v === true }))}
-                              className="mt-0.5 relative before:absolute before:content-[''] before:-inset-3.5"
+                              className="mt-0.5 relative before:absolute before:content-[''] before:-inset-x-3.5"
                             />
                             <span
                               className="text-caption"
