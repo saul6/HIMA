@@ -227,7 +227,7 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
 
 export function ConsolidadoMensualPDF({ consolidado }: { consolidado: ConsolidadoGuardado }) {
   return (
-    <Document title={`Consolidado mensual ${consolidado.datos.mes}`} author="M.A.D.Y">
+    <Document title={`Consolidado mensual ${consolidado.datos.mes}`} author="M.A.D.Y.">
       <ConsolidadoMensualPagina consolidado={consolidado} />
     </Document>
   )

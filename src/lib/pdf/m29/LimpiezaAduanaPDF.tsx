@@ -78,7 +78,7 @@ export function LimpiezaAduanaPDF(props: LimpiezaAduanaPaginaProps) {
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`Bitácora de Limpieza de la Aduana — ${props.instalacion}`}
-      keywords="MADY, inocuidad, limpieza, aduana"
+      keywords="M.A.D.Y., inocuidad, limpieza, aduana"
     >
       <LimpiezaAduanaPagina {...props} />
     </Document>
@@ -93,7 +93,7 @@ export function LimpiezaAduanaConsolidadoPDF({ paginas }: LimpiezaAduanaConsolid
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject="Bitácora de Limpieza de la Aduana — Consolidado"
-      keywords="MADY, inocuidad, limpieza, aduana, consolidado"
+      keywords="M.A.D.Y., inocuidad, limpieza, aduana, consolidado"
     >
       {paginas.map((p, i) => <LimpiezaAduanaPagina key={i} {...p} />)}
     </Document>

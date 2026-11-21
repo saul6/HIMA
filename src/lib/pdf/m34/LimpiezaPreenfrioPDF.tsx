@@ -85,7 +85,7 @@ export function LimpiezaPreenfrioPDF(props: LimpiezaPreenfrioPaginaProps) {
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`Bitácora de Limpieza de Cuartos de Pre-enfrío — ${props.instalacion}`}
-      keywords="MADY, inocuidad, limpieza, preenfrio, conservador"
+      keywords="M.A.D.Y., inocuidad, limpieza, preenfrio, conservador"
     >
       <LimpiezaPreenfrioPagina {...props} />
     </Document>
@@ -100,7 +100,7 @@ export function LimpiezaPreenfrioConsolidadoPDF({ paginas }: LimpiezaPreenfrioCo
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject="Bitácora de Limpieza de Cuartos de Pre-enfrío — Consolidado"
-      keywords="MADY, inocuidad, limpieza, preenfrio, conservador, consolidado"
+      keywords="M.A.D.Y., inocuidad, limpieza, preenfrio, conservador, consolidado"
     >
       {paginas.map((p, i) => <LimpiezaPreenfrioPagina key={i} {...p} />)}
     </Document>

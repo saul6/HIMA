@@ -67,7 +67,7 @@ export function LimpiezaAlmacenEmpaquePagina({
 
 export function LimpiezaAlmacenEmpaquePDF(props: LimpiezaAlmacenEmpaquePaginaProps) {
   return (
-    <Document title={`Limpieza Almacen Empaque ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Almacén de Material de Empaque — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, almacen, empaque">
+    <Document title={`Limpieza Almacen Empaque ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Almacén de Material de Empaque — ${props.instalacion}`} keywords="M.A.D.Y., inocuidad, limpieza, almacen, empaque">
       <LimpiezaAlmacenEmpaquePagina {...props} />
     </Document>
   )
@@ -75,7 +75,7 @@ export function LimpiezaAlmacenEmpaquePDF(props: LimpiezaAlmacenEmpaquePaginaPro
 
 export function LimpiezaAlmacenEmpaqueConsolidadoPDF({ paginas }: LimpiezaAlmacenEmpaqueConsolidadoProps) {
   return (
-    <Document title="Limpieza Almacen Empaque Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Almacén de Material de Empaque — Consolidado" keywords="MADY, inocuidad, limpieza, almacen, empaque, consolidado">
+    <Document title="Limpieza Almacen Empaque Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Almacén de Material de Empaque — Consolidado" keywords="M.A.D.Y., inocuidad, limpieza, almacen, empaque, consolidado">
       {paginas.map((p, i) => <LimpiezaAlmacenEmpaquePagina key={i} {...p} />)}
     </Document>
   )

@@ -69,7 +69,7 @@ export function LimpiezaRecepcionPagina({
 
 export function LimpiezaRecepcionPDF(props: LimpiezaRecepcionPaginaProps) {
   return (
-    <Document title={`Limpieza Recepción ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Área de Recepción — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, recepcion">
+    <Document title={`Limpieza Recepción ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Área de Recepción — ${props.instalacion}`} keywords="M.A.D.Y., inocuidad, limpieza, recepcion">
       <LimpiezaRecepcionPagina {...props} />
     </Document>
   )
@@ -77,7 +77,7 @@ export function LimpiezaRecepcionPDF(props: LimpiezaRecepcionPaginaProps) {
 
 export function LimpiezaRecepcionConsolidadoPDF({ paginas }: LimpiezaRecepcionConsolidadoProps) {
   return (
-    <Document title="Limpieza Recepcion Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Área de Recepción — Consolidado" keywords="MADY, inocuidad, limpieza, recepcion, consolidado">
+    <Document title="Limpieza Recepcion Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Área de Recepción — Consolidado" keywords="M.A.D.Y., inocuidad, limpieza, recepcion, consolidado">
       {paginas.map((p, i) => <LimpiezaRecepcionPagina key={i} {...p} />)}
     </Document>
   )

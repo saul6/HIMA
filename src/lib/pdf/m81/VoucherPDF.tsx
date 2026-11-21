@@ -204,7 +204,7 @@ export function VoucherPagina({ voucher: v }: VoucherPDFProps) {
 
 export function VoucherPDF(props: VoucherPDFProps) {
   return (
-    <Document title={`Voucher ${props.voucher.folio}`} author="M.A.D.Y">
+    <Document title={`Voucher ${props.voucher.folio}`} author="M.A.D.Y.">
       <VoucherPagina {...props} />
     </Document>
   )
