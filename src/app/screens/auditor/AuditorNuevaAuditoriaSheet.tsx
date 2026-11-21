@@ -197,11 +197,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           {[1, 2].map(n => {
             const active = n === paso
             return (
-              <button
+              <span
                 key={n}
-                type="button"
-                onClick={() => { if (n === 1 && paso === 2) { setDireccion(-1); setPaso(1) } }}
-                aria-label={`Paso ${n}`}
                 aria-current={active ? 'step' : undefined}
                 className={`relative z-10 h-3 w-3 rounded-full transition-colors duration-[var(--motion-fast)] ${
                   active ? '' : n < paso ? 'bg-primary/40' : 'bg-muted-foreground/30'
@@ -214,7 +211,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                     transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
                   />
                 )}
-              </button>
+                <span className="sr-only">Paso {n} de 2</span>
+              </span>
             )
           })}
         </div>
