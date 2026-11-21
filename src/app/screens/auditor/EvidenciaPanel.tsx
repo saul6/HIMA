@@ -16,6 +16,7 @@ import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { fechaCorta } from '@/lib/formato'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { BORDE_CAMPO } from './estilosCampo'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   documento_procedimiento: 'Documento / Procedimiento',
@@ -326,7 +327,7 @@ export function EvidenciaPanel({
 
   const inputBase: React.CSSProperties = {
     borderRadius: 'var(--radius)',
-    border: '1px solid var(--border)',
+    border: BORDE_CAMPO,
     backgroundColor: 'var(--input-background)',
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
@@ -370,16 +371,15 @@ export function EvidenciaPanel({
                 </Boton>
               )}
               {canLink && (
-                <button
+                <Boton variante="secundario"
                   aria-expanded={showGateway}
                   aria-controls={gatewayId}
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  className="gap-1"
                 >
                   <Database aria-hidden="true" size={10} />
                   Buscar en otro módulo
-                </button>
+                </Boton>
               )}
             </div>
           )}

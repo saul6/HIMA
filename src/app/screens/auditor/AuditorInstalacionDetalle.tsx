@@ -21,6 +21,8 @@ import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta } from '@/lib/formato'
 import { useEntradaPantalla } from './motionAuditor'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { BORDE_CAMPO } from './estilosCampo'
+import { Checkbox } from '@/app/components/ui/checkbox'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -53,7 +55,7 @@ const inputSt: React.CSSProperties = {
   width: '100%',
   height: '2.5rem',
   borderRadius: 'var(--radius)',
-  border: '1px solid var(--border)',
+  border: BORDE_CAMPO,
   backgroundColor: 'var(--input-background)',
   color: 'var(--foreground)',
   padding: '0 0.75rem',
@@ -581,12 +583,10 @@ export function AuditorInstalacionDetalle() {
               className="flex items-start gap-3 rounded-xl p-3 cursor-pointer"
               style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}
             >
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={confirmado}
-                onChange={e => setConfirmado(e.target.checked)}
-                className="mt-0.5 flex-shrink-0 w-4 h-4"
-                style={{ accentColor: 'var(--primary)' }}
+                onCheckedChange={v => setConfirmado(v === true)}
+                className="mt-0.5 relative before:absolute before:content-[''] before:-inset-3.5"
               />
               <span className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>
                 Entiendo que esta acción es <strong>permanente e irreversible</strong>. El expediente se transfiere a la organización productora destino y no puede deshacerse desde esta pantalla.

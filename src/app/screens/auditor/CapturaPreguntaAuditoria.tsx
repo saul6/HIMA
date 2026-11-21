@@ -30,6 +30,8 @@ import { textoEstadoNc, textoLimpio } from './estados'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { BORDE_CAMPO } from './estilosCampo'
+import { Checkbox } from '@/app/components/ui/checkbox'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -147,7 +149,7 @@ function CampoEsquema({
     borderRadius: 'var(--radius)',
     border: herenciaEstado
       ? '1.5px dashed var(--agro-blue)'
-      : '1px solid var(--border)',
+      : BORDE_CAMPO,
     backgroundColor: disabled ? 'var(--muted)' : 'var(--input-background)',
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
@@ -1123,12 +1125,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         <p className="text-small font-medium" style={{ color: 'var(--foreground)' }}>Confirmar condiciones:</p>
                         {regla.condiciones.map(cond => (
                           <label key={cond.clave} className="flex items-start gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               checked={reglaConfirmaciones[cond.clave] ?? false}
-                              onChange={e => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: e.target.checked }))}
-                              className="mt-0.5 flex-shrink-0"
-                              style={{ accentColor: 'var(--primary)' }}
+                              onCheckedChange={v => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: v === true }))}
+                              className="mt-0.5 relative before:absolute before:content-[''] before:inset-y-0 before:-inset-x-3.5"
                             />
                             <span
                               className="text-caption"
@@ -1159,7 +1159,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             className="resize-none text-body"
                             style={{
                               borderRadius: 'var(--radius)',
-                              border: '1px solid var(--border)',
+                              border: BORDE_CAMPO,
                               backgroundColor: 'var(--input-background)',
                               color: 'var(--foreground)',
                               padding: '0.375rem 0.625rem',
@@ -1209,7 +1209,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         Confirmar N/A en dependientes
                       </Boton>
                       {reglaConflictos && reglaConflictos.length > 0 && (
-                        <button
+                        <Boton variante="secundario"
                           disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
                           onClick={async () => {
                             if (!reglaExplicacion.trim()) return
@@ -1227,11 +1227,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             } catch { /* handled */ }
                             finally { setAplicandoReglaId(null) }
                           }}
-                          className="flex-shrink-0 h-8 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-1.5 before:-inset-x-1"
+                          className="flex-shrink-0 gap-1"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                         >
                           Confirmar de todos modos
-                        </button>
+                        </Boton>
                       )}
                     </div>
                   </div>
@@ -1302,7 +1302,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           className="resize-none text-body"
                           style={{
                             borderRadius: 'var(--radius)',
-                            border: '1px solid var(--border)',
+                            border: BORDE_CAMPO,
                             backgroundColor: 'var(--input-background)',
                             color: 'var(--foreground)',
                             padding: '0.375rem 0.625rem',
@@ -1551,13 +1551,9 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <Boton onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
                   Confirmar
                 </Boton>
-                <button
-                  onClick={() => setAjusteOpen(false)}
-                  className="flex-1 h-9 rounded-lg text-small font-medium"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
+                <Boton variante="secundario" onClick={() => setAjusteOpen(false)} className="flex-1">
                   Cancelar
-                </button>
+                </Boton>
               </div>
             </div>
           )}
@@ -1818,7 +1814,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 className="resize-none text-body"
                 style={{
                   borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
+                  border: BORDE_CAMPO,
                   backgroundColor: bloqueado ? 'var(--muted)' : 'var(--input-background)',
                   color: 'var(--foreground)',
                   padding: '0.375rem 0.625rem',

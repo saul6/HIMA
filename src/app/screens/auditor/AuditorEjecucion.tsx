@@ -40,6 +40,7 @@ import { fechaCorta, fechaHora, formatoPct, formatRango } from '@/lib/formato'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { NavegadorAgrupado, estadoDestino } from './NavegadorPreguntas'
 import type { ModuloNavegador } from './NavegadorPreguntas'
+import { BORDE_CAMPO } from './estilosCampo'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -555,7 +556,7 @@ function PanelValidacion({
                               style={{
                                 width: '100%', height: '2rem',
                                 borderRadius: 'var(--radius)',
-                                border: '1px solid var(--border)',
+                                border: BORDE_CAMPO,
                                 backgroundColor: 'var(--input-background)',
                                 color: 'var(--foreground)',
                                 padding: '0 0.625rem',
@@ -1024,7 +1025,7 @@ function PanelHallazgos({
                         disabled={!canWriteNC}
                         className="text-small h-11 rounded-lg px-2 disabled:opacity-50"
                         style={{
-                          border: '1px solid var(--border)',
+                          border: BORDE_CAMPO,
                           backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
                           color: 'var(--foreground)',
                         }}
@@ -2371,7 +2372,7 @@ export function AuditorEjecucion() {
                   value={formHallazgoClas}
                   onChange={e => setFormHallazgoClas(e.target.value as AudHallazgoClasificacion)}
                   className="h-10 rounded-xl px-3 text-sm"
-                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                  style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                 >
                   <option value="menor">Menor</option>
                   <option value="mayor">Mayor</option>
@@ -2394,7 +2395,7 @@ export function AuditorEjecucion() {
                   className="resize-none text-sm"
                   style={{
                     borderRadius: 'var(--radius)',
-                    border: '1px solid var(--border)',
+                    border: BORDE_CAMPO,
                     backgroundColor: 'var(--input-background)',
                     color: 'var(--foreground)',
                     padding: '0.5rem 0.75rem',
@@ -2442,7 +2443,7 @@ export function AuditorEjecucion() {
                   value={formAccion.internal_status ?? 'REGISTERED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
                   className="h-10 rounded-xl px-3 text-sm w-full"
-                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                  style={{ border: BORDE_CAMPO, backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 >
                   {(Object.keys(INTERNAL_STATUS_LABELS) as AudInternalStatus[]).map(k => (
                     <option key={k} value={k}>{INTERNAL_STATUS_LABELS[k]}</option>
@@ -2459,7 +2460,7 @@ export function AuditorEjecucion() {
                   value={formAccion.external_status ?? 'NOT_TRACKED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, external_status: e.target.value as AudExternalStatus }))}
                   className="h-10 rounded-xl px-3 text-sm w-full"
-                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                  style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                 >
                   {(Object.keys(EXTERNAL_STATUS_LABELS) as AudExternalStatus[]).map(k => (
                     <option key={k} value={k}>{EXTERNAL_STATUS_LABELS[k]}</option>
@@ -2476,7 +2477,7 @@ export function AuditorEjecucion() {
                     onChange={e => setFormAccion(prev => ({ ...prev, owner_external_party: e.target.value || null }))}
                     placeholder="Nombre de la persona u organismo responsable"
                     className="h-10 rounded-xl px-3 text-sm"
-                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                    style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                   />
                 )}
               </Campo>
@@ -2501,7 +2502,7 @@ export function AuditorEjecucion() {
                       className="resize-none text-sm"
                       style={{
                         borderRadius: 'var(--radius)',
-                        border: '1px solid var(--border)',
+                        border: BORDE_CAMPO,
                         backgroundColor: 'var(--input-background)',
                         color: 'var(--foreground)',
                         padding: '0.5rem 0.75rem',
@@ -2623,7 +2624,7 @@ export function AuditorEjecucion() {
                               value={formResultado.observed_status}
                               onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
                               className="h-9 rounded-lg px-2 text-xs"
-                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                              style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                             >
                               {(Object.keys(OBSERVED_STATUS_LABELS) as AudExternalObservedStatus[]).map(k => (
                                 <option key={k} value={k}>{OBSERVED_STATUS_LABELS[k]}</option>
@@ -2638,7 +2639,7 @@ export function AuditorEjecucion() {
                               value={formResultado.observed_at}
                               onChange={e => setFormResultado(p => ({ ...p, observed_at: e.target.value }))}
                               className="h-9 rounded-lg px-2 text-xs"
-                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                              style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                             />
                           )}
                         </Campo>
@@ -2650,7 +2651,7 @@ export function AuditorEjecucion() {
                               onChange={e => setFormResultado(p => ({ ...p, external_audit_id: e.target.value }))}
                               placeholder="Ej. AZZ-2024-00123"
                               className="h-9 rounded-lg px-2 text-xs"
-                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                              style={{ border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                             />
                           )}
                         </Campo>
@@ -2666,7 +2667,7 @@ export function AuditorEjecucion() {
                                 onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
                                 rows={2}
                                 className="resize-none text-xs"
-                                style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                                style={{ borderRadius: 'var(--radius)', border: BORDE_CAMPO, backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
                               />
                             )}
                           </Campo>
@@ -2899,7 +2900,7 @@ export function AuditorEjecucion() {
                       value={incDesde}
                       onChange={e => setIncDesde(e.target.value)}
                       className="h-9 rounded-lg px-2 text-xs"
-                      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                      style={{ border: BORDE_CAMPO, backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                     />
                   )}
                 </Campo>
@@ -2910,7 +2911,7 @@ export function AuditorEjecucion() {
                       value={incHasta}
                       onChange={e => setIncHasta(e.target.value)}
                       className="h-9 rounded-lg px-2 text-xs"
-                      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                      style={{ border: BORDE_CAMPO, backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                     />
                   )}
                 </Campo>
@@ -2925,7 +2926,7 @@ export function AuditorEjecucion() {
                   onKeyDown={e => { if (e.key === 'Enter') handleBuscarIncidencias() }}
                   placeholder="Buscar por descripción…"
                   className="h-11 rounded-lg px-3 text-xs flex-1"
-                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                  style={{ border: BORDE_CAMPO, backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
                 <Boton onClick={handleBuscarIncidencias} cargando={incBuscando} className="flex-shrink-0">
                   Buscar

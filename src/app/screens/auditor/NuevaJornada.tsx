@@ -16,6 +16,7 @@ import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { BORDE_CAMPO } from './estilosCampo'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
@@ -299,7 +300,7 @@ export function NuevaJornada() {
             className="w-full text-sm"
             style={{
               borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
+              border: BORDE_CAMPO,
               backgroundColor: 'var(--input-background)',
               color: 'var(--foreground)',
               padding: '0.5rem 0.75rem',
