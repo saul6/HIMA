@@ -143,7 +143,7 @@ function PendientesPanel({
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {pendientesDest.length} sin responder
                   {herenciasDest.length > 0 ? ` · ${herenciasDest.length} por confirmar` : ''}
-                  {op.issues_abiertos > 0 ? ` · ${op.issues_abiertos} revisión` : ''}
+                  {op.issues_abiertos > 0 ? ` · ${op.issues_abiertos} por revisar` : ''}
                 </p>
               </div>
               <button
