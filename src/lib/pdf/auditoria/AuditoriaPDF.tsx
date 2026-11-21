@@ -299,7 +299,7 @@ const dTitulo = { fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, 
 
 function DetalleCampo({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
-    <View style={{ marginBottom: 5 }}>
+    <View style={{ marginBottom: 5 }} wrap={false}>
       <Text style={dEtiqueta}>{etiqueta}</Text>
       <Text style={dValor} hyphenationCallback={partirPalabraLarga}>{valor}</Text>
     </View>
