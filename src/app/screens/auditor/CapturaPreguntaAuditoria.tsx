@@ -31,6 +31,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { DUR, EASE_OUT } from '@/lib/motion'
 import { BORDE_CAMPO } from './estilosCampo'
+import { Checkbox } from '@/app/components/ui/checkbox'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -1124,12 +1125,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         <p className="text-small font-medium" style={{ color: 'var(--foreground)' }}>Confirmar condiciones:</p>
                         {regla.condiciones.map(cond => (
                           <label key={cond.clave} className="flex items-start gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               checked={reglaConfirmaciones[cond.clave] ?? false}
-                              onChange={e => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: e.target.checked }))}
-                              className="mt-0.5 flex-shrink-0"
-                              style={{ accentColor: 'var(--primary)' }}
+                              onCheckedChange={v => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: v === true }))}
+                              className="mt-0.5 relative before:absolute before:content-[''] before:-inset-3.5"
                             />
                             <span
                               className="text-caption"
