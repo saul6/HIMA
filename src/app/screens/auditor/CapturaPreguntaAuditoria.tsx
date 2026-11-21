@@ -30,6 +30,7 @@ import { textoEstadoNc, textoLimpio } from './estados'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { BORDE_CAMPO } from './estilosCampo'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -147,7 +148,7 @@ function CampoEsquema({
     borderRadius: 'var(--radius)',
     border: herenciaEstado
       ? '1.5px dashed var(--agro-blue)'
-      : '1px solid var(--border)',
+      : BORDE_CAMPO,
     backgroundColor: disabled ? 'var(--muted)' : 'var(--input-background)',
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
@@ -1159,7 +1160,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             className="resize-none text-body"
                             style={{
                               borderRadius: 'var(--radius)',
-                              border: '1px solid var(--border)',
+                              border: BORDE_CAMPO,
                               backgroundColor: 'var(--input-background)',
                               color: 'var(--foreground)',
                               padding: '0.375rem 0.625rem',
@@ -1302,7 +1303,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           className="resize-none text-body"
                           style={{
                             borderRadius: 'var(--radius)',
-                            border: '1px solid var(--border)',
+                            border: BORDE_CAMPO,
                             backgroundColor: 'var(--input-background)',
                             color: 'var(--foreground)',
                             padding: '0.375rem 0.625rem',
@@ -1818,7 +1819,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 className="resize-none text-body"
                 style={{
                   borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
+                  border: BORDE_CAMPO,
                   backgroundColor: bloqueado ? 'var(--muted)' : 'var(--input-background)',
                   color: 'var(--foreground)',
                   padding: '0.375rem 0.625rem',
