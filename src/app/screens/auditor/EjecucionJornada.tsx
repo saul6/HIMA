@@ -94,8 +94,8 @@ function OperacionChip({ op, activa, onClick }: {
             </span>
           )}
           {op.issues_abiertos > 0 && (
-            <span style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
-              {op.issues_abiertos} {op.issues_abiertos === 1 ? 'revisión' : 'revisiones'}
+            <span style={{ color: activa ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }}>
+              {op.issues_abiertos} por revisar
             </span>
           )}
         </div>
