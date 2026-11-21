@@ -1617,6 +1617,7 @@ export function AuditorEjecucion() {
     setDescargando(true)
     try {
       await generarAuditorReportePDF({ auditoria })
+      toast.success('Reporte PDF descargado')
     } catch (e: unknown) {
       console.error('[AuditorEjecucion] generarAuditorReportePDF:', e)
       toast.error('No se pudo generar el PDF. Reintenta.')

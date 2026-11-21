@@ -373,7 +373,7 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `reporte-auditoria-${auditoria.fecha}.pdf`
+  a.download = `reporte-auditoria-${auditoria.fecha}-${aid.slice(0, 8).toUpperCase()}.pdf`
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
