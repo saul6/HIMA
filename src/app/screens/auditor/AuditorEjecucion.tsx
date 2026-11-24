@@ -2527,6 +2527,7 @@ export function AuditorEjecucion() {
                   preguntaId={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.pregunta_id ?? null}
                   criterionCode={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.criterion_code ?? null}
                   ranchoId={auditoria.rancho_id ?? null}
+                  abiertoInicial
                 />
               )}
 
@@ -2997,6 +2998,7 @@ export function AuditorEjecucion() {
                 preguntaId={sheetEvidenciaHallazgo.preguntaId}
                 criterionCode={sheetEvidenciaHallazgo.criterionCode}
                 ranchoId={auditoria.rancho_id ?? null}
+                abiertoInicial
               />
             )}
           </div>
