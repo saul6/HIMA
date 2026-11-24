@@ -1805,6 +1805,20 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           <Campo etiqueta="Observación del auditor" className="gap-1" claseEtiqueta="text-caption font-medium">
             {({ id }) => (
               <TextareaContador id={id} limite={limiteTexto('aud_observaciones', 'observacion')}
+                indicador={<>
+                  {saveStatus === 'saving' && (
+                    <>
+                      <Loader aria-hidden="true" size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+                      <span className="text-small" style={{ color: 'var(--muted-foreground)' }}>Guardando…</span>
+                    </>
+                  )}
+                  {saveStatus === 'saved' && (
+                    <>
+                      <CheckCircle aria-hidden="true" size={12} className="flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
+                      <span className="text-small" style={{ color: 'var(--agro-success-text)' }}>Guardado</span>
+                    </>
+                  )}
+                </>}
                 value={observacion}
                 onChange={e => handleObservacion(preguntaId, e.target.value)}
                 onBlur={() => scheduleBlurSave(preguntaId)}
@@ -1831,20 +1845,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           )}
 
           {/* ── Estado de guardado ── */}
-          <div className="flex items-center gap-2 min-h-[18px]">
-            {saveStatus === 'saving' && (
-              <>
-                <Loader aria-hidden="true" size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
-                <span className="text-small" style={{ color: 'var(--muted-foreground)' }}>Guardando…</span>
-              </>
-            )}
-            {saveStatus === 'saved' && (
-              <>
-                <CheckCircle aria-hidden="true" size={12} className="flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
-                <span className="text-small" style={{ color: 'var(--agro-success-text)' }}>Guardado</span>
-              </>
-            )}
-            {saveStatus === 'error' && (
+          {saveStatus === 'error' && (
+            <div className="flex items-center gap-2">
               <div className="field-error-shake flex items-center gap-2 w-full">
                 <span className="flex items-center gap-1 text-small flex-1 min-w-0" style={{ color: 'var(--agro-danger-text)' }}>
                   <XCircle aria-hidden="true" size={12} className="flex-shrink-0" />
@@ -1859,8 +1861,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   Reintentar
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* ── Hallazgos ── */}
           {!pregunta.es_cualitativa &&

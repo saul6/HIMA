@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Outlet, useLocation, useMatches, Link } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Outlet, useLocation, useMatches, useNavigationType, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, FileCheck2, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff, Receipt } from "lucide-react";
 import { useChkEsCliente } from "@/hooks/useChecklistV2";
@@ -104,6 +104,25 @@ export function Layout() {
   const claveTransicion =
     [...matches].reverse().find(m => !(m.handle as { ventana?: boolean } | undefined)?.ventana)?.pathname ??
     location.pathname;
+  // Scroll del contenedor del contenido: pantalla nueva (PUSH/REPLACE) abre arriba; Atrás/Adelante (POP)
+  // devuelve la posición que tenía esa entrada del historial. Depende de la pantalla de fondo
+  // (`claveTransicion`), así que las rutas tipo ventana y los cambios de hash/búsqueda no lo mueven.
+  const navType = useNavigationType();
+  const contenidoRef = useRef<HTMLDivElement>(null);
+  const posicionesScroll = useRef(new Map<string, { top: number; alto: number }>());
+  const claveEntrada = useRef(location.key);
+  useEffect(() => {
+    claveEntrada.current = location.key;
+    const el = contenidoRef.current;
+    if (!el) return;
+    if (navType === 'POP') {
+      const y = posicionesScroll.current.get(location.key)?.top;
+      if (y !== undefined) requestAnimationFrame(() => el.scrollTo({ top: y, behavior: 'instant' }));
+      return;
+    }
+    el.scrollTo({ top: 0, behavior: 'instant' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [claveTransicion]);
   const { profile } = useAuthContext();
   const { modulos, loading: loadingModulos, terminosSitio } = useModulosContext();
   const { busqueda, setBusqueda } = useHomeSearch();
@@ -418,7 +437,17 @@ export function Layout() {
         </header>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto">
+        <div
+          ref={contenidoRef}
+          onScroll={e => {
+            // Si el contenido se acortó y el scroll solo quedó recortado al máximo, no es una posición del usuario.
+            const el = e.currentTarget;
+            const previa = posicionesScroll.current.get(claveEntrada.current);
+            if (previa && el.scrollHeight < previa.alto && el.scrollTop >= el.scrollHeight - el.clientHeight - 1) return;
+            posicionesScroll.current.set(claveEntrada.current, { top: el.scrollTop, alto: el.scrollHeight });
+          }}
+          className="flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+        >
           <AvisoVentana72h />
           <motion.div
             key={claveTransicion}
