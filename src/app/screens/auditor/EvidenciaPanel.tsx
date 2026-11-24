@@ -76,15 +76,18 @@ interface Props {
   preguntaId?: string | null
   criterionCode?: string | null
   ranchoId?: string | null
+  /** Abre el acordeón al montar (útil dentro de un sheet). */
+  abiertoInicial?: boolean
 }
 
 export function EvidenciaPanel({
   entityType, entityId, orgId, auditoriaId, cerrada,
   hallazgoId, instanciaId: _instanciaId, accionId,
-  preguntaId, criterionCode, ranchoId,
+  preguntaId, criterionCode, ranchoId, abiertoInicial = false,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
   const archivosId = useId()
+  const archivosRef = useRef<HTMLInputElement>(null)
   const cuerpoId = useId()
   const subirId = useId()
   const gatewayId = useId()
@@ -94,7 +97,7 @@ export function EvidenciaPanel({
   const canUpload    = cargandoPermisos || can('evidence.upload')
   const canModuleRead = cargandoPermisos || can('module_record.read')
 
-  const [abierto, setAbierto] = useState(false)
+  const [abierto, setAbierto] = useState(abiertoInicial)
   const [showUpload, setShowUpload] = useState(false)
   const [showGateway, setShowGateway] = useState(false)
   const [showFallback, setShowFallback] = useState(!preguntaId)
@@ -365,10 +368,26 @@ export function EvidenciaPanel({
           {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
               {canUpload && (
-                <Boton aria-expanded={showUpload} aria-controls={subirId} onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
-                  <Upload aria-hidden="true" size={12} />
-                  Subir evidencia
-                </Boton>
+                <>
+                  <input
+                    ref={archivosRef}
+                    id={archivosId}
+                    type="file"
+                    multiple
+                    hidden
+                    aria-label="Archivos de evidencia (puedes elegir varios)"
+                    accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
+                    onChange={e => {
+                      const elegidos = Array.from(e.target.files ?? [])
+                      if (elegidos.length > 0) { setUploadFiles(elegidos); setShowUpload(true) }
+                      e.target.value = ''
+                    }}
+                  />
+                  <Boton onClick={() => { setShowGateway(false); archivosRef.current?.click() }}>
+                    <Upload aria-hidden="true" size={12} />
+                    Subir evidencia
+                  </Boton>
+                </>
               )}
               {canLink && (
                 <Boton variante="secundario"
@@ -415,29 +434,15 @@ export function EvidenciaPanel({
                   />
                 )}
               </Campo>
-              <div className="flex flex-col gap-1">
-                <label htmlFor={archivosId} className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Archivos <span aria-hidden="true" style={{ color: 'var(--agro-red)' }}>*</span><span className="sr-only"> obligatorio</span> (puedes elegir varios)
-                </label>
-                <input
-                  id={archivosId}
-                  type="file"
-                  multiple
-                  accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
-                  onChange={e => setUploadFiles(Array.from(e.target.files ?? []))}
-                  className="text-caption"
-                  style={{ color: 'var(--foreground)' }}
-                />
-                {uploadFiles.length > 0 && (
-                  <ul className="text-caption flex flex-col gap-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                    {uploadFiles.map((f, i) => (
-                      <li key={`${f.name}-${i}`}>{f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              {uploadFiles.length > 0 && (
+                <ul className="text-caption flex flex-col gap-0.5" aria-label="Archivos elegidos" style={{ color: 'var(--muted-foreground)' }}>
+                  {uploadFiles.map((f, i) => (
+                    <li key={`${f.name}-${i}`} className="break-all">{f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
+                  ))}
+                </ul>
+              )}
               <Boton onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
-                {uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
+                {uploadFiles.length > 1 ? `Confirmar ${uploadFiles.length} evidencias` : 'Confirmar evidencia'}
               </Boton>
               <p role="status" className="text-small min-h-4 -mt-1" style={{ color: 'var(--muted-foreground)' }}>
                 {subiendo ? `Subiendo ${progresoSubida ? Math.min(progresoSubida.hechas + 1, progresoSubida.total) : 1} de ${progresoSubida?.total ?? uploadFiles.length}…` : ''}
@@ -461,6 +466,12 @@ export function EvidenciaPanel({
                 const asset = uso.aud_evidencia
                 return (
                   <div key={uso.id} className="px-4 py-3 flex flex-col gap-1.5">
+                    {esAsset && (
+                      <p className="text-xs font-semibold break-words" style={{ color: 'var(--foreground)' }}>
+                        {asset?.evidencia_tipo ? TIPO_LABELS[asset.evidencia_tipo] : 'Archivo de evidencia'}
+                        {asset?.created_at ? ` · ${fechaCorta(asset.created_at)}` : ''}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className="text-caption font-bold px-1.5 py-0.5 rounded-full"
@@ -471,11 +482,6 @@ export function EvidenciaPanel({
                       >
                         {esAsset ? 'Carga externa' : `M.A.D.Y. · ${snap?.source_module_code ?? '?'}`}
                       </span>
-                      {asset?.evidencia_tipo && (
-                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                          {TIPO_LABELS[asset.evidencia_tipo]}
-                        </span>
-                      )}
                       {asset?.documento_codigo && (
                         <span className="text-caption font-mono" style={{ color: 'var(--foreground)' }}>
                           {asset.documento_codigo}

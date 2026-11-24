@@ -2357,14 +2357,8 @@ export function AuditorEjecucion() {
       {confirmarElemento}
 
       {/* Sheet: Crear hallazgo */}
-      <BottomSheet open={!!sheetHallazgo} onClose={() => setSheetHallazgo(null)}>
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Registrar hallazgo</h2>
-            <button aria-label="Cerrar" onClick={() => setSheetHallazgo(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle aria-hidden="true" size={20} />
-            </button>
-          </div>
+      <BottomSheet open={!!sheetHallazgo} onClose={() => setSheetHallazgo(null)} title="Registrar hallazgo">
+        <div className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
             <Campo etiqueta="Clasificación" className="gap-1" claseEtiqueta="text-caption font-medium">
               {({ id }) => (
@@ -2425,7 +2419,7 @@ export function AuditorEjecucion() {
               )}
             </div>
             <button aria-label="Cerrar" onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle aria-hidden="true" size={20} />
+              <X aria-hidden="true" size={20} />
             </button>
           </div>
 
@@ -2533,6 +2527,7 @@ export function AuditorEjecucion() {
                   preguntaId={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.pregunta_id ?? null}
                   criterionCode={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.criterion_code ?? null}
                   ranchoId={auditoria.rancho_id ?? null}
+                  abiertoInicial
                 />
               )}
 
@@ -3003,6 +2998,7 @@ export function AuditorEjecucion() {
                 preguntaId={sheetEvidenciaHallazgo.preguntaId}
                 criterionCode={sheetEvidenciaHallazgo.criterionCode}
                 ranchoId={auditoria.rancho_id ?? null}
+                abiertoInicial
               />
             )}
           </div>

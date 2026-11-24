@@ -18,10 +18,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/app/components/ui/dropdown-menu'
-import {
-  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
-  AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
-} from '@/app/components/ui/alert-dialog'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
@@ -253,6 +250,7 @@ export function EjecucionJornada() {
 
   const [panelPendientes, setPanelPendientes] = useState(false)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const { confirmar, confirmarElemento } = useConfirmar()
   const [confirmTerminar, setConfirmTerminar] = useState(false)
   const [confirmRetirar, setConfirmRetirar] = useState<string | null>(null)
   const [terminando, setTerminando] = useState(false)
@@ -446,6 +444,25 @@ export function EjecucionJornada() {
 
   // ── Acciones de jornada ──
 
+  // Escritorio: misma confirmación que la Auditoría (useConfirmar); el celular conserva la suya en línea.
+  async function pedirRetirar(auditoriaId: string) {
+    const ok = await confirmar({
+      titulo: `¿Quitar "${operacionActiva?.operacion}"?`,
+      descripcion: 'La auditoría no se modifica.',
+      textoConfirmar: 'Confirmar',
+    })
+    if (ok) handleRetirar(auditoriaId)
+  }
+
+  async function pedirTerminar() {
+    const ok = await confirmar({
+      titulo: '¿Terminar la jornada?',
+      descripcion: 'Las auditorías no se cierran; puedes seguir editándolas individualmente.',
+      textoConfirmar: 'Terminar jornada',
+    })
+    if (ok) handleTerminar()
+  }
+
   async function handleTerminar() {
     if (!jornadaId || terminando) return
     setTerminando(true)
@@ -584,13 +601,13 @@ export function EjecucionJornada() {
                     Agregar operación
                   </DropdownMenuItem>
                   {auditoriaActiva && (
-                    <DropdownMenuItem onSelect={() => setConfirmRetirar(auditoriaActiva)}>
+                    <DropdownMenuItem onSelect={() => pedirRetirar(auditoriaActiva)}>
                       <Minus aria-hidden="true" />
                       <span className="truncate">Quitar "{operacionActiva?.operacion}" de la jornada</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => setConfirmTerminar(true)}>
+                  <DropdownMenuItem variant="destructive" onSelect={() => pedirTerminar()}>
                     <XCircle aria-hidden="true" />
                     Terminar jornada
                   </DropdownMenuItem>
@@ -880,45 +897,8 @@ export function EjecucionJornada() {
         </BottomSheet>
       )}
 
-      {/* ── Confirmaciones del menú en escritorio (mismos handlers que en celular) ── */}
-      {esEscritorio && (
-        <>
-          <AlertDialog open={confirmRetirar !== null} onOpenChange={o => { if (!o && !retirando) setConfirmRetirar(null) }}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Quitar "{operacionActiva?.operacion}"?</AlertDialogTitle>
-                <AlertDialogDescription>La auditoría no se modifica.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={retirando}
-                  onClick={e => { e.preventDefault(); if (confirmRetirar) handleRetirar(confirmRetirar) }}
-                >
-                  {retirando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <AlertDialog open={confirmTerminar} onOpenChange={o => { if (!o && !terminando) setConfirmTerminar(false) }}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Terminar la jornada?</AlertDialogTitle>
-                <AlertDialogDescription>Las auditorías no se cierran; puedes seguir editándolas individualmente.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={terminando}
-                  onClick={e => { e.preventDefault(); handleTerminar() }}
-                >
-                  {terminando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      )}
+      {/* Confirmaciones del menú en escritorio */}
+      {confirmarElemento}
 
       {/* ── Panel de pendientes ── */}
       {panelPendientes && detalle && (
