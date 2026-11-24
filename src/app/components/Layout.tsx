@@ -440,7 +440,7 @@ export function Layout() {
         <div
           ref={contenidoRef}
           onScroll={e => posicionesScroll.current.set(claveEntrada.current, e.currentTarget.scrollTop)}
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto [scrollbar-gutter:stable]"
         >
           <AvisoVentana72h />
           <motion.div
