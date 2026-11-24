@@ -28,9 +28,11 @@ export function usePreguntaActiva(ids: string[], refLeerVar: RefObject<HTMLEleme
       .filter((par): par is readonly [string, HTMLElement] => par[1] !== null)
     if (elementos.length === 0) return
 
-    const altoHeader = parseFloat(
+    // Se lee en cada cálculo: el padre publica `--alto-header` después de montar este efecto (vale 0 al inicio).
+    const leerAltoHeader = () => parseFloat(
       refLeerVar.current ? getComputedStyle(refLeerVar.current).getPropertyValue('--alto-header') : '',
     ) || 0
+    const altoHeader = leerAltoHeader()
     const porElemento = new Map<Element, string>(elementos.map(([id, el]) => [el, id]))
     const visibles = new Set<Element>()
 
@@ -44,8 +46,9 @@ export function usePreguntaActiva(ids: string[], refLeerVar: RefObject<HTMLEleme
     function calcular() {
       if (forzada) { setActiva(prev => (prev === forzada ? prev : forzada)); return }
       const rect = root ? root.getBoundingClientRect() : { top: 0, height: window.innerHeight }
-      const areaTop = rect.top + altoHeader
-      const areaAlto = rect.height - altoHeader
+      const alto = leerAltoHeader()
+      const areaTop = rect.top + alto
+      const areaAlto = rect.height - alto
       const restante = root
         ? root.scrollHeight - root.scrollTop - root.clientHeight
         : document.documentElement.scrollHeight - window.scrollY - window.innerHeight
