@@ -109,14 +109,14 @@ export function Layout() {
   // (`claveTransicion`), así que las rutas tipo ventana y los cambios de hash/búsqueda no lo mueven.
   const navType = useNavigationType();
   const contenidoRef = useRef<HTMLDivElement>(null);
-  const posicionesScroll = useRef(new Map<string, number>());
+  const posicionesScroll = useRef(new Map<string, { top: number; alto: number }>());
   const claveEntrada = useRef(location.key);
   useEffect(() => {
     claveEntrada.current = location.key;
     const el = contenidoRef.current;
     if (!el) return;
     if (navType === 'POP') {
-      const y = posicionesScroll.current.get(location.key);
+      const y = posicionesScroll.current.get(location.key)?.top;
       if (y !== undefined) requestAnimationFrame(() => el.scrollTo({ top: y, behavior: 'instant' }));
       return;
     }
@@ -439,7 +439,13 @@ export function Layout() {
         {/* Scrollable content area */}
         <div
           ref={contenidoRef}
-          onScroll={e => posicionesScroll.current.set(claveEntrada.current, e.currentTarget.scrollTop)}
+          onScroll={e => {
+            // Si el contenido se acortó y el scroll solo quedó recortado al máximo, no es una posición del usuario.
+            const el = e.currentTarget;
+            const previa = posicionesScroll.current.get(claveEntrada.current);
+            if (previa && el.scrollHeight < previa.alto && el.scrollTop >= el.scrollHeight - el.clientHeight - 1) return;
+            posicionesScroll.current.set(claveEntrada.current, { top: el.scrollTop, alto: el.scrollHeight });
+          }}
           className="flex-1 overflow-y-auto [scrollbar-gutter:stable]"
         >
           <AvisoVentana72h />
