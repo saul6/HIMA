@@ -156,6 +156,18 @@ function TarjetaResumen({ label, valor, sub }: { label: string; valor: React.Rea
 
 // ── Pestaña Productividad ─────────────────────────────────────────────────────
 
+/** Aviso para el encargado cuando la organización limita la vista a su equipo. */
+function AvisoEquipo() {
+  return (
+    <p
+      className="mx-4 mt-4 rounded-xl px-4 py-3 text-xs"
+      style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+    >
+      Estas métricas son de ti y de los operarios de tu equipo.
+    </p>
+  )
+}
+
 function TabProductividad({
   datos,
   modulos,
@@ -170,6 +182,8 @@ function TabProductividad({
   const reducedMotion = useReducedMotion()
   const colaboradores = datos.colaboradores ?? []
   if (colaboradores.length === 0) return <Vacio />
+  // Encargado con equipo limitado: ve los totales de su equipo como un admin ve los de la organización
+  const vistaEquipo = esAdmin || datos.es_encargado === true
 
   const maxCapturas = Math.max(...colaboradores.map(c => c.capturas), 1)
   const totalCol = datos.total_colaboradores ?? colaboradores.length
@@ -187,9 +201,10 @@ function TabProductividad({
 
   return (
     <div className="space-y-4 pb-8">
+      {datos.es_encargado && <AvisoEquipo />}
       {/* Tarjetas resumen */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
-        {esAdmin ? (
+        {vistaEquipo ? (
           <>
             <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
               <TarjetaResumen
@@ -440,6 +455,7 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
 
   return (
     <div className="space-y-3 px-4 pt-4 pb-8">
+      {datos.es_encargado && <AvisoEquipo />}
       {colaboradores.map((c, i) => {
         const pctATiempo = c.cerradas > 0 ? (c.a_tiempo / c.cerradas) * 100 : null
         return (
