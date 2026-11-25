@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
 import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
+import { useEquipoPendientes } from '@/hooks/useEquipoPendientes'
 import { useAgendaResumen } from '@/hooks/useAgendaResumen'
 import { useMisVouchers } from '@/hooks/useNomina'
 import { estadoPagoTexto, formatoMoneda, rangoSemana } from '@/lib/nomina/formato'
@@ -510,6 +511,7 @@ export function Home() {
   }, [obligatoria, profile?.id])
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
+  const { datos: pendientesEquipo } = useEquipoPendientes()
   const { resumen: agendaResumen } = useAgendaResumen()
   const { datos: misVouchers } = useMisVouchers()
   const voucherReciente = [...misVouchers].sort((a, b) => b.inicio.localeCompare(a.inicio))[0]
@@ -878,6 +880,42 @@ export function Home() {
             </div>
           </div>
         )}
+
+        {/* Pendientes de mi equipo — solo encargado con el interruptor de equipo prendido */}
+        {!loading && pendientesEquipo && (() => {
+          const p = pendientesEquipo.resumen
+          const filas = [
+            { etiqueta: 'Por corregir', valor: p.por_corregir },
+            { etiqueta: 'Sin verificar', valor: p.sin_verificar },
+            { etiqueta: 'Sin firma', valor: p.sin_firma },
+            { etiqueta: 'Tareas atrasadas', valor: p.tareas_atrasadas },
+          ]
+          if (filas.every(f => f.valor === 0)) return null
+          return (
+            <Link
+              to="/equipo/actividad"
+              className={`hover-lift rounded-xl overflow-hidden border block ${FOCUS_RING}`}
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <div className="px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+                <span className="text-sm font-semibold" style={{ color: 'var(--agro-info-text)' }}>
+                  Pendientes de mi equipo
+                </span>
+                <span className="text-xs ml-2" style={{ color: 'var(--agro-info-text)' }}>
+                  últimos {pendientesEquipo.dias} días
+                </span>
+              </div>
+              <div className="bg-card grid grid-cols-2 gap-px">
+                {filas.map(f => (
+                  <div key={f.etiqueta} className="px-4 py-3">
+                    <p className="text-xs text-muted-foreground">{f.etiqueta}</p>
+                    <p className="text-sm font-semibold tabular-nums text-foreground">{f.valor}</p>
+                  </div>
+                ))}
+              </div>
+            </Link>
+          )
+        })()}
 
         {/* Banner agenda de tareas */}
         {agendaResumen && !loading && (
