@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { mensajeErrorBd } from '@/lib/erroresBd'
+import type { EquipoListado } from '@/hooks/useEquipo'
 
 export type FirmaEstado = 'firmado' | 'falta_verifico' | 'sin_firma'
 export type TipoActividad = 'registro' | 'jornada' | 'dia'
@@ -74,10 +75,12 @@ export function useActividadEquipo(filtros: FiltrosActividad) {
   const [empleados, setEmpleados] = useState<EmpleadoBasico[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [restringido, setRestringido] = useState(false)
 
   const { desde, hasta, usuario, modulo, rancho, solo } = filtros
   // Administrador y Encargado ven la actividad del equipo (solo lectura)
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico' || profile?.rol === 'super_admin'
+  const esEncargado = profile?.rol === 'asesor_tecnico'
 
   const cargar = useCallback(async () => {
     if (!profile?.org_id || !esAdmin) {
@@ -87,12 +90,35 @@ export function useActividadEquipo(filtros: FiltrosActividad) {
     setLoading(true)
     setError(null)
     try {
+      // Encargado con el interruptor prendido: el filtro de colaboradores es su equipo
+      // (equipo_listar), no toda la organización. Apagado, como siempre (profiles).
+      let equipoEncargado: EquipoListado | null = null
+      if (esEncargado) {
+        equipoEncargado = await (supabase as any)
+          .rpc('equipo_listar')
+          .then(({ data, error: err }: { data: EquipoListado | null; error: unknown }) => {
+            if (err) throw err
+            return data
+          })
+      }
+      const restringe = !!equipoEncargado?.restringir_encargados
+      setRestringido(restringe)
       const [empResult, actResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, nombre_completo')
-          .eq('org_id', profile.org_id)
-          .eq('activo', true),
+        restringe
+          ? Promise.resolve({
+              data: [
+                { id: profile.id, nombre_completo: profile.nombre_completo ?? 'Yo' },
+                ...(equipoEncargado!.encargados
+                  .find((e) => e.encargado_id === profile.id)
+                  ?.operarios.map((o) => ({ id: o.operario_id, nombre_completo: o.nombre })) ?? []),
+              ] as EmpleadoBasico[],
+              error: null,
+            })
+          : supabase
+              .from('profiles')
+              .select('id, nombre_completo')
+              .eq('org_id', profile.org_id)
+              .eq('activo', true),
         supabase.rpc('actividad_equipo', {
           p_desde: desde,
           p_hasta: hasta,
@@ -115,11 +141,11 @@ export function useActividadEquipo(filtros: FiltrosActividad) {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id, esAdmin, desde, hasta, usuario, modulo, rancho, solo])
+  }, [profile?.org_id, profile?.id, profile?.nombre_completo, esAdmin, esEncargado, desde, hasta, usuario, modulo, rancho, solo])
 
   useEffect(() => {
     cargar()
   }, [cargar])
 
-  return { items, resumen, totalFiltrado, truncado, empleados, loading, error, refetch: cargar }
+  return { items, resumen, totalFiltrado, truncado, empleados, restringido, loading, error, refetch: cargar }
 }
