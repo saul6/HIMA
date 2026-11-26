@@ -1,5 +1,5 @@
 import { useState, useEffect, useId, useRef } from 'react'
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { useParams, useNavigate, useLocation, useOutletContext, Navigate } from 'react-router'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -28,7 +28,9 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
   const location = useLocation()
   const { profile } = useAuthContext()
 
-  const orgNombre: string = (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa'
+  const empresa = useOutletContext<{ orgNombre?: string } | undefined>()
+  const orgNombre: string = empresa?.orgNombre
+    ?? (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa'
   const hoy = hoyMX()
 
   const [ranchos, setRanchos]                     = useState<RanchoItem[]>([])

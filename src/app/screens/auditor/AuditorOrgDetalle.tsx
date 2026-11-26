@@ -4,6 +4,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { fechaCorta } from '@/lib/formato'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
 import type { AuditorAuditoriaItem } from '@/hooks/useAuditorOrg'
+import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { Fab } from '@/app/components/Fab'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motion, useReducedMotion } from 'motion/react'
@@ -53,7 +54,10 @@ export function AuditorOrgDetalle() {
   const reducedMotion = useReducedMotion()
   const mostrarSkeleton = useMostrarCarga(loading, ranchos.length > 0 || auditorias.length > 0)
 
-  const nombreEmpresa = (location.state as { orgNombre?: string } | null)?.orgNombre
+  // El nombre sale de las asignaciones; el estado de navegación solo cubre la espera.
+  const { orgs } = useAuditorAsignaciones()
+  const nombreEmpresa = orgs.find(o => o.org_id === orgId)?.nombre
+    ?? (location.state as { orgNombre?: string } | null)?.orgNombre
   const orgNombre: string = nombreEmpresa ?? 'Empresa auditada'
 
   if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
@@ -149,7 +153,7 @@ export function AuditorOrgDetalle() {
       {/* FAB */}
             <Fab onClick={() => navigate(`/auditor/org/${orgId}/nueva`, { state: { orgNombre } })} aria-label="Nueva auditoría" />
 
-      <Outlet />
+      <Outlet context={{ orgNombre: nombreEmpresa }} />
     </div>
   )
 }
