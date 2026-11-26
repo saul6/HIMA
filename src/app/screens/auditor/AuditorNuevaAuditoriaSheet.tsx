@@ -1,9 +1,8 @@
-import { useState, useId } from 'react'
+import { useState, useId, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
-import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
@@ -14,6 +13,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { BORDE_CAMPO } from './estilosCampo'
+import { crearAuditoria, errorFechasVisita, finMaximoVisita, limitesInicioVisita, textoErrorCrear } from './crearAuditoria'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -40,9 +40,12 @@ const inputSt: React.CSSProperties = {
 export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   const idInicio = useId()
   const idFin = useId()
-  const { profile } = useAuthContext()
   const navigate = useNavigate()
   const hoy = hoyMX()
+  const limitesInicio = limitesInicioVisita()
+  // Un identificador por formulario abierto: un reintento usa el mismo.
+  const [solicitudId] = useState(() => crypto.randomUUID())
+  const enCurso = useRef(false)
 
   const reducedMotion = useReducedMotion()
   const [paso, setPaso] = useState<1 | 2>(1)
@@ -59,7 +62,6 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
 
   // Paso 2 — módulos
   const [modulos, setModulos] = useState<ModuloItem[]>([])
-  const [versionId, setVersionId] = useState<string | null>(null)
   const [cargandoModulos, setCargandoModulos] = useState(false)
   const mostrarSkeleton = useMostrarCarga(cargandoModulos, modulos.length > 0)
   const [modulosSel, setModulosSel] = useState<Set<string>>(new Set())
@@ -68,7 +70,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   async function handleSiguiente() {
     if (!nombre.trim()) { toast.warning('Escribe el nombre de la instalación'); return }
     if (!fechaInicio || !fechaFin) { toast.warning('Indica las fechas de visita'); return }
-    if (fechaFin < fechaInicio) { toast.warning('La fecha de fin debe ser igual o posterior al inicio'); return }
+    const errorFechas = errorFechasVisita(fechaInicio, fechaFin)
+    if (errorFechas) { toast.warning(errorFechas); return }
 
     if (modulos.length === 0 && !cargandoModulos) {
       setCargandoModulos(true)
@@ -77,7 +80,6 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           .select('id').eq('vigente', true).single()
         if (verErr) throw verErr
         const vid = verData.id as string
-        setVersionId(vid)
         const { data: modData, error: modErr } = await tbl('aud_modulos_norma')
           .select('id, nombre, orden').eq('version_id', vid).order('orden')
         if (modErr) throw modErr
@@ -104,75 +106,33 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
 
   async function handleCrear() {
     if (modulosSel.size === 0) { toast.warning('Selecciona al menos un módulo'); return }
-    if (!versionId || !profile?.org_id) return
+    if (enCurso.current) return
 
+    enCurso.current = true
     setGuardando(true)
-    let instId: string | null = null
     try {
-      // 1) instalación (dueño = auditor)
-      const { data: instData, error: e1 } = await tbl('aud_instalaciones').insert({
-        auditor_profile_id: profile.id,
-        certificadora_org_id: profile.org_id,
-        nombre: nombre.trim(),
-        ubicacion: ubicacion.trim() || null,
-        cultivo_producto: cultivoProducto.trim() || null,
-        tipo_operacion: tipoOperacion.trim() || null,
-        contacto: contacto.trim() || null,
-      }).select('id').single()
-      if (e1) throw e1
-      instId = (instData as { id: string }).id
-
-      // 2) auditoría (org_id = certificadora del auditor)
-      const { data: audData, error: e2 } = await tbl('aud_auditorias').insert({
-        org_id: profile.org_id,
-        version_id: versionId,
-        instalacion_id: instId,
-        rancho_id: null,
-        auditor_profile_id: profile.id,
-        certificadora_org_id: profile.org_id,
-        auditor_nombre: profile.nombre_completo ?? null,
-        fecha: hoyMX(),
-        estado: 'en_proceso',
-        creado_por: profile.id,
-        scoring_isolation_key: crypto.randomUUID(),
-      }).select('id').single()
-      if (e2) {
-        // evita instalación huérfana
-        await tbl('aud_instalaciones').delete().eq('id', instId)
-        throw e2
-      }
-      const auditoriaId = (audData as { id: string }).id
-
-      // 3) módulos elegidos
-      const filas = Array.from(modulosSel).map(mid => ({
-        org_id: profile.org_id,
-        auditoria_id: auditoriaId,
-        modulo_norma_id: mid,
-        aplicable: true,
-      }))
-      const { error: e3 } = await tbl('aud_auditoria_modulos').insert(filas)
-      if (e3) throw e3
-
-      // 4) evento de agenda — rango de visita
-      const { error: e4 } = await tbl('aud_agenda').insert({
-        auditor_profile_id: profile.id,
-        instalacion_id: instId,
-        auditoria_id: auditoriaId,
-        tipo: 'visita',
-        titulo: nombre.trim(),
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin,
+      const creada = await crearAuditoria({
+        p_solicitud_id: solicitudId,
+        p_modulos: Array.from(modulosSel),
+        p_visita_inicio: fechaInicio,
+        p_visita_fin: fechaFin,
+        p_instalacion_nueva: {
+          nombre: nombre.trim(),
+          ubicacion: ubicacion.trim(),
+          cultivo_producto: cultivoProducto.trim(),
+          tipo_operacion: tipoOperacion.trim(),
+          contacto: contacto.trim(),
+        },
       })
-      if (e4) console.error('[AuditorNuevaAuditoriaSheet] aud_agenda', e4)
-
       onCreated()
-      navigate(`/auditor/auditoria/${auditoriaId}`, {
-        state: { instalacionId: instId, instalacionNombre: nombre.trim() },
+      navigate(`/auditor/auditoria/${creada.auditoria_id}`, {
+        state: { instalacionId: creada.instalacion_id, instalacionNombre: nombre.trim() },
       })
     } catch (e) {
       console.error('[AuditorNuevaAuditoriaSheet]', e)
-      toast.error('No se pudo crear la auditoría. Reintenta.')
+      toast.error(textoErrorCrear(e))
     } finally {
+      enCurso.current = false
       setGuardando(false)
     }
   }
@@ -292,6 +252,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                   id={idInicio}
                   type="date"
                   value={fechaInicio}
+                  min={limitesInicio.min}
+                  max={limitesInicio.max}
                   onChange={e => {
                     setFechaInicio(e.target.value)
                     if (fechaFin < e.target.value) setFechaFin(e.target.value)
@@ -306,6 +268,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                   type="date"
                   value={fechaFin}
                   min={fechaInicio}
+                  max={finMaximoVisita(fechaInicio)}
                   onChange={e => setFechaFin(e.target.value)}
                   style={inputSt}
                 />
