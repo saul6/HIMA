@@ -369,11 +369,19 @@ export function EjecucionJornada() {
 
   // ── Derivados ──
 
-  const modulos = useMemo(() => [...new Set(preguntas.map(p => p.modulo))], [preguntas])
+  // Módulos de la operación activa (no de toda la jornada).
+  const modulos = useMemo(() => {
+    const deLaOperacion = auditoriaActiva
+      ? preguntas.filter(p => p.destinos.some(d => d.auditoria_id === auditoriaActiva))
+      : preguntas
+    return [...new Set(deLaOperacion.map(p => p.modulo))]
+  }, [preguntas, auditoriaActiva])
+  // Si el módulo elegido no es de esta operación, se muestra el primero que sí lo es.
+  const moduloVisible = moduloActivo && modulos.includes(moduloActivo) ? moduloActivo : modulos[0] ?? null
 
   const preguntasFiltradas = useMemo(() => {
     let base = preguntas
-    if (moduloActivo) base = base.filter(p => p.modulo === moduloActivo)
+    if (moduloVisible) base = base.filter(p => p.modulo === moduloVisible)
     if (filtro === 'comunes') base = base.filter(p => p.destinos.length > 1)
     if (filtro === 'pendientes' && auditoriaActiva) {
       base = base.filter(p => {
@@ -382,7 +390,7 @@ export function EjecucionJornada() {
       })
     }
     return base
-  }, [preguntas, moduloActivo, filtro, auditoriaActiva])
+  }, [preguntas, moduloVisible, filtro, auditoriaActiva])
 
   // Adapta las preguntas de la jornada al navegador común (solo presentación).
   const itemsNavegador = useMemo<ItemNavegador[]>(() => preguntasFiltradas.map(p => {
@@ -429,9 +437,11 @@ export function EjecucionJornada() {
   // siguiente pregunta en el filtrado actual
   const sigPregunta = useMemo(() => {
     const idx = preguntasFiltradas.findIndex(p => p.question_id === questionActiva)
+    // La pregunta abierta no es de esta operación: se sigue por la primera de la lista.
+    if (idx < 0 && preguntaNoEnCuestionario) return preguntasFiltradas[0] ?? null
     if (idx < 0 || idx >= preguntasFiltradas.length - 1) return null
     return preguntasFiltradas[idx + 1]
-  }, [preguntasFiltradas, questionActiva])
+  }, [preguntasFiltradas, questionActiva, preguntaNoEnCuestionario])
 
   const totalPendientes = useMemo(() => {
     return detalle?.operaciones.reduce((acc, op) => acc + (op.conteo.pendientes ?? 0) + op.herencia_pendiente + op.issues_abiertos, 0) ?? 0
@@ -681,11 +691,11 @@ export function EjecucionJornada() {
                 <button
                   key={m}
                   onClick={() => setModuloActivo(m)}
-                  aria-pressed={moduloActivo === m}
+                  aria-pressed={moduloVisible === m}
                   className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{
-                    backgroundColor: moduloActivo === m ? 'var(--accent)' : 'var(--muted)',
-                    color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
+                    backgroundColor: moduloVisible === m ? 'var(--accent)' : 'var(--muted)',
+                    color: moduloVisible === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
                   Módulo {m}
