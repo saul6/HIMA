@@ -757,21 +757,21 @@ export function EjecucionJornada() {
           {/* ── Botones de acción ── */}
           {questionActivaObj && (
             <div className="flex flex-col gap-2">
-              {/* Continuar con siguiente operación */}
-              {sigOperacion && (
-                <Boton onClick={async () => {
-                    const ok = await cambiarOperacion(sigOperacion.auditoria_id)
-                    if (!ok) return
-                  }} className="w-full">
-                  Continuar con {sigOperacion.productor} · {sigOperacion.operacion} →
+              {/* Siguiente pregunta: acción principal */}
+              {sigPregunta && (
+                <Boton onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
+                  <span>Siguiente pregunta</span>
+                  <ChevronDown aria-hidden="true" size={14} />
                 </Boton>
               )}
 
-              {/* Siguiente pregunta */}
-              {sigPregunta && (
-                <Boton variante="secundario" onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
-                  <span>Siguiente pregunta</span>
-                  <ChevronDown aria-hidden="true" size={14} />
+              {/* Continuar con siguiente operación: principal solo si no hay siguiente pregunta */}
+              {sigOperacion && (
+                <Boton variante={sigPregunta ? 'secundario' : 'primario'} onClick={async () => {
+                    const ok = await cambiarOperacion(sigOperacion.auditoria_id)
+                    if (!ok) return
+                  }} className="w-full h-auto min-h-11 py-2 whitespace-normal break-words">
+                  <span className="min-w-0">Continuar con {nombreOperacion(sigOperacion)} →</span>
                 </Boton>
               )}
 
