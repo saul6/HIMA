@@ -643,15 +643,15 @@ export function EjecucionJornada() {
       )}
       </AnimatePresence>
 
-      <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8" {...ent(0)}>
+      <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-0" {...ent(0)}>
 
         {/* ── Panel izquierdo: selector de operación + navigator de preguntas ── */}
-        <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0">
+        <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0 md:overflow-y-auto">
 
           {/* Selector de operación (mobile: scroll horizontal; desktop: lista vertical) */}
           <div className="px-4 pt-3 pb-2">
             <TituloSeccion as="p" className="mb-2">Operaciones</TituloSeccion>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none md:flex-col md:overflow-visible md:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none md:flex-col md:max-h-[28dvh] md:overflow-x-hidden md:overflow-y-auto md:pb-0">
               {detalle.operaciones.map(op => (
                 <OperacionChip
                   key={op.auditoria_id}
@@ -715,7 +715,7 @@ export function EjecucionJornada() {
           <LeyendaEstados />
 
           {/* Lista de preguntas */}
-          <div className="flex-1 overflow-y-auto border-t border-border md:min-h-0">
+          <div className="flex-1 overflow-y-auto border-t border-border md:min-h-40">
             <NavegadorPreguntas
               items={itemsNavegador}
               activaId={questionActiva}
@@ -725,7 +725,7 @@ export function EjecucionJornada() {
         </div>
 
         {/* ── Panel derecho: formulario de captura ── */}
-        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 md:min-h-0 md:overflow-y-auto">
+        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 md:min-h-0 md:overflow-y-auto md:pb-8">
 
           {/* Aviso: pregunta no en cuestionario */}
           {preguntaNoEnCuestionario && operacionActiva && (
