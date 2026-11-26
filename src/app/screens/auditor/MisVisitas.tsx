@@ -10,6 +10,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { DUR, EASE_OUT } from '@/lib/motion'
 import { formatRango } from '@/lib/formato'
 
@@ -82,8 +83,8 @@ function EventoCard({
         opacity: 1, y: 0,
         transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
       }}
-      className="rounded-xl border border-border p-4 flex flex-col gap-2 transition-colors hover:bg-muted"
-      style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}
+      className="rounded-xl border border-border p-4 flex flex-col gap-2"
+      style={{ backgroundColor: 'var(--card)' }}
     >
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
@@ -223,13 +224,7 @@ export function MisVisitas() {
       <section>
         <TituloSeccion as="p">Próximos eventos</TituloSeccion>
         {pendientes.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-6 flex flex-col items-center gap-2">
-            <Calendar aria-hidden="true" size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.35 }} />
-            <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-              Sin eventos pendientes.
-              <br />Los avisos de borrado aparecen aquí solos.
-            </p>
-          </div>
+          <EstadoVacio icono={Calendar} titulo="Sin eventos pendientes." ayuda="Los avisos de borrado aparecen aquí solos." />
         ) : (
           <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
             {pendientes.map((ev, index) => (

@@ -34,8 +34,15 @@ export function AuditorAgenda() {
   }
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'ArrowLeft') setTab('visitas')
-    if (e.key === 'ArrowRight') setTab('calendario')
+    const destino: Tab | null =
+      e.key === 'ArrowLeft' || e.key === 'Home' ? 'visitas'
+        : e.key === 'ArrowRight' || e.key === 'End' ? 'calendario'
+          : null
+    if (!destino) return
+    e.preventDefault()
+    if (destino !== tab) setTab(destino)
+    // El foco acompaña a la selección.
+    document.getElementById(`tab-${destino}`)?.focus()
   }
 
   return (
@@ -58,6 +65,7 @@ export function AuditorAgenda() {
                 id={`tab-${id}`}
                 aria-selected={tab === id}
                 aria-controls={`panel-${id}`}
+                tabIndex={tab === id ? 0 : -1}
                 onClick={() => setTab(id)}
                 onKeyDown={handleTabKeyDown}
                 className="relative flex-1 py-1.5 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary before:absolute before:content-[''] before:-inset-y-1.5"

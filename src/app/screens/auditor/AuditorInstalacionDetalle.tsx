@@ -359,7 +359,7 @@ export function AuditorInstalacionDetalle() {
                       className="hover-lift w-full text-left bg-card rounded-xl border border-border p-4 flex items-start justify-between gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
+                        <p className="text-sm font-semibold line-clamp-2 break-words" style={{ color: 'var(--foreground)' }}>
                           {a.modulos.length > 0 ? a.modulos.join(' · ') : 'Auditoría PrimusGFS'}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>

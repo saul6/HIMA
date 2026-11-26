@@ -1,5 +1,5 @@
-import { useState, useEffect, useId } from 'react'
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { useState, useEffect, useId, useRef } from 'react'
+import { useParams, useNavigate, useLocation, useOutletContext, Navigate } from 'react-router'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -12,6 +12,8 @@ import { motion } from 'motion/react'
 import { useEntradaPantalla } from './motionAuditor'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { BORDE_CAMPO } from './estilosCampo'
+import { CamposVisita } from './CamposVisita'
+import { crearAuditoria, errorFechasVisita, textoErrorCrear } from './crearAuditoria'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -26,22 +28,26 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
   const location = useLocation()
   const { profile } = useAuthContext()
 
-  const orgNombre: string = (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa'
+  const empresa = useOutletContext<{ orgNombre?: string } | undefined>()
+  const orgNombre: string = empresa?.orgNombre
+    ?? (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa'
   const hoy = hoyMX()
 
   const [ranchos, setRanchos]                     = useState<RanchoItem[]>([])
   const [modulos, setModulos]                     = useState<ModuloItem[]>([])
-  const [versionId, setVersionId]                 = useState<string | null>(null)
-  const [certificadoraOrgId, setCertificadoraOrgId] = useState<string | null>(null)
   const [cargando, setCargando]                   = useState(true)
 
   const [ranchoId, setRanchoId]               = useState('')
-  const [fecha, setFecha]                     = useState(hoy)
+  const [visitaInicio, setVisitaInicio]       = useState(hoy)
+  const [visitaFin, setVisitaFin]             = useState('')
   const [tipoOperacion, setTipoOperacion]     = useState('')
   const [producto, setProducto]               = useState('')
   const [periodo, setPeriodo]                 = useState('')
   const [modulosSel, setModulosSel]           = useState<Set<string>>(new Set())
   const [guardando, setGuardando]             = useState(false)
+  // Un identificador por formulario abierto: un reintento usa el mismo.
+  const [solicitudId] = useState(() => crypto.randomUUID())
+  const enCurso = useRef(false)
   const ent = useEntradaPantalla(!cargando)
 
   const sinAcceso = profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin'
@@ -52,22 +58,14 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
     async function init() {
       setCargando(true)
       try {
-        const [rRes, verRes, asigRes] = await Promise.all([
+        const [rRes, verRes] = await Promise.all([
           tbl('ranchos').select('id, nombre').eq('org_id', orgId).order('nombre'),
           tbl('aud_versiones_norma').select('id').eq('vigente', true).single(),
-          tbl('auditor_asignaciones')
-            .select('certificadora_org_id')
-            .eq('auditor_profile_id', profile!.id)
-            .eq('productor_org_id', orgId)
-            .eq('activo', true)
-            .maybeSingle(),
         ])
         if (cancelado) return
         setRanchos(rRes.data ?? [])
         if (verRes.error) throw verRes.error
         const vid = verRes.data.id as string
-        setVersionId(vid)
-        setCertificadoraOrgId(asigRes.data?.certificadora_org_id ?? profile!.org_id ?? null)
 
         const { data: modData, error: modErr } = await tbl('aud_modulos_norma')
           .select('id, nombre, orden')
@@ -97,47 +95,30 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
   async function handleCrear() {
     if (!ranchoId) { toast.warning('Selecciona una instalación'); return }
     if (modulosSel.size === 0) { toast.warning('Selecciona al menos un módulo PrimusGFS'); return }
-    if (!versionId) { toast.warning('Catálogo no disponible, espera un momento'); return }
-    if (!orgId) return
+    const errorFechas = errorFechasVisita(visitaInicio, visitaFin)
+    if (errorFechas) { toast.warning(errorFechas); return }
+    if (enCurso.current) return
 
+    enCurso.current = true
     setGuardando(true)
     try {
-      const { data: audData, error: audErr } = await tbl('aud_auditorias')
-        .insert({
-          org_id: orgId,
-          version_id: versionId,
-          rancho_id: ranchoId,
-          tipo_operacion: tipoOperacion.trim() || null,
-          producto: producto.trim() || null,
-          periodo: periodo.trim() || null,
-          fecha,
-          auditor_nombre: profile!.nombre_completo ?? null,
-          auditor_profile_id: profile!.id,
-          certificadora_org_id: certificadoraOrgId,
-          creado_por: profile!.id,
-          estado: 'en_proceso',
-          scoring_isolation_key: crypto.randomUUID(),
-        })
-        .select('id')
-        .single()
-      if (audErr) throw audErr
-      const auditoriaId = (audData as { id: string }).id
-
-      const modInserts = Array.from(modulosSel).map(mid => ({
-        org_id: orgId,
-        auditoria_id: auditoriaId,
-        modulo_norma_id: mid,
-        aplicable: true,
-      }))
-      const { error: mErr } = await tbl('aud_auditoria_modulos').insert(modInserts)
-      if (mErr) throw mErr
-
+      const creada = await crearAuditoria({
+        p_solicitud_id: solicitudId,
+        p_modulos: Array.from(modulosSel),
+        p_visita_inicio: visitaInicio,
+        p_visita_fin: visitaFin || undefined,
+        p_rancho_id: ranchoId,
+        p_tipo_operacion: tipoOperacion.trim() || undefined,
+        p_producto: producto.trim() || undefined,
+        p_periodo: periodo.trim() || undefined,
+      })
       toast.success('Auditoría creada')
-      navigate(`/auditor/auditoria/${auditoriaId}`, { replace: true, state: { orgId, orgNombre } })
+      navigate(`/auditor/auditoria/${creada.auditoria_id}`, { replace: true, state: { orgId, orgNombre } })
     } catch (e: unknown) {
       console.error('[AuditorNuevaAuditoria]', e)
-      toast.error('No se pudo crear la auditoría. Reintenta.')
+      toast.error(textoErrorCrear(e))
     } finally {
+      enCurso.current = false
       setGuardando(false)
     }
   }
@@ -188,12 +169,8 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
           )}
         </Campo>
 
-        {/* Fecha */}
-        <Campo etiqueta="Fecha" requerido className="gap-1.5">
-          {({ id }) => (
-            <input id={id} type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={inputSt} />
-          )}
-        </Campo>
+        {/* Visita */}
+        <CamposVisita inicio={visitaInicio} fin={visitaFin} onInicio={setVisitaInicio} onFin={setVisitaFin} inputStyle={inputSt} />
 
         {/* Tipo de operación */}
         <Campo etiqueta="Tipo de operación" className="gap-1.5">
