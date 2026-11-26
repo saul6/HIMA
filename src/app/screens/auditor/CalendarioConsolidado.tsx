@@ -9,6 +9,7 @@ import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 import { estadoAgenda, textoLimpio } from './estados'
 import { dayKey, diasDelRango } from '@/lib/formato'
 
@@ -197,6 +198,15 @@ export function CalendarioConsolidado() {
         >
           <ChevronRight aria-hidden="true" size={16} />
         </button>
+        <Boton
+          variante="secundario"
+          tamano="sm"
+          onClick={() => setMesOffset(0)}
+          disabled={mesOffset === 0}
+          className="h-8 flex-shrink-0 before:absolute before:content-[''] before:-inset-y-1.5 before:inset-x-0"
+        >
+          Hoy
+        </Boton>
         <button
           onClick={recargar}
           disabled={cargando}

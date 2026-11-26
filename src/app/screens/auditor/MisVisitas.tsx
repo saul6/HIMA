@@ -83,8 +83,8 @@ function EventoCard({
         opacity: 1, y: 0,
         transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
       }}
-      className="rounded-xl border border-border p-4 flex flex-col gap-2 transition-colors hover:bg-muted"
-      style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}
+      className="rounded-xl border border-border p-4 flex flex-col gap-2"
+      style={{ backgroundColor: 'var(--card)' }}
     >
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
