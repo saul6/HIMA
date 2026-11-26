@@ -41,6 +41,11 @@ function avancePct(conteo: JornadaConteo): number {
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
 
+// En instalaciones no vinculadas el productor y la operación son el mismo nombre: se escribe una vez.
+function nombreOperacion(op: JornadaOperacionDetalle): string {
+  return op.productor === op.operacion ? op.operacion : `${op.productor} · ${op.operacion}`
+}
+
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
 function OperacionChip({ op, activa, onClick }: {
@@ -62,12 +67,14 @@ function OperacionChip({ op, activa, onClick }: {
         color: activa ? 'var(--primary-foreground)' : 'var(--foreground)',
       }}
     >
-      <p className="text-small font-semibold leading-tight truncate max-w-[140px]">
+      <p className="text-small font-semibold leading-tight line-clamp-2 break-words max-w-[200px] md:max-w-none">
         {op.productor}
       </p>
-      <p className="text-small leading-tight truncate max-w-[140px]" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
-        {op.operacion}
-      </p>
+      {op.operacion !== op.productor && (
+        <p className="text-small leading-tight line-clamp-2 break-words max-w-[200px] md:max-w-none" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
+          {op.operacion}
+        </p>
+      )}
       <div className="flex items-center gap-1.5 mt-0.5">
         <div
           className="flex-1 h-1 rounded-full overflow-hidden"
@@ -656,8 +663,8 @@ export function EjecucionJornada() {
             </div>
             {operacionActiva && (
               <div className="mt-2 min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-                  {operacionActiva.productor} · {operacionActiva.operacion}
+                <p className="text-xs font-semibold line-clamp-2 break-words" style={{ color: 'var(--foreground)' }}>
+                  {nombreOperacion(operacionActiva)}
                 </p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} {(operacionActiva.conteo.pendientes ?? 0) === 1 ? 'pendiente' : 'pendientes'}
