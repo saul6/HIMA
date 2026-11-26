@@ -37,6 +37,8 @@ export interface MiResumenProductividad {
 
 export interface MetProductividad {
   es_admin: boolean
+  /** Encargado con el interruptor de equipo prendido: la lista es solo él y sus operarios. */
+  es_encargado?: boolean
   colaboradores: ColaboradorProductividad[] | null
   verificacion: VerificacionProductividad | null
   total_colaboradores: number
@@ -57,6 +59,7 @@ export interface ColaboradorAgenda {
 
 export interface MetAgenda {
   es_admin: boolean
+  es_encargado?: boolean
   colaboradores: ColaboradorAgenda[] | null
 }
 

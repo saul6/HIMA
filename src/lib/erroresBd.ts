@@ -1,4 +1,5 @@
 import { toast } from 'sonner'
+import { traducirErrorEquipo } from './equipoErrores'
 
 /** Etiqueta visible de las columnas más comunes (si no está, se usa el nombre con espacios). */
 const ETIQUETAS_COLUMNA: Record<string, string> = {
@@ -40,6 +41,8 @@ function etiquetaColumna(columna: string): string {
 
 /** Traduce errores de los triggers de límites de la BD a mensajes para el usuario. */
 export function traducirErrorBd(msg: string): string | null {
+  const eq = traducirErrorEquipo(msg)
+  if (eq) return eq
   const largo = msg.match(/TEXTO_MUY_LARGO[^"]*"([^"]+)"[^0-9]*(\d+)/)
   if (largo) return `El campo ${etiquetaColumna(largo[1])} admite hasta ${largo[2]} caracteres`
   if (msg.includes('TEXTO_MUY_LARGO')) return 'Un campo de texto excede el máximo de caracteres permitido'

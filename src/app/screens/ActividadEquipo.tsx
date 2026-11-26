@@ -187,7 +187,7 @@ export function ActividadEquipo() {
   const hoy = hoyMX()
   const { desde, hasta } = useMemo(() => rangoPeriodo(periodo, hoy), [periodo, hoy])
 
-  const { items, resumen, totalFiltrado, truncado, empleados, loading, error, refetch } =
+  const { items, resumen, totalFiltrado, truncado, empleados, restringido, loading, error, refetch } =
     useActividadEquipo({ desde, hasta, usuario, modulo, rancho, solo })
   const mostrarSkeleton = useMostrarCarga(loading, items.length > 0)
   const ent = useEntradaPantalla(!loading)
@@ -312,7 +312,7 @@ export function ActividadEquipo() {
     return (
       <div className="min-h-full pb-safe-nav">
         <EncabezadoPantalla titulo="Actividad" alRegresar={() => navigate(-1)} />
-        <EstadoVacio icono={Activity} titulo="Solo el administrador puede ver la actividad del equipo" />
+        <EstadoVacio icono={Activity} titulo="Solo el administrador o el encargado pueden ver la actividad del equipo" />
       </div>
     )
   }
@@ -372,6 +372,17 @@ export function ActividadEquipo() {
             indice={3}
           />
         </div>
+        )}
+
+        {restringido && (
+          <motion.div {...ent(1)}>
+            <p
+              className="rounded-xl px-4 py-3 text-xs"
+              style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+            >
+              Ves tus registros y los de los operarios de tu equipo.
+            </p>
+          </motion.div>
         )}
 
         {/* Filtros */}

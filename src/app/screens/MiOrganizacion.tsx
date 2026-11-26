@@ -36,6 +36,7 @@ import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { ConfirmarSheet } from '@/app/components/ui-mady/ConfirmarSheet'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
+import { EquipoAdmin, InterruptorEquipo, MiEquipo } from '@/app/components/equipo/EquipoSecciones'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -126,6 +127,9 @@ export function MiOrganizacion() {
   const bloqueado = esPendiente || enLimite
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  const esAdminOrg = profile?.rol === 'admin_org'
+  // El encargado solo ve «Mi equipo»: ninguna sección de administración.
+  const esEncargado = profile?.rol === 'asesor_tecnico'
   const [actualizandoToggle, setActualizandoToggle] = useState(false)
 
   // ── Sheet rancho ─────────────────────────────────────────────────────────────
@@ -449,7 +453,7 @@ export function MiOrganizacion() {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <h1 className="text-foreground flex-1 min-w-0 truncate font-semibold">
-          Mi organización
+          {esEncargado ? 'Mi equipo' : 'Mi organización'}
         </h1>
       </header>
 
@@ -502,8 +506,15 @@ export function MiOrganizacion() {
                     className="flex-shrink-0"
                   />
                 </div>
+                {esAdminOrg && <InterruptorEquipo />}
               </div>
             )}
+
+            {/* Encargados y su equipo — solo admin_org */}
+            {esAdminOrg && <EquipoAdmin />}
+
+            {/* Mi equipo — solo encargado */}
+            {esEncargado && profile?.id && <MiEquipo miId={profile.id} />}
 
             {/* Asignación de sitios a operarios — solo admin */}
             {esAdmin && empleados.length > 0 && (
@@ -615,6 +626,7 @@ export function MiOrganizacion() {
             )}
 
             {/* Lista de ranchos */}
+            {!esEncargado && (
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
                 <p className="text-xs text-muted-foreground font-semibold">
@@ -732,6 +744,7 @@ export function MiOrganizacion() {
                 </div>
               )}
             </div>
+            )}
           </>
         )}
       </div>

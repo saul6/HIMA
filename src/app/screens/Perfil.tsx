@@ -346,8 +346,8 @@ export function Perfil() {
         </motion.div>
         {/* Columna derecha (fila 2): en celular es `contents` y `order-N` conserva el orden de siempre */}
         <div className="contents lg:flex lg:flex-col lg:gap-4 lg:col-start-2 lg:row-start-2 lg:self-start">
-        {/* Mi organización — solo para admin_org */}
-        {profile?.rol === 'admin_org' && (
+        {/* Mi organización (admin_org) / Mi equipo (encargado): misma pantalla, el encargado solo ve su equipo */}
+        {(profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico') && (
           <motion.div {...ent(1)} className="order-2">
           <button
             onClick={() => navigate('/perfil/mi-organizacion')}
@@ -358,10 +358,10 @@ export function Perfil() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-foreground text-sm font-semibold">
-                Mi organización
+                {profile?.rol === 'asesor_tecnico' ? 'Mi equipo' : 'Mi organización'}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Gestionar ranchos y configuración
+                {profile?.rol === 'asesor_tecnico' ? 'Operarios a tu cargo' : 'Gestionar ranchos y configuración'}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
