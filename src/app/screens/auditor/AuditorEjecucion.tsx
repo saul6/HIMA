@@ -996,7 +996,7 @@ function PanelHallazgos({
           ) : (
             <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>
               {hallazgos.map(h => {
-                const clasConfig = CLASIFICACION_CONFIG[h.clasificacion]
+                const clasConfig = CLASIFICACION_CONFIG[h.clasificacion] ?? { label: 'Sin clasificar', tono: 'neutral' as const }
                 const estConfig = estadoHallazgo(h.estado)
                 const preg = preguntas.find(p => p.id === h.pregunta_id)
                 return (
