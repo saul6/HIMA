@@ -13,7 +13,6 @@ import type {
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/app/components/ui/sheet'
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator,
@@ -204,25 +203,14 @@ function PendientesPanel({
     </div>
   )
 
-  if (esEscritorio) {
-    return (
-      <Sheet open onOpenChange={o => { if (!o) onClose() }}>
-        <SheetContent side="right" className="w-full sm:max-w-[440px] gap-0 p-0 bg-card">
-          <div className="flex flex-col gap-0.5 px-4 pt-4 pb-3 pr-12 border-b border-border flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <SheetTitle className="text-base">Pendientes</SheetTitle>
-              <Etiqueta tono={total > 0 ? 'sky' : 'neutral'}>{total}</Etiqueta>
-            </div>
-            <SheetDescription className="text-caption">Preguntas sin responder en esta jornada</SheetDescription>
-          </div>
-          {contenido}
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
   return (
     <BottomSheet open onClose={onClose} title="Pendientes">
+      {esEscritorio && (
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border flex-shrink-0">
+          <p className="text-caption text-muted-foreground min-w-0">Preguntas sin responder en esta jornada</p>
+          <Etiqueta tono={total > 0 ? 'sky' : 'neutral'}>{total}</Etiqueta>
+        </div>
+      )}
       {contenido}
     </BottomSheet>
   )
