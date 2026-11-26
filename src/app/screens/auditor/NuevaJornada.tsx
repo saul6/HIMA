@@ -286,7 +286,7 @@ export function NuevaJornada() {
       {seleccionados.size > 0 && (
         <Portal>
         <div
-          className="fixed bottom-0 left-0 right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
+          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}
