@@ -30,11 +30,12 @@ function AuditoriaCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
+          <p className="text-sm font-semibold line-clamp-2 break-words" style={{ color: 'var(--foreground)' }}>
             {a.modulos.length > 0 ? a.modulos.join(' · ') : 'Auditoría PrimusGFS'}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            {a.rancho_nombre} · {fechaCorta(a.fecha)}
+            {/* Sin rancho, el hook entrega «—»: se muestra solo la fecha. */}
+            {[a.rancho_nombre === '—' ? null : a.rancho_nombre, fechaCorta(a.fecha)].filter(Boolean).join(' · ')}
           </p>
         </div>
         <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
@@ -93,7 +94,7 @@ export function AuditorOrgDetalle() {
           accion={<Boton variante="secundario" onClick={refetch}>Reintentar</Boton>}
         />
       ) : (
-        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-x-6">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-start lg:gap-x-6">
           {/* Instalaciones */}
           <section>
             <div className="flex items-center gap-2 mb-2.5">
@@ -103,25 +104,25 @@ export function AuditorOrgDetalle() {
             {ranchos.length === 0 ? (
               <EstadoVacio icono={MapPin} titulo="Sin instalaciones registradas." />
             ) : (
-              <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))]">
+              <ul className="flex flex-col divide-y divide-border">
                 {ranchos.map((r, index) => (
-                  <motion.div
+                  <motion.li
                     key={r.id}
                     {...entrada(index, reducedMotion)}
-                    className="bg-muted rounded-lg px-4 py-3 flex items-center gap-3"
+                    className="py-2.5 flex items-start gap-3"
                   >
-                    <MapPin aria-hidden="true" size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
+                    <MapPin aria-hidden="true" size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{r.nombre}</p>
+                      <p className="text-sm font-medium break-words" style={{ color: 'var(--foreground)' }}>{r.nombre}</p>
                       {(r.codigo || r.cultivo) && (
                         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                           {[r.codigo, r.cultivo].filter(Boolean).join(' · ')}
                         </p>
                       )}
                     </div>
-                  </motion.div>
+                  </motion.li>
                 ))}
-              </div>
+              </ul>
             )}
           </section>
 
@@ -134,7 +135,7 @@ export function AuditorOrgDetalle() {
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
                 {auditorias.map((a, index) => (
                   <AuditoriaCard
                     key={a.id}
