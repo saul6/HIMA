@@ -54,8 +54,21 @@ function OperacionChip({ op, activa, onClick }: {
   onClick: () => void
 }) {
   const pct = avancePct(op.conteo)
+  // La lista de operaciones tiene altura máxima en escritorio: la activa se deja a la vista
+  // moviendo solo esa lista (nunca la página). En celular la lista no tiene scroll vertical.
+  const ref = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    const lista = el?.parentElement
+    if (!activa || !el || !lista || lista.scrollHeight <= lista.clientHeight) return
+    const e = el.getBoundingClientRect()
+    const l = lista.getBoundingClientRect()
+    if (e.top < l.top) lista.scrollTop -= l.top - e.top
+    else if (e.bottom > l.bottom) lista.scrollTop += e.bottom - l.bottom
+  }, [activa])
   return (
     <button
+      ref={ref}
       onClick={onClick}
       aria-current={activa ? 'true' : undefined}
       disabled={!op.disponible}
