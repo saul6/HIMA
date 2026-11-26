@@ -8,6 +8,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { estadoAgenda, textoLimpio } from './estados'
 import { dayKey, diasDelRango } from '@/lib/formato'
 
@@ -252,15 +253,11 @@ export function CalendarioConsolidado() {
           ))}
         </div>
       ) : eventosPorDia.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-          <CalendarDays aria-hidden="true" size={32} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-          <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-            Sin eventos en {nombreMes.toLowerCase()}
-          </p>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            {tiposActivos.size > 0 ? 'Prueba quitando los filtros activos.' : 'Aquí aparecerán visitas, vencimientos y capacitaciones.'}
-          </p>
-        </div>
+        <EstadoVacio
+          icono={CalendarDays}
+          titulo={`Sin eventos en ${nombreMes.toLowerCase()}`}
+          ayuda={tiposActivos.size > 0 ? 'Prueba quitando los filtros activos.' : 'Aquí aparecerán visitas, vencimientos y capacitaciones.'}
+        />
       ) : (
         <div className="flex flex-col gap-5">
           {eventosPorDia.map(([dayIso, evs]) => (

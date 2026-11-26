@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation, Navigate, Outlet } from 'react-router'
-import { MapPin, ClipboardCheck, ChevronRight } from 'lucide-react'
+import { MapPin, ClipboardCheck, ChevronRight, AlertCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { fechaCorta } from '@/lib/formato'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
@@ -83,12 +83,11 @@ export function AuditorOrgDetalle() {
           </div>
         ) : null
       ) : error ? (
-        <div className="flex flex-col items-center gap-2 py-16 px-4">
-          <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
-          <Boton variante="secundario" onClick={refetch}>
-            Reintentar
-          </Boton>
-        </div>
+        <EstadoVacio
+          icono={AlertCircle}
+          titulo={error}
+          accion={<Boton variante="secundario" onClick={refetch}>Reintentar</Boton>}
+        />
       ) : (
         <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-x-6">
           {/* Instalaciones */}
