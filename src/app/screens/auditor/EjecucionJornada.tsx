@@ -41,6 +41,11 @@ function avancePct(conteo: JornadaConteo): number {
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
 
+// En instalaciones no vinculadas el productor y la operación son el mismo nombre: se escribe una vez.
+function nombreOperacion(op: JornadaOperacionDetalle): string {
+  return op.productor === op.operacion ? op.operacion : `${op.productor} · ${op.operacion}`
+}
+
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
 function OperacionChip({ op, activa, onClick }: {
@@ -49,8 +54,21 @@ function OperacionChip({ op, activa, onClick }: {
   onClick: () => void
 }) {
   const pct = avancePct(op.conteo)
+  // La lista de operaciones tiene altura máxima en escritorio: la activa se deja a la vista
+  // moviendo solo esa lista (nunca la página). En celular la lista no tiene scroll vertical.
+  const ref = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    const lista = el?.parentElement
+    if (!activa || !el || !lista || lista.scrollHeight <= lista.clientHeight) return
+    const e = el.getBoundingClientRect()
+    const l = lista.getBoundingClientRect()
+    if (e.top < l.top) lista.scrollTop -= l.top - e.top
+    else if (e.bottom > l.bottom) lista.scrollTop += e.bottom - l.bottom
+  }, [activa])
   return (
     <button
+      ref={ref}
       onClick={onClick}
       aria-current={activa ? 'true' : undefined}
       disabled={!op.disponible}
@@ -62,12 +80,14 @@ function OperacionChip({ op, activa, onClick }: {
         color: activa ? 'var(--primary-foreground)' : 'var(--foreground)',
       }}
     >
-      <p className="text-small font-semibold leading-tight truncate max-w-[140px]">
+      <p className="text-small font-semibold leading-tight line-clamp-2 break-words max-w-[200px] md:max-w-none">
         {op.productor}
       </p>
-      <p className="text-small leading-tight truncate max-w-[140px]" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
-        {op.operacion}
-      </p>
+      {op.operacion !== op.productor && (
+        <p className="text-small leading-tight line-clamp-2 break-words max-w-[200px] md:max-w-none" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
+          {op.operacion}
+        </p>
+      )}
       <div className="flex items-center gap-1.5 mt-0.5">
         <div
           className="flex-1 h-1 rounded-full overflow-hidden"
@@ -362,11 +382,19 @@ export function EjecucionJornada() {
 
   // ── Derivados ──
 
-  const modulos = useMemo(() => [...new Set(preguntas.map(p => p.modulo))], [preguntas])
+  // Módulos de la operación activa (no de toda la jornada).
+  const modulos = useMemo(() => {
+    const deLaOperacion = auditoriaActiva
+      ? preguntas.filter(p => p.destinos.some(d => d.auditoria_id === auditoriaActiva))
+      : preguntas
+    return [...new Set(deLaOperacion.map(p => p.modulo))]
+  }, [preguntas, auditoriaActiva])
+  // Si el módulo elegido no es de esta operación, se muestra el primero que sí lo es.
+  const moduloVisible = moduloActivo && modulos.includes(moduloActivo) ? moduloActivo : modulos[0] ?? null
 
   const preguntasFiltradas = useMemo(() => {
     let base = preguntas
-    if (moduloActivo) base = base.filter(p => p.modulo === moduloActivo)
+    if (moduloVisible) base = base.filter(p => p.modulo === moduloVisible)
     if (filtro === 'comunes') base = base.filter(p => p.destinos.length > 1)
     if (filtro === 'pendientes' && auditoriaActiva) {
       base = base.filter(p => {
@@ -375,7 +403,7 @@ export function EjecucionJornada() {
       })
     }
     return base
-  }, [preguntas, moduloActivo, filtro, auditoriaActiva])
+  }, [preguntas, moduloVisible, filtro, auditoriaActiva])
 
   // Adapta las preguntas de la jornada al navegador común (solo presentación).
   const itemsNavegador = useMemo<ItemNavegador[]>(() => preguntasFiltradas.map(p => {
@@ -422,9 +450,11 @@ export function EjecucionJornada() {
   // siguiente pregunta en el filtrado actual
   const sigPregunta = useMemo(() => {
     const idx = preguntasFiltradas.findIndex(p => p.question_id === questionActiva)
+    // La pregunta abierta no es de esta operación: se sigue por la primera de la lista.
+    if (idx < 0 && preguntaNoEnCuestionario) return preguntasFiltradas[0] ?? null
     if (idx < 0 || idx >= preguntasFiltradas.length - 1) return null
     return preguntasFiltradas[idx + 1]
-  }, [preguntasFiltradas, questionActiva])
+  }, [preguntasFiltradas, questionActiva, preguntaNoEnCuestionario])
 
   const totalPendientes = useMemo(() => {
     return detalle?.operaciones.reduce((acc, op) => acc + (op.conteo.pendientes ?? 0) + op.herencia_pendiente + op.issues_abiertos, 0) ?? 0
@@ -636,15 +666,15 @@ export function EjecucionJornada() {
       )}
       </AnimatePresence>
 
-      <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8" {...ent(0)}>
+      <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-0" {...ent(0)}>
 
         {/* ── Panel izquierdo: selector de operación + navigator de preguntas ── */}
-        <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0">
+        <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0 md:overflow-y-auto">
 
           {/* Selector de operación (mobile: scroll horizontal; desktop: lista vertical) */}
           <div className="px-4 pt-3 pb-2">
             <TituloSeccion as="p" className="mb-2">Operaciones</TituloSeccion>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none md:flex-col md:overflow-visible md:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none md:flex-col md:max-h-[28dvh] md:overflow-x-hidden md:overflow-y-auto md:pb-0">
               {detalle.operaciones.map(op => (
                 <OperacionChip
                   key={op.auditoria_id}
@@ -656,8 +686,8 @@ export function EjecucionJornada() {
             </div>
             {operacionActiva && (
               <div className="mt-2 min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-                  {operacionActiva.productor} · {operacionActiva.operacion}
+                <p className="text-xs font-semibold line-clamp-2 break-words" style={{ color: 'var(--foreground)' }}>
+                  {nombreOperacion(operacionActiva)}
                 </p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} {(operacionActiva.conteo.pendientes ?? 0) === 1 ? 'pendiente' : 'pendientes'}
@@ -674,11 +704,11 @@ export function EjecucionJornada() {
                 <button
                   key={m}
                   onClick={() => setModuloActivo(m)}
-                  aria-pressed={moduloActivo === m}
+                  aria-pressed={moduloVisible === m}
                   className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{
-                    backgroundColor: moduloActivo === m ? 'var(--accent)' : 'var(--muted)',
-                    color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
+                    backgroundColor: moduloVisible === m ? 'var(--accent)' : 'var(--muted)',
+                    color: moduloVisible === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
                   Módulo {m}
@@ -708,7 +738,7 @@ export function EjecucionJornada() {
           <LeyendaEstados />
 
           {/* Lista de preguntas */}
-          <div className="flex-1 overflow-y-auto border-t border-border md:min-h-0">
+          <div className="flex-1 overflow-y-auto border-t border-border md:min-h-40">
             <NavegadorPreguntas
               items={itemsNavegador}
               activaId={questionActiva}
@@ -718,7 +748,7 @@ export function EjecucionJornada() {
         </div>
 
         {/* ── Panel derecho: formulario de captura ── */}
-        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 md:min-h-0 md:overflow-y-auto">
+        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 md:min-h-0 md:overflow-y-auto md:pb-8">
 
           {/* Aviso: pregunta no en cuestionario */}
           {preguntaNoEnCuestionario && operacionActiva && (
@@ -750,21 +780,21 @@ export function EjecucionJornada() {
           {/* ── Botones de acción ── */}
           {questionActivaObj && (
             <div className="flex flex-col gap-2">
-              {/* Continuar con siguiente operación */}
-              {sigOperacion && (
-                <Boton onClick={async () => {
-                    const ok = await cambiarOperacion(sigOperacion.auditoria_id)
-                    if (!ok) return
-                  }} className="w-full">
-                  Continuar con {sigOperacion.productor} · {sigOperacion.operacion} →
+              {/* Siguiente pregunta: acción principal */}
+              {sigPregunta && (
+                <Boton onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
+                  <span>Siguiente pregunta</span>
+                  <ChevronDown aria-hidden="true" size={14} />
                 </Boton>
               )}
 
-              {/* Siguiente pregunta */}
-              {sigPregunta && (
-                <Boton variante="secundario" onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
-                  <span>Siguiente pregunta</span>
-                  <ChevronDown aria-hidden="true" size={14} />
+              {/* Continuar con siguiente operación: principal solo si no hay siguiente pregunta */}
+              {sigOperacion && (
+                <Boton variante={sigPregunta ? 'secundario' : 'primario'} onClick={async () => {
+                    const ok = await cambiarOperacion(sigOperacion.auditoria_id)
+                    if (!ok) return
+                  }} className="w-full h-auto min-h-11 py-2 whitespace-normal break-words">
+                  <span className="min-w-0">Continuar con {nombreOperacion(sigOperacion)} →</span>
                 </Boton>
               )}
 

@@ -32,10 +32,16 @@ function FilaOperacion({
 }) {
   return (
     <FilaRegistro
-      seleccionable
+      // Ya incluida: la fila deja de ser un botón y la casilla queda deshabilitada de forma nativa.
+      seleccionable={!yaEnEstaJornada}
       seleccionado={selected}
-      onClick={yaEnEstaJornada ? () => {} : onToggle}
-      className={yaEnEstaJornada ? 'opacity-60' : undefined}
+      onClick={yaEnEstaJornada ? undefined : onToggle}
+      icono={yaEnEstaJornada ? (
+        <fieldset disabled className="flex">
+          <input type="checkbox" disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
+        </fieldset>
+      ) : undefined}
+      className={yaEnEstaJornada ? 'px-4 py-1 opacity-60 [&>div>div>span:first-child]:size-5 [&>div>div>span:first-child]:bg-transparent' : undefined}
       titulo={
         <>
           {fila.operacion}
@@ -286,7 +292,7 @@ export function NuevaJornada() {
       {seleccionados.size > 0 && (
         <Portal>
         <div
-          className="fixed bottom-0 left-0 right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
+          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}

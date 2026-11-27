@@ -1306,16 +1306,20 @@ export function AuditorEjecucion() {
     let cancelado = false
     async function cargarHistorial() {
       try {
+        // Auditoría de instalación (sin rancho): el historial es el de esa instalación.
+        const porInstalacion = !!auditoria!.instalacion_id && !auditoria!.rancho_id
+        const vista = porInstalacion ? 'aud_criterion_history_instalacion' : 'aud_criterion_history'
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let q: any = (supabase as any)
-          .from('aud_criterion_history')
+          .from(vista)
           .select('criterion_code, n_hallazgos, primer_detectado, ultimo_detectado, ultimo_hallazgo_id, ultimo_estado')
           .eq('org_id', auditoria!.org_id)
           .order('n_hallazgos', { ascending: false })
           .limit(20)
         if (auditoria!.rancho_id) q = q.eq('rancho_id', auditoria!.rancho_id)
+        if (porInstalacion) q = q.eq('instalacion_id', auditoria!.instalacion_id)
         const { data, error } = await q
-        if (error) { console.error('[AuditorEjecucion] aud_criterion_history', error); return }
+        if (error) { console.error(`[AuditorEjecucion] ${vista}`, error); return }
         if (!cancelado) setHistorialCriterios(data ?? [])
       } catch (e) {
         console.error('[AuditorEjecucion] cargarHistorialCriterios', e)
@@ -1323,7 +1327,7 @@ export function AuditorEjecucion() {
     }
     cargarHistorial()
     return () => { cancelado = true }
-  }, [auditoria?.org_id, auditoria?.rancho_id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [auditoria?.org_id, auditoria?.rancho_id, auditoria?.instalacion_id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cargar reincidencia para preguntas con NC/deficiencia al cargar el catálogo
   useEffect(() => {
