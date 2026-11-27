@@ -30,18 +30,14 @@ function FilaOperacion({
   onToggle: () => void
   yaEnEstaJornada?: boolean
 }) {
-  return (
+  const registro = (
     <FilaRegistro
       // Ya incluida: la fila deja de ser un botón y la casilla queda deshabilitada de forma nativa.
       seleccionable={!yaEnEstaJornada}
       seleccionado={selected}
       onClick={yaEnEstaJornada ? undefined : onToggle}
-      icono={yaEnEstaJornada ? (
-        <fieldset disabled className="flex">
-          <input type="checkbox" checked disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
-        </fieldset>
-      ) : undefined}
-      className={yaEnEstaJornada ? 'px-4 py-1 opacity-60 [&>div>div>span:first-child]:size-5 [&>div>div>span:first-child]:bg-transparent' : undefined}
+      icono={null}
+      className={yaEnEstaJornada ? 'min-w-0 flex-1 border-b-0' : undefined}
       titulo={
         <>
           {fila.operacion}
@@ -68,6 +64,15 @@ function FilaOperacion({
         </>
       }
     />
+  )
+  if (!yaEnEstaJornada) return registro
+  return (
+    <div className="flex items-center gap-3 border-b border-border px-4 py-1 opacity-60">
+      <fieldset disabled className="flex size-5 shrink-0 items-center justify-center">
+        <input type="checkbox" checked disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
+      </fieldset>
+      {registro}
+    </div>
   )
 }
 
