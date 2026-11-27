@@ -28,7 +28,8 @@ import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { motion, AnimatePresence, useAnimate, useReducedMotion } from 'motion/react'
 import { DUR, EASE_OUT } from '@/lib/motion'
-import { NavegadorPreguntas, LeyendaEstados, estadoDestino } from './NavegadorPreguntas'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { NavegadorPreguntas, LeyendaEstados, estadoDestino, FILTRO_ANGOSTO } from './NavegadorPreguntas'
 import type { ItemNavegador } from './NavegadorPreguntas'
 import { useEntradaPantalla, avisoMotion, fundidoEntrada, comportamientoScroll } from './motionAuditor'
 
@@ -698,41 +699,28 @@ export function EjecucionJornada() {
 
           {/* Filtro por módulo: solo si la jornada tiene más de uno */}
           {modulos.length > 1 && (
-          <div className="px-4 pt-3">
-            <div className="flex gap-1.5 overflow-x-auto pt-2.5 pb-3.5 -mt-2.5 -mb-2.5 -mx-4 px-4 scrollbar-none">
-              {modulos.map(m => (
-                <button
-                  key={m}
-                  onClick={() => setModuloActivo(m)}
-                  aria-pressed={moduloVisible === m}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
-                  style={{
-                    backgroundColor: moduloVisible === m ? 'var(--accent)' : 'var(--muted)',
-                    color: moduloVisible === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                  }}
-                >
-                  Módulo {m}
-                </button>
-              ))}
-            </div>
+          <div className="px-4 pt-3 flex flex-wrap gap-x-1.5 gap-y-2">
+            <FiltroPildoras
+              options={modulos.map(m => ({ value: m, label: `Módulo ${m}` }))}
+              value={moduloVisible ?? ''}
+              onChange={setModuloActivo}
+              className={FILTRO_ANGOSTO}
+            />
           </div>
           )}
 
           {/* Filtros */}
-          <div className="px-4 pt-2 pb-1 flex gap-1.5">
-            {(['todas', 'pendientes', 'comunes'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFiltro(f)}
-                className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
-                style={{
-                  backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
-                  color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',
-                }}
-              >
-                {f === 'todas' ? 'Todas' : f === 'pendientes' ? 'Pendientes' : 'Comunes'}
-              </button>
-            ))}
+          <div className="px-4 pt-2 pb-1 flex flex-wrap gap-x-1.5 gap-y-2">
+            <FiltroPildoras
+              options={[
+                { value: 'todas', label: 'Todas' },
+                { value: 'pendientes', label: 'Pendientes' },
+                { value: 'comunes', label: 'Comunes' },
+              ]}
+              value={filtro}
+              onChange={setFiltro}
+              className={FILTRO_ANGOSTO}
+            />
           </div>
 
           <LeyendaEstados />
