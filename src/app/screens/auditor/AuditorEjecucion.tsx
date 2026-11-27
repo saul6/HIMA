@@ -2755,14 +2755,8 @@ export function AuditorEjecucion() {
       </BottomSheet>
 
       {/* Sheet: Historial de versiones */}
-      <BottomSheet open={sheetHistorial !== null} onClose={() => setSheetHistorial(null)} height="85%">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Historial de versiones</h2>
-            <button aria-label="Cerrar" onClick={() => setSheetHistorial(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle aria-hidden="true" size={20} />
-            </button>
-          </div>
+      <BottomSheet open={sheetHistorial !== null} onClose={() => setSheetHistorial(null)} height="85%" title="Historial de versiones">
+        <div className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
             {(sheetHistorial ?? []).length === 0 ? (
               <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>Sin versiones guardadas aún.</p>
@@ -2801,21 +2795,13 @@ export function AuditorEjecucion() {
       </BottomSheet>
 
       {/* Sheet: Incidencias M13 como antecedentes del hallazgo */}
-      <BottomSheet open={!!sheetIncidenciasHallazgo} onClose={() => setSheetIncidenciasHallazgo(null)} height="85%">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Antecedentes — Incidencias M13</h2>
-              {sheetIncidenciasHallazgo && (
-                <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
-                  {sheetIncidenciasHallazgo.descripcion}
-                </p>
-              )}
-            </div>
-            <button aria-label="Cerrar" onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle aria-hidden="true" size={20} />
-            </button>
-          </div>
+      <BottomSheet open={!!sheetIncidenciasHallazgo} onClose={() => setSheetIncidenciasHallazgo(null)} height="85%" title="Antecedentes — Incidencias M13">
+        <div className="flex flex-col flex-1 min-h-0">
+          {sheetIncidenciasHallazgo && (
+            <p className="px-4 pt-3 text-caption line-clamp-1 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+              {sheetIncidenciasHallazgo.descripcion}
+            </p>
+          )}
 
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
             {/* Incidencias vinculadas */}
@@ -2976,21 +2962,13 @@ export function AuditorEjecucion() {
       </BottomSheet>
 
       {/* Sheet: Evidencias del hallazgo */}
-      <BottomSheet open={!!sheetEvidenciaHallazgo} onClose={() => setSheetEvidenciaHallazgo(null)} height="85%">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Evidencias del hallazgo</h2>
-              {sheetEvidenciaHallazgo && (
-                <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
-                  {sheetEvidenciaHallazgo.descripcion}
-                </p>
-              )}
-            </div>
-            <button aria-label="Cerrar" onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle aria-hidden="true" size={20} />
-            </button>
-          </div>
+      <BottomSheet open={!!sheetEvidenciaHallazgo} onClose={() => setSheetEvidenciaHallazgo(null)} height="85%" title="Evidencias del hallazgo">
+        <div className="flex flex-col flex-1 min-h-0">
+          {sheetEvidenciaHallazgo && (
+            <p className="px-4 pt-3 text-caption line-clamp-1 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+              {sheetEvidenciaHallazgo.descripcion}
+            </p>
+          )}
           <div className="flex-1 overflow-y-auto px-4 py-4">
             {sheetEvidenciaHallazgo && auditoria && (
               <EvidenciaPanel
