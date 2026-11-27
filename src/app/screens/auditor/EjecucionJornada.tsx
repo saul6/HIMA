@@ -155,7 +155,7 @@ function PendientesPanel({
             <div className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2.5">
               <div className="flex flex-col min-w-0">
                 <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-                  {op.productor} · {op.operacion}
+                  {nombreOperacion(op)}
                 </p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {pendientesDest.length} sin responder
@@ -421,7 +421,7 @@ export function EjecucionJornada() {
         return {
           id: d.auditoria_id,
           estado: estadoDestino(d.respuesta, d.herencia_pendiente),
-          titulo: op ? `${op.productor} · ${op.operacion}` : undefined,
+          titulo: op ? nombreOperacion(op) : undefined,
         }
       }),
       nota: auditoriaActiva && !destinoActivo ? 'No aplica en esta operación' : undefined,
