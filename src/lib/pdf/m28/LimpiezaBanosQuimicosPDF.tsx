@@ -77,7 +77,7 @@ export function LimpiezaBanosQuimicosPDF(props: LimpiezaBanosQuimicosPaginaProps
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`Bitácora de Limpieza de Baños y Almacén de Químicos — ${props.instalacion}`}
-      keywords="MADY, inocuidad, limpieza, banos, quimicos"
+      keywords="M.A.D.Y., inocuidad, limpieza, banos, quimicos"
     >
       <LimpiezaBanosQuimicosPagina {...props} />
     </Document>
@@ -92,7 +92,7 @@ export function LimpiezaBanosQuimicosConsolidadoPDF({ paginas }: LimpiezaBanosQu
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject="Bitácora de Limpieza de Baños y Almacén de Químicos — Consolidado"
-      keywords="MADY, inocuidad, limpieza, banos, quimicos, consolidado"
+      keywords="M.A.D.Y., inocuidad, limpieza, banos, quimicos, consolidado"
     >
       {paginas.map((p, i) => <LimpiezaBanosQuimicosPagina key={i} {...p} />)}
     </Document>

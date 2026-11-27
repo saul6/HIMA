@@ -52,7 +52,7 @@ export function InventarioReg01PDF({
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
-      keywords="MADY, inocuidad, GlobalGAP, REG-01, inventario"
+      keywords="M.A.D.Y., inocuidad, GlobalGAP, REG-01, inventario"
     >
       <PaginaEstandar
         orientacion="portrait"

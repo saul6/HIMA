@@ -519,7 +519,7 @@ export function ChecklistVisitaPDF({
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
       subject="Reporte de visita del Checklist de documentos"
-      keywords="MADY, inocuidad, checklist, visita"
+      keywords="M.A.D.Y., inocuidad, checklist, visita"
     >
       <Page size="A4" orientation="landscape" style={s.page}>
         <Marca />

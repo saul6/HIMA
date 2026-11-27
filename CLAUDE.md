@@ -29,6 +29,8 @@ Guía técnica para Claude Code. Léela antes de tocar cualquier archivo. Verifi
 
 **Nombres de archivo de PDF:** Nunca incluir el nombre del rancho/instalación en el filename. Formato obligatorio: `${nombreModulo}-${fecha|mes}.pdf` (individual) o `${nombreModulo}-consolidado-${desde}-${hasta}.pdf` (consolidado). Sin slugs de terceros.
 
+Excepción: el reporte del auditor se llama `reporte-auditoria-<fecha>-<folio>.pdf` (folio = primeros 8 caracteres del id de la auditoría, en mayúsculas). No lleva el nombre de la instalación.
+
 ---
 
 ## 2. STACK Y HERRAMIENTAS

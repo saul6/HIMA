@@ -299,7 +299,7 @@ const dTitulo = { fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, 
 
 function DetalleCampo({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
-    <View style={{ marginBottom: 5 }}>
+    <View style={{ marginBottom: 5 }} wrap={false}>
       <Text style={dEtiqueta}>{etiqueta}</Text>
       <Text style={dValor} hyphenationCallback={partirPalabraLarga}>{valor}</Text>
     </View>
@@ -374,6 +374,10 @@ export function AuditoriaPagina({
   const folioDsp    = auditoriaId.slice(0, 8).toUpperCase()
   const firmaLabels = firmasOpt ?? ['Responsable de Inocuidad — Firma']
   const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoría interna'
+  const sitioMeta   = `${terminoSitio}: ${ranchoNombre}${ranchoCodigo ? ` (${ranchoCodigo})` : ''}`
+  const auditorMeta = `Auditor: ${auditorNombre ?? '—'}`
+  // Un dato largo ocupa dos renglones: el encabezado crece y la página baja su contenido.
+  const encabezadoLargo = sitioMeta.length > 60 || auditorMeta.length > 34
 
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
@@ -387,7 +391,7 @@ export function AuditoriaPagina({
   if (modulo === 'm17' && portada) portadaLineas = formatPortadaM17(portada)
 
   return (
-    <Page size="A4" style={s.page} wrap>
+    <Page size="A4" style={encabezadoLargo ? [s.page, { paddingTop: 91 }] : s.page} wrap>
 
       {/* ── Header fijo: barra de degradado + logo + título + meta ───────── */}
       <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: PC.white }}>
@@ -413,14 +417,14 @@ export function AuditoriaPagina({
             </View>
           </View>
         </View>
-        {/* Meta bar: tipo, sitio, auditor */}
-        <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', gap: 14, paddingTop: 3, paddingBottom: 4, paddingLeft: 50, paddingRight: 50 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub }}>{tipoAudit}</Text>
-          <Text style={{ fontSize: 7, color: PC.textSub }}>
-            {terminoSitio}: {ranchoNombre}{ranchoCodigo ? ` (${ranchoCodigo})` : ''}
+        {/* Meta bar: tipo, sitio, auditor — ancho fijo por dato, hasta dos renglones */}
+        <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', alignItems: 'flex-start', gap: 14, paddingTop: 3, paddingBottom: 4, paddingLeft: 50, paddingRight: 50 }}>
+          <Text style={{ fontSize: 7, color: PC.textSub, width: 120 }}>{tipoAudit}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub, width: 210 }} hyphenationCallback={partirPalabraLarga}>
+            {sitioMeta}
           </Text>
-          <Text style={{ fontSize: 7, color: PC.textSub }}>
-            Auditor: {auditorNombre ?? '—'}
+          <Text style={{ fontSize: 7, color: PC.textSub, width: 123 }} hyphenationCallback={partirPalabraLarga}>
+            {auditorMeta}
           </Text>
         </View>
       </View>
@@ -527,7 +531,7 @@ export function AuditoriaPagina({
                   : resp?.respuesta === 'na'
                     ? s.qCellNA
                   : {}
-                const ptsLabel = preg.puntos > 0 && resp
+                const ptsLabel = preg.puntos > 0 && resp && resp.respuesta !== 'na'
                   ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
                   : ''
 

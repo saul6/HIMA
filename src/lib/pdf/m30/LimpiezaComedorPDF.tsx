@@ -68,7 +68,7 @@ export function LimpiezaComedorPagina({
 
 export function LimpiezaComedorPDF(props: LimpiezaComedorPaginaProps) {
   return (
-    <Document title={`Limpieza Comedor ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Comedor — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, comedor">
+    <Document title={`Limpieza Comedor ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Comedor — ${props.instalacion}`} keywords="M.A.D.Y., inocuidad, limpieza, comedor">
       <LimpiezaComedorPagina {...props} />
     </Document>
   )
@@ -76,7 +76,7 @@ export function LimpiezaComedorPDF(props: LimpiezaComedorPaginaProps) {
 
 export function LimpiezaComedorConsolidadoPDF({ paginas }: LimpiezaComedorConsolidadoProps) {
   return (
-    <Document title="Limpieza Comedor Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Comedor — Consolidado" keywords="MADY, inocuidad, limpieza, comedor, consolidado">
+    <Document title="Limpieza Comedor Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Comedor — Consolidado" keywords="M.A.D.Y., inocuidad, limpieza, comedor, consolidado">
       {paginas.map((p, i) => <LimpiezaComedorPagina key={i} {...p} />)}
     </Document>
   )
