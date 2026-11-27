@@ -508,9 +508,23 @@ export function EjecucionJornada() {
         ...prev,
         operaciones: prev.operaciones.filter(o => o.auditoria_id !== auditoriaId),
       } : prev)
+      let nuevaActiva = auditoriaActiva
       if (auditoriaActiva === auditoriaId) {
         const first = detalle?.operaciones.find(o => o.auditoria_id !== auditoriaId && o.disponible)
-        setAuditoriaActiva(first?.auditoria_id ?? null)
+        nuevaActiva = first?.auditoria_id ?? null
+        setAuditoriaActiva(nuevaActiva)
+      }
+      // La lista de preguntas deja de mostrar la operación retirada sin volver a consultar. Un refresco
+      // que siga en vuelo aún la traería, así que se descarta.
+      refrescoSeqRef.current++
+      const sinRetirada = (lista: JornadaPregunta[]) => lista
+        .map(p => ({ ...p, destinos: p.destinos.filter(d => d.auditoria_id !== auditoriaId) }))
+        .filter(p => p.destinos.length > 0)
+      setPreguntas(sinRetirada)
+      const restantes = sinRetirada(preguntas)
+      if (!restantes.some(p => p.question_id === questionActiva)) {
+        const siguiente = restantes.find(p => p.destinos.some(d => d.auditoria_id === nuevaActiva))
+        setQuestionActiva(siguiente?.question_id ?? null)
       }
     } catch (e) {
       console.error('[EjecucionJornada] retirarOperacion', e)
