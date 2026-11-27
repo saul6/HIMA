@@ -38,7 +38,7 @@ function FilaOperacion({
       onClick={yaEnEstaJornada ? undefined : onToggle}
       icono={yaEnEstaJornada ? (
         <fieldset disabled className="flex">
-          <input type="checkbox" disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
+          <input type="checkbox" checked disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
         </fieldset>
       ) : undefined}
       className={yaEnEstaJornada ? 'px-4 py-1 opacity-60 [&>div>div>span:first-child]:size-5 [&>div>div>span:first-child]:bg-transparent' : undefined}
