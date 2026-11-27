@@ -749,7 +749,8 @@ export function EjecucionJornada() {
 
           {/* Captura */}
           {!preguntaNoEnCuestionario && preguntaIdActivo && auditoriaActiva && (
-            <div ref={capturaScope}>
+            // El panel de Pendientes baja hasta aquí; el margen deja libre el encabezado fijo.
+            <div id="captura-pregunta" ref={capturaScope} className="scroll-mt-24 md:scroll-mt-4">
               <CapturaPreguntaAuditoria
                 key={auditoriaActiva}
                 ref={capturaRef}
