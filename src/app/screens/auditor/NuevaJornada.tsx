@@ -214,12 +214,16 @@ export function NuevaJornada() {
 
         {/* Error */}
         {errorCandidatas && (
-          <div className="mx-4 mt-4 rounded-xl border border-dashed border-border p-4 flex items-center gap-3">
-            <AlertCircle aria-hidden="true" size={16} style={{ color: 'var(--agro-danger-text)' }} />
-            <p className="text-sm flex-1" style={{ color: 'var(--muted-foreground)' }}>{errorCandidatas}</p>
-            <Boton variante="secundario" onClick={cargarCandidatas}>
-              Reintentar
-            </Boton>
+          <div className="px-6">
+            <EstadoVacio
+              icono={AlertCircle}
+              titulo={errorCandidatas}
+              accion={(
+                <Boton variante="secundario" onClick={cargarCandidatas}>
+                  Reintentar
+                </Boton>
+              )}
+            />
           </div>
         )}
 
