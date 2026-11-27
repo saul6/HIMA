@@ -173,7 +173,7 @@ export interface ModuloNavegador {
 type FiltroNavegador = 'todas' | 'pendientes'
 
 /** Píldoras de filtro en paneles angostos: menos relleno lateral y área táctil de 44 px. */
-export const FILTRO_ANGOSTO = "px-2.5 before:absolute before:content-[''] before:inset-x-0 before:-inset-y-1"
+export const FILTRO_ANGOSTO = "px-2 before:absolute before:content-[''] before:inset-x-0 before:-inset-y-1"
 
 export function NavegadorAgrupado({ modulos, onIr, className }: {
   modulos: ModuloNavegador[]
