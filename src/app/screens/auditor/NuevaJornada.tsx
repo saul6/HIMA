@@ -301,7 +301,7 @@ export function NuevaJornada() {
       {seleccionados.size > 0 && (
         <Portal>
         <div
-          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
+          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 max-md:pl-[88px] flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}
@@ -323,11 +323,11 @@ export function NuevaJornada() {
           />
           )}
           {jornadaDestino ? (
-            <Boton onClick={handleAgregar} cargando={creando} disabled={!destino} className="w-full">
+            <Boton onClick={handleAgregar} cargando={creando} disabled={!destino} className="w-full h-auto min-h-11 py-2 whitespace-normal">
               <Plus aria-hidden="true" size={15} />Agregar {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} a la jornada
             </Boton>
           ) : (
-          <Boton onClick={handleCrear} cargando={creando} className="w-full">
+          <Boton onClick={handleCrear} cargando={creando} className="w-full h-auto min-h-11 py-2 whitespace-normal">
             <Plus aria-hidden="true" size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
           </Boton>
           )}
