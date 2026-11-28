@@ -74,6 +74,7 @@ export function AuditorInstalacionDetalle() {
   const [cargando, setCargando] = useState(true)
   const mostrarSkeleton = useMostrarCarga(cargando, instalacion !== null)
   const [error, setError] = useState<string | null>(null)
+  const [recarga, setRecarga] = useState(0)
   const ent = useEntradaPantalla(!cargando && !error)
 
   // — Sheet: vincular a org M.A.D.Y. —
@@ -100,9 +101,13 @@ export function AuditorInstalacionDetalle() {
   useEffect(() => {
     if (!instalacionId || sinAcceso) return
     let cancelado = false
+    // Una recarga con la instalación ya en pantalla no la oculta ni la cambia por un error.
+    const silenciosa = recarga > 0 && instalacion?.id === instalacionId
     async function cargar() {
-      setCargando(true)
-      setError(null)
+      if (!silenciosa) {
+        setCargando(true)
+        setError(null)
+      }
       try {
         const { data: instData, error: instErr } = await tbl('aud_instalaciones')
           .select('id, nombre, ubicacion, cultivo_producto, tipo_operacion, contacto, linked_org_id, linked_rancho_id, linked_at')
@@ -137,7 +142,7 @@ export function AuditorInstalacionDetalle() {
         if (!cancelado) setAuditorias(items)
       } catch (e: unknown) {
         console.error('[AuditorInstalacionDetalle]', e)
-        if (!cancelado) setError('No se pudo cargar la instalación.')
+        if (!cancelado && !silenciosa) setError('No se pudo cargar la instalación.')
       } finally {
         if (!cancelado) setCargando(false)
       }
@@ -145,7 +150,7 @@ export function AuditorInstalacionDetalle() {
     cargar()
     return () => { cancelado = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instalacionId])
+  }, [instalacionId, recarga])
 
   async function cargarPerfiles(orgId: string) {
     if (!orgId) { setPerfiles([]); return }
@@ -603,7 +608,7 @@ export function AuditorInstalacionDetalle() {
         </div>
       </BottomSheet>
 
-      <Outlet />
+      <Outlet context={{ instalacionNombre: instalacion?.nombre, recargar: () => setRecarga(n => n + 1) }} />
     </div>
   )
 }

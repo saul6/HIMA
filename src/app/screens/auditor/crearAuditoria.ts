@@ -1,5 +1,6 @@
 // Creación de auditorías del auditor: una sola llamada a `aud_auditoria_crear`, que en una
 // transacción crea la instalación (si es nueva), la auditoría, sus módulos y la visita en la agenda.
+import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { fechaCorta } from '@/lib/formato'
@@ -90,4 +91,43 @@ export function textoErrorCrear(e: unknown): string {
   const mensaje = (e as { message?: string } | null)?.message ?? ''
   const propio = /^AUD_CREAR_[A-Z0-9_]+: (.+)/s.exec(mensaje)
   return propio ? propio[1] : 'No se pudo crear la auditoría. Reintenta.'
+}
+
+export const AVISO_YA_CREADA = 'Esta auditoría ya se había creado con los datos anteriores'
+const AVISO_SIN_RESPUESTA = 'No sabemos si se creó; revisa tu lista antes de reintentar'
+
+let recargaPendiente: (() => void) | null = null
+
+/** Sin red, la recarga fallaría: se hace una vez cuando el navegador avisa que volvió. */
+function recargarCuandoHayaRed(recargar: () => void) {
+  if (recargaPendiente) window.removeEventListener('online', recargaPendiente)
+  recargaPendiente = null
+  if (navigator.onLine) { recargar(); return }
+  recargaPendiente = recargar
+  window.addEventListener('online', recargar, { once: true })
+}
+
+/**
+ * Avisa según el fallo de `crearAuditoria`. Devuelve el id de la auditoría que la solicitud ya
+ * había creado (con otros datos) para ofrecer abrirla; en cualquier otro caso, null.
+ */
+export function avisarErrorCrear(e: unknown, recargar: () => void): string | null {
+  const error = e as { code?: string; message?: string; details?: string | null } | null
+
+  if (error?.code === '23505' && error.message?.startsWith('AUD_CREAR_SOLICITUD_REUTILIZADA')) {
+    // `details` solo es un id en este error; llega null si la solicitud es de otro auditor.
+    if (error.details) return error.details
+    toast.warning(AVISO_YA_CREADA)
+    return null
+  }
+
+  // Sin código no hubo respuesta del servidor: la auditoría pudo crearse o no.
+  if (!error?.code) {
+    toast.warning(AVISO_SIN_RESPUESTA, { duration: 7000 })
+    recargarCuandoHayaRed(recargar)
+    return null
+  }
+
+  toast.error(textoErrorCrear(e))
+  return null
 }

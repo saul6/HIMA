@@ -154,7 +154,7 @@ export function AuditorOrgDetalle() {
       {/* FAB */}
             <Fab onClick={() => navigate(`/auditor/org/${orgId}/nueva`, { state: { orgNombre } })} aria-label="Nueva auditoría" />
 
-      <Outlet context={{ orgNombre: nombreEmpresa }} />
+      <Outlet context={{ orgNombre: nombreEmpresa, recargar: refetch }} />
     </div>
   )
 }
