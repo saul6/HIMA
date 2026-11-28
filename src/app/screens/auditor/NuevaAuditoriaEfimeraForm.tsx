@@ -38,9 +38,10 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
   const location = useLocation()
   const { profile } = useAuthContext()
 
-  const instalacion = useOutletContext<{ recargar?: () => void } | undefined>()
-  const instalacionNombre: string =
-    (location.state as { instalacionNombre?: string } | null)?.instalacionNombre ?? 'Instalación'
+  // El nombre sale de la pantalla de la instalación; el estado de navegación solo cubre la espera.
+  const instalacion = useOutletContext<{ instalacionNombre?: string; recargar?: () => void } | undefined>()
+  const instalacionNombre: string = instalacion?.instalacionNombre
+    ?? (location.state as { instalacionNombre?: string } | null)?.instalacionNombre ?? 'Instalación'
   const hoy = hoyMX()
 
   const [modulos, setModulos] = useState<ModuloItem[]>([])

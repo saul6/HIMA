@@ -608,7 +608,7 @@ export function AuditorInstalacionDetalle() {
         </div>
       </BottomSheet>
 
-      <Outlet context={{ recargar: () => setRecarga(n => n + 1) }} />
+      <Outlet context={{ instalacionNombre: instalacion?.nombre, recargar: () => setRecarga(n => n + 1) }} />
     </div>
   )
 }
