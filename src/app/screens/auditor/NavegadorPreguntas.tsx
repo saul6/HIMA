@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { comportamientoScroll } from './motionAuditor'
 import { usePreguntaActiva } from './usePreguntaActiva'
 
@@ -171,6 +172,9 @@ export interface ModuloNavegador {
 
 type FiltroNavegador = 'todas' | 'pendientes'
 
+/** Píldoras de filtro en paneles angostos: menos relleno lateral y área táctil de 44 px. */
+export const FILTRO_ANGOSTO = "px-2 before:absolute before:content-[''] before:inset-x-0 before:-inset-y-1"
+
 export function NavegadorAgrupado({ modulos, onIr, className }: {
   modulos: ModuloNavegador[]
   onIr: (id: string) => void
@@ -211,22 +215,16 @@ export function NavegadorAgrupado({ modulos, onIr, className }: {
 
   return (
     <nav ref={navRef} aria-label="Preguntas de la auditoría" className={className}>
-      <div className="px-4 pt-3 pb-2 flex gap-1.5">
-        {(['todas', 'pendientes'] as const).map(f => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFiltro(f)}
-            aria-pressed={filtro === f}
-            className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
-            style={{
-              backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
-              color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',
-            }}
-          >
-            {f === 'todas' ? 'Todas' : 'Pendientes'}
-          </button>
-        ))}
+      <div className="px-4 pt-3 pb-2 flex flex-wrap gap-x-1.5 gap-y-2">
+        <FiltroPildoras
+          options={[
+            { value: 'todas', label: 'Todas' },
+            { value: 'pendientes', label: 'Pendientes' },
+          ]}
+          value={filtro}
+          onChange={setFiltro}
+          className={FILTRO_ANGOSTO}
+        />
       </div>
       <LeyendaEstados />
       <div className="border-t border-border">

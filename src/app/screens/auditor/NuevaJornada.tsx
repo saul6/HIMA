@@ -30,18 +30,14 @@ function FilaOperacion({
   onToggle: () => void
   yaEnEstaJornada?: boolean
 }) {
-  return (
+  const registro = (
     <FilaRegistro
       // Ya incluida: la fila deja de ser un botón y la casilla queda deshabilitada de forma nativa.
       seleccionable={!yaEnEstaJornada}
       seleccionado={selected}
       onClick={yaEnEstaJornada ? undefined : onToggle}
-      icono={yaEnEstaJornada ? (
-        <fieldset disabled className="flex">
-          <input type="checkbox" disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
-        </fieldset>
-      ) : undefined}
-      className={yaEnEstaJornada ? 'px-4 py-1 opacity-60 [&>div>div>span:first-child]:size-5 [&>div>div>span:first-child]:bg-transparent' : undefined}
+      icono={null}
+      className={yaEnEstaJornada ? 'min-w-0 flex-1 border-b-0' : undefined}
       titulo={
         <>
           {fila.operacion}
@@ -68,6 +64,15 @@ function FilaOperacion({
         </>
       }
     />
+  )
+  if (!yaEnEstaJornada) return registro
+  return (
+    <div className="flex items-center gap-3 border-b border-border px-4 py-1 opacity-60">
+      <fieldset disabled className="flex size-5 shrink-0 items-center justify-center">
+        <input type="checkbox" checked disabled aria-label={`Seleccionar ${fila.operacion}`} className="size-4 cursor-not-allowed" />
+      </fieldset>
+      {registro}
+    </div>
   )
 }
 
@@ -209,12 +214,16 @@ export function NuevaJornada() {
 
         {/* Error */}
         {errorCandidatas && (
-          <div className="mx-4 mt-4 rounded-xl border border-dashed border-border p-4 flex items-center gap-3">
-            <AlertCircle aria-hidden="true" size={16} style={{ color: 'var(--agro-danger-text)' }} />
-            <p className="text-sm flex-1" style={{ color: 'var(--muted-foreground)' }}>{errorCandidatas}</p>
-            <Boton variante="secundario" onClick={cargarCandidatas}>
-              Reintentar
-            </Boton>
+          <div className="px-6">
+            <EstadoVacio
+              icono={AlertCircle}
+              titulo={errorCandidatas}
+              accion={(
+                <Boton variante="secundario" onClick={cargarCandidatas}>
+                  Reintentar
+                </Boton>
+              )}
+            />
           </div>
         )}
 
@@ -292,7 +301,7 @@ export function NuevaJornada() {
       {seleccionados.size > 0 && (
         <Portal>
         <div
-          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
+          className="fixed bottom-0 left-0 md:left-[64px] lg:left-[220px] right-0 z-20 border-t border-border px-4 py-4 max-md:pl-[88px] flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}
@@ -314,11 +323,11 @@ export function NuevaJornada() {
           />
           )}
           {jornadaDestino ? (
-            <Boton onClick={handleAgregar} cargando={creando} disabled={!destino} className="w-full">
+            <Boton onClick={handleAgregar} cargando={creando} disabled={!destino} className="w-full h-auto min-h-11 py-2 whitespace-normal">
               <Plus aria-hidden="true" size={15} />Agregar {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} a la jornada
             </Boton>
           ) : (
-          <Boton onClick={handleCrear} cargando={creando} className="w-full">
+          <Boton onClick={handleCrear} cargando={creando} className="w-full h-auto min-h-11 py-2 whitespace-normal">
             <Plus aria-hidden="true" size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
           </Boton>
           )}

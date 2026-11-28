@@ -28,7 +28,8 @@ import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { motion, AnimatePresence, useAnimate, useReducedMotion } from 'motion/react'
 import { DUR, EASE_OUT } from '@/lib/motion'
-import { NavegadorPreguntas, LeyendaEstados, estadoDestino } from './NavegadorPreguntas'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { NavegadorPreguntas, LeyendaEstados, estadoDestino, FILTRO_ANGOSTO } from './NavegadorPreguntas'
 import type { ItemNavegador } from './NavegadorPreguntas'
 import { useEntradaPantalla, avisoMotion, fundidoEntrada, comportamientoScroll } from './motionAuditor'
 
@@ -154,7 +155,7 @@ function PendientesPanel({
             <div className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2.5">
               <div className="flex flex-col min-w-0">
                 <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-                  {op.productor} · {op.operacion}
+                  {nombreOperacion(op)}
                 </p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {pendientesDest.length} sin responder
@@ -292,7 +293,9 @@ export function EjecucionJornada() {
       // Restaurar contexto o poner defaults
       const ctx = det.jornada.contexto
       const firstOp = det.operaciones.find(o => o.disponible)
-      const initialAud = ctx?.auditoria_id ?? firstOp?.auditoria_id ?? null
+      // La operación guardada puede haberse quitado de la jornada: entonces se usa la primera que sí esté.
+      const guardadaSigue = det.operaciones.some(o => o.auditoria_id === ctx?.auditoria_id)
+      const initialAud = (guardadaSigue ? ctx?.auditoria_id : firstOp?.auditoria_id) ?? null
       setAuditoriaActiva(initialAud)
 
       // La pregunta inicial debe existir en la operación inicial: `preg[0]` (o la del contexto guardado)
@@ -420,7 +423,7 @@ export function EjecucionJornada() {
         return {
           id: d.auditoria_id,
           estado: estadoDestino(d.respuesta, d.herencia_pendiente),
-          titulo: op ? `${op.productor} · ${op.operacion}` : undefined,
+          titulo: op ? nombreOperacion(op) : undefined,
         }
       }),
       nota: auditoriaActiva && !destinoActivo ? 'No aplica en esta operación' : undefined,
@@ -507,9 +510,23 @@ export function EjecucionJornada() {
         ...prev,
         operaciones: prev.operaciones.filter(o => o.auditoria_id !== auditoriaId),
       } : prev)
+      let nuevaActiva = auditoriaActiva
       if (auditoriaActiva === auditoriaId) {
         const first = detalle?.operaciones.find(o => o.auditoria_id !== auditoriaId && o.disponible)
-        setAuditoriaActiva(first?.auditoria_id ?? null)
+        nuevaActiva = first?.auditoria_id ?? null
+        setAuditoriaActiva(nuevaActiva)
+      }
+      // La lista de preguntas deja de mostrar la operación retirada sin volver a consultar. Un refresco
+      // que siga en vuelo aún la traería, así que se descarta.
+      refrescoSeqRef.current++
+      const sinRetirada = (lista: JornadaPregunta[]) => lista
+        .map(p => ({ ...p, destinos: p.destinos.filter(d => d.auditoria_id !== auditoriaId) }))
+        .filter(p => p.destinos.length > 0)
+      setPreguntas(sinRetirada)
+      const restantes = sinRetirada(preguntas)
+      if (!restantes.some(p => p.question_id === questionActiva)) {
+        const siguiente = restantes.find(p => p.destinos.some(d => d.auditoria_id === nuevaActiva))
+        setQuestionActiva(siguiente?.question_id ?? null)
       }
     } catch (e) {
       console.error('[EjecucionJornada] retirarOperacion', e)
@@ -698,41 +715,28 @@ export function EjecucionJornada() {
 
           {/* Filtro por módulo: solo si la jornada tiene más de uno */}
           {modulos.length > 1 && (
-          <div className="px-4 pt-3">
-            <div className="flex gap-1.5 overflow-x-auto pt-2.5 pb-3.5 -mt-2.5 -mb-2.5 -mx-4 px-4 scrollbar-none">
-              {modulos.map(m => (
-                <button
-                  key={m}
-                  onClick={() => setModuloActivo(m)}
-                  aria-pressed={moduloVisible === m}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
-                  style={{
-                    backgroundColor: moduloVisible === m ? 'var(--accent)' : 'var(--muted)',
-                    color: moduloVisible === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-                  }}
-                >
-                  Módulo {m}
-                </button>
-              ))}
-            </div>
+          <div className="px-4 pt-3 flex flex-wrap gap-x-1.5 gap-y-2">
+            <FiltroPildoras
+              options={modulos.map(m => ({ value: m, label: `Módulo ${m}` }))}
+              value={moduloVisible ?? ''}
+              onChange={setModuloActivo}
+              className={FILTRO_ANGOSTO}
+            />
           </div>
           )}
 
           {/* Filtros */}
-          <div className="px-4 pt-2 pb-1 flex gap-1.5">
-            {(['todas', 'pendientes', 'comunes'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFiltro(f)}
-                className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
-                style={{
-                  backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
-                  color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',
-                }}
-              >
-                {f === 'todas' ? 'Todas' : f === 'pendientes' ? 'Pendientes' : 'Comunes'}
-              </button>
-            ))}
+          <div className="px-4 pt-2 pb-1 flex flex-wrap gap-x-1.5 gap-y-2">
+            <FiltroPildoras
+              options={[
+                { value: 'todas', label: 'Todas' },
+                { value: 'pendientes', label: 'Pendientes' },
+                { value: 'comunes', label: 'Comunes' },
+              ]}
+              value={filtro}
+              onChange={setFiltro}
+              className={FILTRO_ANGOSTO}
+            />
           </div>
 
           <LeyendaEstados />
@@ -761,7 +765,8 @@ export function EjecucionJornada() {
 
           {/* Captura */}
           {!preguntaNoEnCuestionario && preguntaIdActivo && auditoriaActiva && (
-            <div ref={capturaScope}>
+            // El panel de Pendientes baja hasta aquí; el margen deja libre el encabezado fijo.
+            <div id="captura-pregunta" ref={capturaScope} className="scroll-mt-24 md:scroll-mt-4">
               <CapturaPreguntaAuditoria
                 key={auditoriaActiva}
                 ref={capturaRef}
