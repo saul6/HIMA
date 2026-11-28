@@ -293,7 +293,9 @@ export function EjecucionJornada() {
       // Restaurar contexto o poner defaults
       const ctx = det.jornada.contexto
       const firstOp = det.operaciones.find(o => o.disponible)
-      const initialAud = ctx?.auditoria_id ?? firstOp?.auditoria_id ?? null
+      // La operación guardada puede haberse quitado de la jornada: entonces se usa la primera que sí esté.
+      const guardadaSigue = det.operaciones.some(o => o.auditoria_id === ctx?.auditoria_id)
+      const initialAud = (guardadaSigue ? ctx?.auditoria_id : firstOp?.auditoria_id) ?? null
       setAuditoriaActiva(initialAud)
 
       // La pregunta inicial debe existir en la operación inicial: `preg[0]` (o la del contexto guardado)
