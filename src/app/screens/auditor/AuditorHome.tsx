@@ -496,6 +496,7 @@ export function AuditorHome() {
         <AuditorNuevaAuditoriaSheet
           onClose={() => setShowSheet(false)}
           onCreated={() => { setShowSheet(false); setRefreshKey(k => k + 1) }}
+          onRecargar={() => setRefreshKey(k => k + 1)}
         />
       )}
 

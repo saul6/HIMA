@@ -13,7 +13,8 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { BORDE_CAMPO } from './estilosCampo'
-import { crearAuditoria, errorFechasVisita, finMaximoVisita, limitesInicioVisita, textoErrorCrear } from './crearAuditoria'
+import { avisarErrorCrear, crearAuditoria, errorFechasVisita, finMaximoVisita, limitesInicioVisita } from './crearAuditoria'
+import { AvisoYaCreada } from './AvisoYaCreada'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -23,6 +24,8 @@ interface ModuloItem { id: string; nombre: string; orden: number }
 interface Props {
   onClose: () => void
   onCreated: () => void
+  /** Recarga lo que muestra Inicio, sin cerrar la hoja. */
+  onRecargar: () => void
 }
 
 const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT }
@@ -37,14 +40,17 @@ const inputSt: React.CSSProperties = {
   fontSize: '0.875rem',
 }
 
-export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
+export function AuditorNuevaAuditoriaSheet({ onClose, onCreated, onRecargar }: Props) {
   const idInicio = useId()
   const idFin = useId()
   const navigate = useNavigate()
   const hoy = hoyMX()
   const limitesInicio = limitesInicioVisita()
-  // Un identificador por formulario abierto: un reintento usa el mismo.
-  const [solicitudId] = useState(() => crypto.randomUUID())
+  // Un identificador por formulario abierto: un reintento usa el mismo. Solo cambia con «Crear otra».
+  const [solicitudId, setSolicitudId] = useState(() => crypto.randomUUID())
+  // Auditoría que esta solicitud ya había creado con otros datos.
+  const [yaCreada, setYaCreada] = useState<string | null>(null)
+  const [abriendo, setAbriendo] = useState(false)
   const enCurso = useRef(false)
 
   const reducedMotion = useReducedMotion()
@@ -104,15 +110,17 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
     })
   }
 
-  async function handleCrear() {
+  async function handleCrear(otra = false) {
     if (modulosSel.size === 0) { toast.warning('Selecciona al menos un módulo'); return }
     if (enCurso.current) return
+    const solicitud = otra ? crypto.randomUUID() : solicitudId
+    if (otra) setSolicitudId(solicitud)
 
     enCurso.current = true
     setGuardando(true)
     try {
       const creada = await crearAuditoria({
-        p_solicitud_id: solicitudId,
+        p_solicitud_id: solicitud,
         p_modulos: Array.from(modulosSel),
         p_visita_inicio: fechaInicio,
         p_visita_fin: fechaFin,
@@ -130,11 +138,27 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
       })
     } catch (e) {
       console.error('[AuditorNuevaAuditoriaSheet]', e)
-      toast.error(textoErrorCrear(e))
+      setYaCreada(avisarErrorCrear(e, onRecargar))
     } finally {
       enCurso.current = false
       setGuardando(false)
     }
+  }
+
+  async function handleAbrir() {
+    if (!yaCreada || enCurso.current) return
+    enCurso.current = true
+    setAbriendo(true)
+    // El nombre escrito pudo cambiar: se leen los datos de la auditoría ya creada.
+    // Si la lectura falla, se abre sin ellos.
+    const { data } = await tbl('aud_auditorias')
+      .select('instalacion_id, aud_instalaciones(nombre)')
+      .eq('id', yaCreada)
+      .maybeSingle()
+    onCreated()
+    navigate(`/auditor/auditoria/${yaCreada}`, {
+      state: { instalacionId: data?.instalacion_id, instalacionNombre: data?.aud_instalaciones?.nombre },
+    })
   }
 
   return (
@@ -329,12 +353,23 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           <Boton onClick={handleSiguiente} cargando={cargandoModulos} className="w-full">
             Siguiente
           </Boton>
+        ) : yaCreada ? (
+          <AvisoYaCreada
+            onAbrir={handleAbrir}
+            onCrearOtra={() => handleCrear(true)}
+            creando={guardando}
+            abriendo={abriendo}
+          >
+            <Boton variante="secundario" onClick={() => { setDireccion(-1); setPaso(1) }}>
+              Atrás
+            </Boton>
+          </AvisoYaCreada>
         ) : (
           <div className="flex gap-2">
             <Boton variante="secundario" onClick={() => { setDireccion(-1); setPaso(1) }}>
               Atrás
             </Boton>
-            <Boton onClick={handleCrear} cargando={guardando} disabled={cargandoModulos} className="flex-1">
+            <Boton onClick={() => handleCrear()} cargando={guardando} disabled={cargandoModulos} className="flex-1">
               {guardando ? 'Creando…' : 'Crear auditoría'}
             </Boton>
           </div>

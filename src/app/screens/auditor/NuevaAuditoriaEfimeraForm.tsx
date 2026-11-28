@@ -1,5 +1,5 @@
 import { useState, useEffect, useId, useRef } from 'react'
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { useParams, useNavigate, useLocation, useOutletContext, Navigate } from 'react-router'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -13,7 +13,8 @@ import { useEntradaPantalla } from './motionAuditor'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { BORDE_CAMPO } from './estilosCampo'
 import { CamposVisita } from './CamposVisita'
-import { crearAuditoria, errorFechasVisita, textoErrorCrear } from './crearAuditoria'
+import { avisarErrorCrear, crearAuditoria, errorFechasVisita } from './crearAuditoria'
+import { AvisoYaCreada } from './AvisoYaCreada'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -37,6 +38,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
   const location = useLocation()
   const { profile } = useAuthContext()
 
+  const instalacion = useOutletContext<{ recargar?: () => void } | undefined>()
   const instalacionNombre: string =
     (location.state as { instalacionNombre?: string } | null)?.instalacionNombre ?? 'Instalación'
   const hoy = hoyMX()
@@ -46,8 +48,10 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
 
   const [visitaInicio, setVisitaInicio] = useState(hoy)
   const [visitaFin, setVisitaFin] = useState('')
-  // Un identificador por formulario abierto: un reintento usa el mismo.
-  const [solicitudId] = useState(() => crypto.randomUUID())
+  // Un identificador por formulario abierto: un reintento usa el mismo. Solo cambia con «Crear otra».
+  const [solicitudId, setSolicitudId] = useState(() => crypto.randomUUID())
+  // Auditoría que esta solicitud ya había creado con otros datos.
+  const [yaCreada, setYaCreada] = useState<string | null>(null)
   const enCurso = useRef(false)
   const [tipoOperacion, setTipoOperacion] = useState('')
   const [producto, setProducto] = useState('')
@@ -93,17 +97,19 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
     })
   }
 
-  async function handleCrear() {
+  async function handleCrear(otra = false) {
     if (modulosSel.size === 0) { toast.warning('Selecciona al menos un módulo PrimusGFS'); return }
     const errorFechas = errorFechasVisita(visitaInicio, visitaFin)
     if (errorFechas) { toast.warning(errorFechas); return }
     if (!instalacionId || enCurso.current) return
+    const solicitud = otra ? crypto.randomUUID() : solicitudId
+    if (otra) setSolicitudId(solicitud)
 
     enCurso.current = true
     setGuardando(true)
     try {
       const creada = await crearAuditoria({
-        p_solicitud_id: solicitudId,
+        p_solicitud_id: solicitud,
         p_modulos: Array.from(modulosSel),
         p_visita_inicio: visitaInicio,
         p_visita_fin: visitaFin || undefined,
@@ -113,17 +119,25 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
         p_periodo: periodo.trim() || undefined,
       })
       toast.success('Auditoría creada')
-      navigate(`/auditor/auditoria/${creada.auditoria_id}`, {
-        replace: true,
-        state: { instalacionId, instalacionNombre },
-      })
+      abrirAuditoria(creada.auditoria_id)
     } catch (e: unknown) {
       console.error('[AuditorNuevaAuditoriaEfimera]', e)
-      toast.error(textoErrorCrear(e))
+      setYaCreada(avisarErrorCrear(e, () => instalacion?.recargar?.()))
     } finally {
       enCurso.current = false
       setGuardando(false)
     }
+  }
+
+  function abrirAuditoria(auditoriaId: string) {
+    navigate(`/auditor/auditoria/${auditoriaId}`, {
+      replace: true,
+      state: { instalacionId, instalacionNombre },
+    })
+  }
+
+  function handleAbrir() {
+    if (yaCreada) abrirAuditoria(yaCreada)
   }
 
   if (sinAcceso) {
@@ -200,9 +214,13 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
 
       {!cargando && (
         <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
-          <Boton onClick={handleCrear} cargando={guardando} className="w-full">
-            {guardando ? 'Creando…' : 'Crear auditoría'}
-          </Boton>
+          {yaCreada ? (
+            <AvisoYaCreada onAbrir={handleAbrir} onCrearOtra={() => handleCrear(true)} creando={guardando} />
+          ) : (
+            <Boton onClick={() => handleCrear()} cargando={guardando} className="w-full">
+              {guardando ? 'Creando…' : 'Crear auditoría'}
+            </Boton>
+          )}
         </div>
       )}
     </>
